@@ -1,0 +1,33 @@
+services:
+  fit-main-app:
+    container_name: fit-main-app
+    hostname: fit-main-app
+    build:
+      context: "FiTrackerMain"
+    ports:
+      - "8080:8080"
+    depends_on:
+      - fit-main-db
+  fit-main-db:
+    container_name: fit-main-db
+    hostname: fit-main-db
+    build:
+      context: 'FiTrackerMainDb'
+    ports:
+      - "5432:5432"
+  fit-api:
+    container_name: fit-api
+    hostname: fit-api
+    build:
+      context: 'FiTrackerApiGateway'
+    ports:
+      - '8090:80'
+      - '443:443'
+    depends_on:
+      - fit-main-app
+networks:
+  fir:
+    driver: bridge
+volumes:
+  fit-db:
+    driver: local

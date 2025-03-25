@@ -1,0 +1,30 @@
+import {NgModule} from '@angular/core';
+import {AuthComponent} from './components/auth-component/auth.component';
+
+import {SharedModule} from '../shared/shared.module';
+import {UsersService} from './services/users.service';
+import {ApiUsersService} from 'api';
+import {UsersRoutingModule} from './users-routing.module';
+import {MainContainerComponent} from './components/main-container/main-container.component';
+import {ReactiveFormsModule} from '@angular/forms';
+import {RegisterComponent} from './components/register-component/register.component';
+
+@NgModule({
+  declarations: [
+    AuthComponent,
+    MainContainerComponent,
+    RegisterComponent
+  ],
+  imports: [
+    ReactiveFormsModule,
+    UsersRoutingModule,
+    SharedModule
+
+  ],
+  providers: [
+    ApiUsersService,
+    UsersService,
+  ]
+})
+export class UsersModule {
+}

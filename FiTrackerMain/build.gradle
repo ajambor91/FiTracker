@@ -1,0 +1,111 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version '3.4.3'
+	id 'io.spring.dependency-management' version '1.1.7'
+	id 'jacoco'
+}
+
+group = 'aj.FiTracker'
+version = '0.0.1-SNAPSHOT'
+
+java {
+	toolchain {
+		languageVersion = JavaLanguageVersion.of(23)
+	}
+}
+
+configurations {
+	compileOnly {
+		extendsFrom annotationProcessor
+	}
+}
+
+repositories {
+	mavenCentral()
+}
+
+dependencies {
+	compileOnly 'jakarta.servlet:jakarta.servlet-api:6.1.0'
+	implementation 'org.flywaydb:flyway-core:11.4.0'
+	runtimeOnly 'org.flywaydb:flyway-database-postgresql:11.4.0'
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+	implementation 'org.springframework.boot:spring-boot-starter-security'
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	compileOnly 'org.projectlombok:lombok'
+	runtimeOnly 'com.h2database:h2'
+	annotationProcessor 'org.projectlombok:lombok'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.springframework.security:spring-security-test'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	implementation 'org.springframework.boot:spring-boot-starter-validation'
+	implementation 'org.postgresql:postgresql'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.testcontainers:junit-jupiter'
+	testImplementation 'org.testcontainers:postgresql'
+	implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
+	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
+	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
+}
+
+
+tasks.register('unitTest', Test) {
+	useJUnitPlatform {
+		excludeTags 'integration'
+	}
+	systemProperty 'spring.profiles.active', 'unit'
+}
+
+tasks.register('integrationTest', Test) {
+	useJUnitPlatform {
+		includeTags 'integration'
+	}
+	systemProperty 'spring.profiles.active', 'integration'
+	shouldRunAfter 'unitTest'
+}
+
+tasks.register('buildWithoutTests') {
+	group = 'build'
+	description = 'Builds the project without running any tests.'
+
+	dependsOn assemble
+}
+
+test {
+	dependsOn unitTest
+}
+
+tasks.jacocoTestReport {
+	dependsOn tasks.named('test'), tasks.named('integrationTest') // Zależności od obu typów testów
+	executionData fileTree(project.rootDir.absolutePath).include("**/build/jacoco/*.exec")
+
+	reports {
+		xml.required = true
+		csv.required = false
+		html.required = true
+		html.outputLocation = layout.buildDirectory.dir('reports/jacoco')
+	}
+}
+
+tasks.jacocoTestCoverageVerification {
+	dependsOn tasks.jacocoTestReport
+	violationRules {
+		rule {
+			limit {
+				minimum = 0.5
+			}
+		}
+	}
+}
+
+check {
+	dependsOn tasks.jacocoTestCoverageVerification
+}
+
+
+sourceSets {
+	test {
+		resources {
+			srcDirs = ['src/test/resources']
+		}
+	}
+}
