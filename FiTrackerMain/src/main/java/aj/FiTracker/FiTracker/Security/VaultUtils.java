@@ -15,7 +15,6 @@ public final class VaultUtils {
 
 
     public static String extractKey(VaultTransitKey key) {
-        System.out.println("VAULT KERY " + key.getKeys());
         Map<String, String> keyMap = getRSAKey(key);
         String pubKey = keyMap.get(PUBLIC_MAP_KEY);
         if (pubKey.isEmpty()) {

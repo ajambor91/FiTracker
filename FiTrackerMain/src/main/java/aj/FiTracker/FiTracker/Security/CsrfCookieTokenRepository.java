@@ -49,7 +49,6 @@ public class CsrfCookieTokenRepository implements CsrfTokenRepository {
         Cookie[] cookies = request.getCookies();
         if (cookies != null) {
             for (Cookie cookie : cookies) {
-                System.out.println(cookie.getValue());
                 if (cookie.getName().equals(cookieName)) {
                     return cookie.getValue();
                 }

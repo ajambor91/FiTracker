@@ -48,6 +48,19 @@ services:
       - fit-main-app
     networks:
       - fit
+    volumes:
+      - fit-api:/var/log/nginx
+  fit-promtail:
+    container_name: fit-promtail
+    hostname: fit-promtail
+    build:
+      context: './FiTPromtail'
+    volumes:
+      - fit-api:/var/log/external/api:ro
+    networks:
+      - fit
+    depends_on:
+      - fit-loki
   fit-grafana:
     build:
       context: 'FiTGrafana'
@@ -97,4 +110,6 @@ volumes:
   fit-vault:
     driver: local
   fit-grafana:
+    driver: local
+  fit-api:
     driver: local

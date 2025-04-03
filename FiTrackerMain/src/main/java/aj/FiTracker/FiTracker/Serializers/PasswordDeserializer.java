@@ -13,9 +13,7 @@ public class PasswordDeserializer extends JsonDeserializer<char[]> {
     public char[] deserialize(JsonParser p, DeserializationContext ctxt) throws IOException {
         JsonNode node = p.getCodec().readTree(p);
         String rawPassword = node.asText();
-        System.out.println("PASS STARIUNG " + rawPassword);
         char[] passwordChars = rawPassword.toCharArray();
-        System.out.println("PAAASSS CHARS " + passwordChars);
         rawPassword = "";
         rawPassword = null;
         return passwordChars;
