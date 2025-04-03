@@ -61,8 +61,11 @@ public class UserControllerIntegrationTest extends AbstractIntegrationTest {
     @Test
     @DisplayName("Should return Conflict when user is duplicated")
     public void testRegisterUserReturnConflict() throws Exception {
-        this.insertTestData("INSERT INTO app_core.app_user (login, name, password, salt) VALUES ('testLogin', 'Test name', '$2a$10$JWWX4sPfFPl84AeiYeQm5eA.EEmNbALPjKYyGiP2qG/Q3t8.8fQ4a', 'xAcJlQ5mjvc6QsK0AF+hkA==')");
-        this.mockMvc.perform(post("/users/register")
+        this.insertTestData(
+                "INSERT INTO app_core.app_user (login, name, password, salt, unique_id, created_at, updated_at) " +
+                        "VALUES ('testLogin', 'Test name', '$2a$10$JWWX4sPfFPl84AeiYeQm5eA.EEmNbALPjKYyGiP2qG/Q3t8.8fQ4a', " +
+                        "'xAcJlQ5mjvc6QsK0AF+hkA==', '194e36b4-2f25-4171-83e3-8543bfcd54f4', NOW(), NOW())"
+        );          this.mockMvc.perform(post("/users/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(this.objectMapper.writeValueAsString(RequestsDataFactory.createTestRegisterUserRequest())))
                 .andExpect(status().isConflict());
@@ -71,8 +74,11 @@ public class UserControllerIntegrationTest extends AbstractIntegrationTest {
     @Test
     @DisplayName("Should login user and return 200")
     public void testLoginUser() throws Exception {
-        this.insertTestData("INSERT INTO app_core.app_user (login, name, password, salt) VALUES ('testLogin', 'Test name', '$2a$10$JWWX4sPfFPl84AeiYeQm5eA.EEmNbALPjKYyGiP2qG/Q3t8.8fQ4a', 'xAcJlQ5mjvc6QsK0AF+hkA==')");
-        this.mockMvc.perform(post("/users/login")
+        this.insertTestData(
+                "INSERT INTO app_core.app_user (login, name, password, salt, unique_id, created_at, updated_at) " +
+                        "VALUES ('testLogin', 'Test name', '$2a$10$JWWX4sPfFPl84AeiYeQm5eA.EEmNbALPjKYyGiP2qG/Q3t8.8fQ4a', " +
+                        "'xAcJlQ5mjvc6QsK0AF+hkA==', '194e36b4-2f25-4171-83e3-8543bfcd54f4', NOW(), NOW())"
+        );        this.mockMvc.perform(post("/users/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(this.objectMapper.writeValueAsString(RequestsDataFactory.createTestLoginRequestData())))
                 .andExpect(status().isOk())
@@ -96,8 +102,11 @@ public class UserControllerIntegrationTest extends AbstractIntegrationTest {
     @Test
     @DisplayName("Should 401 when password is not correct")
     public void testLoginUserIncorrectPassword() throws Exception {
-        this.insertTestData("INSERT INTO app_core.app_user (login, name, password, salt) VALUES ('testLogin', 'Test name', 'IncorrectPassword.EEmNbALPjKYyGiP2qG/Q3t8.8fQ4a', 'xAcJlQ5mjvc6QsK0AF+hkA==')");
-        this.mockMvc.perform(post("/users/login")
+        this.insertTestData(
+                "INSERT INTO app_core.app_user (login, name, password, salt, unique_id, created_at, updated_at) " +
+                        "VALUES ('testLogin', 'Test name', 'IncorrectPassword', " +
+                        "'xAcJlQ5mjvc6QsK0AF+hkA==', '194e36b4-2f25-4171-83e3-8543bfcd54f4', NOW(), NOW())"
+        );        this.mockMvc.perform(post("/users/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(this.objectMapper.writeValueAsString(RequestsDataFactory.createTestLoginRequestData())))
                 .andExpect(status().isUnauthorized());

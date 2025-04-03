@@ -1,0 +1,71 @@
+openssl req -x509 -nodes -newkey rsa:2048 -keyout certs/vault.key -out certs/vault.crt -subj "/CN=fit-vault" -addext "subjectAltName=IP:127.0.0.1,DNS:localhost"
+
+
+vault operator init
+
+
+
+
+vault operator unseal GmT4Xp6Sy/IZHcunLBVDudjh5ZDQn8S9YWWyygJ9WDs5
+vault operator unseal oSU8JIH5D393nybQFRxP3QicZC4wXhZEbO6W3KaKnSoa
+vault operator unseal QcsNttEXh7HA1m+iqCWBoTsy5hCIdDBCRhlC45KXamSC
+vault operator unseal 6Bcdr74a8eazBJXy0l5TsQWw5IvxZEmue/xAiKgXGqy5
+vault operator unseal myGomopo0pPOOFhgOryqxxyrrFxTmZ85gYmDvmE1J0K6
+
+root
+vault login token=hvs.SVV4WJdZEpgUHmjpwWNJKwc0
+
+ kcAm3zSkYxfJ0su0RGbIqJNz
+ 
+ 
+ vault secrets enable -path=secret kv-v2
+
+
+
+vault token capabilities root
+vault auth enable approle
+
+
+vault write transit/keys/jwt-rsa-key type="rsa-4096" exportable=true allow_plaintext_backup=true
+#load policy
+vault policy write fit-main-app-policy /vault/policies/fit-main-policy.hcl
+
+
+#create policy
+vault write auth/approle/role/fit-main-app-policy  token_policies="fit-main-app-policy" token_ttl=24h token_max_ttl=48h secret_id_ttl=24h
+
+#get role
+vault read auth/approle/role/fit-main-app-policy/role-id
+
+
+#get secret once key
+vault write -f auth/approle/role/fit-main-app-policy/secret-id
+
+#chewck policy
+vault policy read fit-main-app-policy
+###
+SPRING CONFIG
+
+role_id    4f80a821-738f-c932-b8fd-04aecf6ac2c6
+
+---                   -----
+secret_id             efd4a63f-3564-77ff-526f-8e7fda5b2156
+secret_id_accessor    6441b026-608d-a80e-6072-3d7b1a6ebf98
+secret_id_num_uses    0
+secret_id_ttl         24h
+
+
+
+vault login -method=approle role_id="776477ef-d37a-e61c-2d66-18308862ca8d" secret_id="057ee458-0a1e-288c-8577-8fd62b9caaea"
+
+
+"Cannot login using org.springframework.web.client.ResourceAccessException: I/O error on POST request for "http://fit-vault:8200/v1/auth/approle/login": fit-vault"
+
+
+vault token lookup 776477ef-d37a-e61c-2d66-18308862ca8d
+
+#EXPORT KEY
+
+
+vault write transit/keys/jwt-rsa-key exportable=true allow_plaintext_backup=true  deletion_allowed=true 
+vault read secret/keys/jwt-rsa-key

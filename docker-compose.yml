@@ -6,8 +6,14 @@ services:
       context: "FiTrackerMain"
     ports:
       - "8080:8080"
+      - "9000:9000"
     depends_on:
       - fit-main-db
+    networks:
+      - fit
+      - fit-security
+    volumes:
+      - './FiTrackerMain/cfg/application.properties:/usr/app/application.properties'
   fit-main-db:
     container_name: fit-main-db
     hostname: fit-main-db
@@ -15,6 +21,21 @@ services:
       context: 'FiTrackerMainDb'
     ports:
       - "5432:5432"
+    networks:
+      - fit
+  fit-zone-app:
+    container_name: fit-zone-app
+    hostname: fit-zone-app
+    build:
+      context: "FiTrackerZoneService"
+    ports:
+      - '9090:8080'
+    depends_on:
+      - fit-main-app
+    networks:
+      - fit
+    volumes:
+      - './FiTrackerZoneService/cfg/application.properties:/usr/app/application.properties'
   fit-api:
     container_name: fit-api
     hostname: fit-api
@@ -25,9 +46,55 @@ services:
       - '443:443'
     depends_on:
       - fit-main-app
+    networks:
+      - fit
+  fit-grafana:
+    build:
+      context: 'FiTGrafana'
+    container_name: fit-grafana
+    hostname: fit-grafana
+    ports:
+      - '3000:3000'
+    networks:
+      - fit
+    volumes:
+      - 'fit-grafana:/var/lib/grafana'
+  fit-loki:
+    build:
+      context: 'FiTLoki'
+    container_name: fit-loki
+    hostname: fit-loki
+    ports:
+      - '3100:3100'
+    networks:
+      - fit
+  fit-vault:
+    build:
+      context: "FiTrackerVault"
+    container_name: fit-vault
+    hostname: fit-vault
+    ports:
+      - "8200:8200"
+      - "8201:8201"
+    networks:
+      - fit-security
+    volumes:
+      - "./FiTrackerVault/certs/:/vault/certs/"
+      - "./FiTrackerVault/config/config.hcl:/vault/config/config.hcl"
+      - "./FiTrackerVault/policies/:/vault/policies/"
+      - "fit-vault:/vault/data/"
+    cap_add:
+      - IPC_LOCK
 networks:
-  fir:
+  fit:
     driver: bridge
+  fit-security:
+    driver: bridge
+
 volumes:
   fit-db:
+    driver: local
+  fit-vault:
+    driver: local
+  fit-grafana:
     driver: local

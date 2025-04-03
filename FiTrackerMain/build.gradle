@@ -28,23 +28,31 @@ dependencies {
 	compileOnly 'jakarta.servlet:jakarta.servlet-api:6.1.0'
 	implementation 'org.flywaydb:flyway-core:11.4.0'
 	runtimeOnly 'org.flywaydb:flyway-database-postgresql:11.4.0'
-	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
-	implementation 'org.springframework.boot:spring-boot-starter-security'
-	implementation 'org.springframework.boot:spring-boot-starter-web'
-	compileOnly 'org.projectlombok:lombok'
-	runtimeOnly 'com.h2database:h2'
-	annotationProcessor 'org.projectlombok:lombok'
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testImplementation 'org.springframework.security:spring-security-test'
-	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
-	implementation 'org.springframework.boot:spring-boot-starter-validation'
-	implementation 'org.postgresql:postgresql'
-	testImplementation 'org.springframework.boot:spring-boot-starter-test'
-	testImplementation 'org.testcontainers:junit-jupiter'
-	testImplementation 'org.testcontainers:postgresql'
+	implementation 'org.springframework.boot:spring-boot-starter-data-jpa:3.4.4'
+	implementation 'org.springframework.boot:spring-boot-starter-security:3.4.4'
+	implementation 'org.springframework.boot:spring-boot-starter-web:3.4.4'
+	compileOnly 'org.projectlombok:lombok:1.18.36'
+	runtimeOnly 'com.h2database:h2:2.3.232'
+	annotationProcessor 'org.projectlombok:lombok:1.18.36'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test:3.4.4'
+	testImplementation 'org.springframework.security:spring-security-test:6.4.4'
+	testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.11.4'
+	implementation 'org.springframework.boot:spring-boot-starter-validation:3.4.4'
+	implementation 'org.postgresql:postgresql:42.7.5'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test:3.4.4'
+	testImplementation 'org.testcontainers:junit-jupiter:1.20.6'
+	testImplementation 'org.testcontainers:postgresql:1.20.6'
 	implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
 	runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.12.6'
 	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.12.6'
+	implementation 'org.springframework.security:spring-security-oauth2-authorization-server:1.4.2'
+	implementation 'org.springframework.security:spring-security-oauth2-jose:6.4.4'
+	implementation 'org.springframework.vault:spring-vault-core:3.1.2'
+	implementation 'org.springframework.cloud:spring-cloud-vault-config:4.2.1'
+	testImplementation "org.testcontainers:vault:1.20.6"
+	implementation 'commons-codec:commons-codec:1.18.0'
+	implementation 'org.bouncycastle:bcpkix-jdk15on:1.47'
+
 }
 
 
@@ -75,7 +83,7 @@ test {
 }
 
 tasks.jacocoTestReport {
-	dependsOn tasks.named('test'), tasks.named('integrationTest') // Zależności od obu typów testów
+	dependsOn tasks.named('test'), tasks.named('integrationTest')
 	executionData fileTree(project.rootDir.absolutePath).include("**/build/jacoco/*.exec")
 
 	reports {

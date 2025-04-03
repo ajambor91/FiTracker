@@ -7,6 +7,9 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 @Entity
 @Getter
 @Setter
@@ -40,6 +43,16 @@ public class User implements UserData {
     @Column(nullable = false)
     private String salt;
 
+    @Column(nullable = false, name = "unique_id")
+    private UUID uniqueId;
+
+    @Column(nullable = false, name = "created_at")
+    private LocalDateTime createdAt;
+
+    @Column(nullable = false, name = "updated_at")
+    private LocalDateTime updatedAt;
+
+
     public User() {}
 
     public User(RegisterUserRequest userRequest) {
@@ -51,5 +64,17 @@ public class User implements UserData {
     public User(LoginRequest loginRequest) {
         this.login = loginRequest.getLogin();
         this.rawPassword = loginRequest.getRawPassword();
+    }
+
+    @PrePersist
+    private void prePersist() {
+        this.createdAt = LocalDateTime.now();
+        this.updatedAt = LocalDateTime.now();
+        this.uniqueId = UUID.randomUUID();
+    }
+
+    @PreUpdate
+    private void preUpdate() {
+        this.updatedAt = LocalDateTime.now();
     }
 }

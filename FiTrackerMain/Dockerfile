@@ -1,7 +1,6 @@
 FROM openjdk:23-jdk
 WORKDIR /app
 RUN microdnf install findutils
-COPY cfg/application.properties /usr/app/application.properties
 
 COPY gradlew .
 COPY gradle gradle

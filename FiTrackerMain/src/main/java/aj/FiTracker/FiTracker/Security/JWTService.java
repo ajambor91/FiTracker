@@ -1,45 +1,81 @@
 package aj.FiTracker.FiTracker.Security;
 
 import aj.FiTracker.FiTracker.Entities.User;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.vault.core.VaultTransitOperations;
+import org.springframework.vault.support.Plaintext;
+import org.springframework.vault.support.VaultTransitKey;
 
-import javax.crypto.SecretKey;
-import java.nio.charset.StandardCharsets;
-import java.util.Date;
+
+import java.security.NoSuchAlgorithmException;
+import java.security.interfaces.RSAPublicKey;
+import java.security.spec.InvalidKeySpecException;
+import java.util.Base64;
+import java.util.Map;
 
 @Component
 public class JWTService {
+    private final ObjectMapper objectMapper;
+    private final VaultTransitOperations vaultTransitOperations;
     private final Logger logger;
     private final long tokenExpiration;
-    private final SecretKey secretKey;
     @Autowired
-    public JWTService(   @Value("${login.jwt.secret}") String secretKey,
-                         @Value("${login.expiration}") Long tokenExpiration) {
+    public JWTService(
+            VaultTransitOperations vaultTransitOperations,
+            ObjectMapper objectMapper,
+            @Value("${login.expiration}"
+                         ) Long tokenExpiration) {
         this.logger = LoggerFactory.getLogger(JWTService.class);
+        this.vaultTransitOperations = vaultTransitOperations;
         this.tokenExpiration = tokenExpiration;
-        this.secretKey =  Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));;
+        this.objectMapper = objectMapper;
     }
 
-    public User generateToken(User user) {
+    public User generateToken(User user) throws JsonProcessingException, NoSuchAlgorithmException, InvalidKeySpecException {
         return this.generateToken(user, tokenExpiration);
     }
 
-    public User generateToken(User user, long expirationTime) {
-        String token = Jwts.builder()
-                .claims()
-                .subject(user.getName())
-                .issuedAt(new Date(System.currentTimeMillis()))
-                .expiration(new Date(System.currentTimeMillis() + expirationTime))
-                .and()
-                .signWith(secretKey)
-                .compact();
-        user.setJwt(token);
+    public User generateToken(User user, long expiration) throws JsonProcessingException, NoSuchAlgorithmException, InvalidKeySpecException {
+        VaultTransitKey transitKey = vaultTransitOperations.getKey("jwt-rsa-key");
+        assert transitKey != null;
+        String extractedKey = VaultUtils.extractKey(transitKey);
+        RSAPublicKey rsaPublicKey = RSAUtil.getRSAPubKey(extractedKey);
+        String kid = RSAUtil.generateKidFromPublicKey(rsaPublicKey);
+        Map<String, Object> header = Map.of(
+                "alg", "PS256",
+                "typ", "JWT",
+                "kid", kid
+        );
+
+        Map<String, Object> claims = Map.of(
+                "sub", user.getName(),
+                "iat", System.currentTimeMillis(),
+                "exp", System.currentTimeMillis() + expiration
+        );
+
+        String encodedHeader = Base64.getUrlEncoder().withoutPadding().encodeToString(
+                objectMapper.writeValueAsBytes(header)
+        );
+
+        String encodedPayload = Base64.getUrlEncoder().withoutPadding().encodeToString(
+                objectMapper.writeValueAsBytes(claims)
+        );
+        String unsignedToken = encodedHeader + "." + encodedPayload;
+
+        String vaultSignature = vaultTransitOperations.sign("jwt-rsa-key", Plaintext.of(unsignedToken))
+                .getSignature();
+        String jwtSignature = VaultUtils.convertVaultSignatureToJWT(vaultSignature);
+        String signedToken = unsignedToken + "." + jwtSignature;
+        user.setJwt(signedToken.trim());
+
         return user;
     }
 }

@@ -12,6 +12,7 @@ import aj.FiTracker.FiTracker.Security.JWTService;
 import aj.FiTracker.FiTracker.Security.PasswordEncoder;
 import aj.FiTracker.FiTracker.TestUtils.RequestsDataFactory;
 import aj.FiTracker.FiTracker.TestUtils.UserDataTestFactory;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -27,6 +28,8 @@ import static org.mockito.ArgumentMatchers.any;
 import org.junit.jupiter.api.Tag;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.security.NoSuchAlgorithmException;
+import java.security.spec.InvalidKeySpecException;
 import java.util.Optional;
 
 import static org.mockito.Mockito.*;
@@ -85,7 +88,7 @@ public class UserServiceUnitTest {
 
     @Test
     @DisplayName("Should return User entity based on LoginRequest")
-    public void testLoginUser() {
+    public void testLoginUser() throws JsonProcessingException, NoSuchAlgorithmException, InvalidKeySpecException {
         PasswordEncoder passwordEncoderMock = mock(PasswordEncoder.class);
         ReflectionTestUtils.setField(this.userService, "passwordEncoder", passwordEncoderMock);
         when(passwordEncoderMock.checkPass(any(User.class), any(User.class))).thenReturn(true);
