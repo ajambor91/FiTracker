@@ -4,7 +4,6 @@ import aj.FiTracker.FiTracker.Entities.User;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,9 +22,9 @@ import java.util.Map;
 
 @Component
 public class JWTService {
+    private final Logger logger;
     private final ObjectMapper objectMapper;
     private final VaultTransitOperations vaultTransitOperations;
-    private final Logger logger;
     private final long tokenExpiration;
     @Autowired
     public JWTService(
@@ -44,10 +43,13 @@ public class JWTService {
     }
 
     public User generateToken(User user, long expiration) throws JsonProcessingException, NoSuchAlgorithmException, InvalidKeySpecException {
+        logger.info("Generating token for {} user", user.getId());
         VaultTransitKey transitKey = vaultTransitOperations.getKey("jwt-rsa-key");
+        logger.info("Fetch transit key for KID generation, for user: {}", user.getId());
         assert transitKey != null;
         String extractedKey = VaultUtils.extractKey(transitKey);
         RSAPublicKey rsaPublicKey = RSAUtil.getRSAPubKey(extractedKey);
+        logger.info("Extracted RSA public key for user {}", user.getId());
         String kid = RSAUtil.generateKidFromPublicKey(rsaPublicKey);
         Map<String, Object> header = Map.of(
                 "alg", "PS256",
@@ -60,6 +62,7 @@ public class JWTService {
                 "iat", System.currentTimeMillis(),
                 "exp", System.currentTimeMillis() + expiration
         );
+        logger.info("Created JWT payload and claims for user {}", user.getId());
 
         String encodedHeader = Base64.getUrlEncoder().withoutPadding().encodeToString(
                 objectMapper.writeValueAsBytes(header)
@@ -68,14 +71,16 @@ public class JWTService {
         String encodedPayload = Base64.getUrlEncoder().withoutPadding().encodeToString(
                 objectMapper.writeValueAsBytes(claims)
         );
+        logger.info("Encoded token dara for user {}", user.getId());
         String unsignedToken = encodedHeader + "." + encodedPayload;
 
         String vaultSignature = vaultTransitOperations.sign("jwt-rsa-key", Plaintext.of(unsignedToken))
                 .getSignature();
+        logger.info("Signed token data for user {}", user.getId());
         String jwtSignature = VaultUtils.convertVaultSignatureToJWT(vaultSignature);
         String signedToken = unsignedToken + "." + jwtSignature;
         user.setJwt(signedToken.trim());
-
+        logger.info("Set signed token for user {}", user.getId());
         return user;
     }
 }

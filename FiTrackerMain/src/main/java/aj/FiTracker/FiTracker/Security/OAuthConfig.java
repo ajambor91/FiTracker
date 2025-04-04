@@ -6,6 +6,8 @@ import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 import org.apache.commons.codec.digest.DigestUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -30,6 +32,8 @@ import java.security.interfaces.RSAPublicKey;
 
 @Configuration
 public class OAuthConfig {
+    private static final Logger lopgger = LoggerFactory.getLogger(OAuthConfig.class);
+
     @Value("${oauth.client.id}")
     private String clientId;
 
@@ -41,10 +45,14 @@ public class OAuthConfig {
     @Autowired
     public OAuthConfig(VaultTransitOperations vaultTransitOperations) {
         this.vaultTransitOperations = vaultTransitOperations;
+        lopgger.info("OAuthConfig initialized with VaultTransitOperations");
+
     }
 
     @Bean
     public RegisteredClientRepository registeredClientRepository() {
+        lopgger.info("Creating RegisteredClientRepository bean");
+
         RegisteredClient client = RegisteredClient.withId(UUID.randomUUID().toString())
                 .clientId(clientId)
                 .clientSecret("{noop}" + clientSecret)
@@ -62,17 +70,31 @@ public class OAuthConfig {
 
     @Bean
     public JWKSource<SecurityContext> jwkSource() throws NoSuchAlgorithmException, InvalidKeySpecException {
+        lopgger.info("Creating JWKSource bean");
+
         RSAKey rsaKey = generateRsaKey();
         JWKSet jwkSet = new JWKSet(rsaKey);
+        lopgger.info("JWKSet created with key ID: {}", rsaKey.getKeyID());
+        lopgger.debug("JWKSet details: {}", jwkSet.toString(false));
         return (jwkSelector, securityContext) -> jwkSelector.select(jwkSet);
     }
 
     private RSAKey generateRsaKey() throws NoSuchAlgorithmException, InvalidKeySpecException {
+        lopgger.info("Generating RSA key from Vault.");
+
         VaultTransitKey transitKey = vaultTransitOperations.getKey("jwt-rsa-key");
+        if (transitKey != null) {
+            lopgger.debug("Retrieved Vault transit key: {}", transitKey.getName());
+        } else {
+            lopgger.warn("Failed to retrieve Vault transit key 'jwt-rsa-key'");
+        }
         assert transitKey != null;
         String extractedKey = VaultUtils.extractKey(transitKey);
+        lopgger.debug("Extracted key from Vault transit key (first few chars): {}", extractedKey.substring(0, Math.min(extractedKey.length(), 50)) + "...");
         RSAPublicKey rsaPublicKey = RSAUtil.getRSAPubKey(extractedKey);
         String kid = RSAUtil.generateKidFromPublicKey(rsaPublicKey);
+        lopgger.info("Generated RSA key with key ID (KID): {}", kid);
+        lopgger.debug("RSA Public Key details: {}", rsaPublicKey);
         return new RSAKey.Builder(rsaPublicKey)
                 .keyUse(KeyUse.SIGNATURE)
                 .keyID(kid)

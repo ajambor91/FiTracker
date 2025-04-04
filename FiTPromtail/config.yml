@@ -16,4 +16,4 @@ scrape_configs:
         labels:
           job: fit-api
           app: fit-api
-          __path__: /var/log/external/nginx/*
+          __path__: /var/log/external/api/*
