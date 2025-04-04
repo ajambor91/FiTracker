@@ -7,11 +7,13 @@ import lombok.Setter;
 @Getter
 @Setter
 public class LoginResponseSuccess {
+    private long userId;
     private String message;
     private String login;
     private String name;
 
     public LoginResponseSuccess(User user, String message) {
+        this.userId = user.getId();
         this.login = user.getLogin();
         this.name = user.getName();
         this.message = message;

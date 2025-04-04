@@ -1,5 +1,6 @@
 package aj.FiTracker.FiTracker.Controllers;
 import aj.FiTracker.FiTracker.DTO.REST.NewZone;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -9,7 +10,7 @@ import org.springframework.web.bind.annotation.*;
 public class ZoneController {
 
     @PostMapping("/zone")
-    public ResponseEntity<?> createZone() {
+    public ResponseEntity<?> createZone(@RequestBody @Valid NewZone newZone) {
         return ResponseEntity.status(HttpStatus.CREATED).build();
     }
 }

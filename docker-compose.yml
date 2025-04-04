@@ -12,6 +12,7 @@ services:
     networks:
       - fit
       - fit-security
+      - fit-main
     volumes:
       - './FiTrackerMain/cfg/application.properties:/usr/app/application.properties'
   fit-main-db:
@@ -22,7 +23,7 @@ services:
     ports:
       - "5432:5432"
     networks:
-      - fit
+      - fit-main
   fit-zone-app:
     container_name: fit-zone-app
     hostname: fit-zone-app
@@ -34,8 +35,20 @@ services:
       - fit-main-app
     networks:
       - fit
+      - fit-zone
     volumes:
       - './FiTrackerZoneService/cfg/application.properties:/usr/app/application.properties'
+  fit-zone-db:
+    container_name: fit-zone-db
+    hostname: fit-zone-db
+    build:
+      context: './FiTrackerZoneDb'
+    ports:
+      - "27017:27017"
+    networks:
+      - fit-zone
+    volumes:
+      - fit-zone-db:/data/db
   fit-api:
     container_name: fit-api
     hostname: fit-api
@@ -103,6 +116,10 @@ networks:
     driver: bridge
   fit-security:
     driver: bridge
+  fit-zone:
+    driver: bridge
+  fit-main:
+    driver: bridge
 
 volumes:
   fit-db:
@@ -112,4 +129,6 @@ volumes:
   fit-grafana:
     driver: local
   fit-api:
+    driver: local
+  fit-zone-db:
     driver: local

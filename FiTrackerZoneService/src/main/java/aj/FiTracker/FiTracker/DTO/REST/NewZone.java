@@ -8,6 +8,7 @@ import lombok.Setter;
 public class NewZone {
     private String name;
     private String description;
+    private String userId;
 
     public NewZone() {
 
