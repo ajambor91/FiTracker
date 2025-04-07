@@ -1,9 +1,9 @@
 package aj.FiTracker.FiTracker.Controllers;
 
 import aj.FiTracker.FiTracker.Exceptions.ErrorResponseDTO;
-import aj.FiTracker.FiTracker.Exceptions.UserAlreadyExistsException;
-import aj.FiTracker.FiTracker.Exceptions.UserDoesntExistException;
 import aj.FiTracker.FiTracker.Exceptions.UserUnauthorizedException;
+import aj.FiTracker.FiTracker.Exceptions.ZoneAlreadyExistsException;
+import aj.FiTracker.FiTracker.Exceptions.ZoneDoesntExistException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -22,18 +22,18 @@ public class AppExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
-    @ExceptionHandler(UserAlreadyExistsException.class)
+    @ExceptionHandler(ZoneAlreadyExistsException.class)
     public ResponseEntity<ErrorResponseDTO> handleIllegalArgumentException(
-            UserAlreadyExistsException ex,
+            ZoneAlreadyExistsException ex,
             HttpServletRequest request
     ) {
         ErrorResponseDTO errorResponse =new ErrorResponseDTO(ex, request);
         return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
     }
 
-    @ExceptionHandler(UserDoesntExistException.class)
+    @ExceptionHandler(ZoneDoesntExistException.class)
     public ResponseEntity<ErrorResponseDTO> handleIllegalArgumentException(
-            UserDoesntExistException ex,
+            ZoneDoesntExistException ex,
             HttpServletRequest request
     ) {
         ErrorResponseDTO errorResponse =new ErrorResponseDTO(ex, request);

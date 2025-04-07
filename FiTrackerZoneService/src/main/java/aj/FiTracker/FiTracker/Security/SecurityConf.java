@@ -12,12 +12,7 @@ import org.springframework.security.web.SecurityFilterChain;
 @Configuration
 @EnableWebSecurity
 public class SecurityConf {
-    @Value("${oauth.client.id}")
-    private String clientId;
-    @Value("${jwks.api.uri}")
-    private String jwksUri;
-    @Value("${oauth.client.secret}")
-    private String clientSecret;
+
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {

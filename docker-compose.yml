@@ -6,7 +6,6 @@ services:
       context: "FiTrackerMain"
     ports:
       - "8080:8080"
-      - "9000:9000"
     depends_on:
       - fit-main-db
     networks:
@@ -49,6 +48,29 @@ services:
       - fit-zone
     volumes:
       - fit-zone-db:/data/db
+  fit-expenses-db:
+    container_name: fit-expenses-db
+    hostname: fit-expenses-db
+    build:
+      context: 'FiTrackerExpensesDb'
+    ports:
+      - "5433:5432"
+    networks:
+      - fit-expenses
+  fit-expenses-app:
+    container_name: fit-expenses-app
+    hostname: fit-expenses-app
+    build:
+      context: "FiTrackerExpenses"
+    ports:
+      - '7090:8080'
+    depends_on:
+      - fit-expenses-db
+    networks:
+      - fit
+      - fit-expenses
+    volumes:
+      - './FiTrackerExpenses/cfg/application.properties:/usr/app/application.properties'
   fit-api:
     container_name: fit-api
     hostname: fit-api
@@ -57,8 +79,8 @@ services:
     ports:
       - '8090:80'
       - '443:443'
-    depends_on:
-      - fit-main-app
+#    depends_on:
+#      - fit-main-app
     networks:
       - fit
     volumes:
@@ -120,7 +142,8 @@ networks:
     driver: bridge
   fit-main:
     driver: bridge
-
+  fit-expenses:
+    driver: bridge
 volumes:
   fit-db:
     driver: local

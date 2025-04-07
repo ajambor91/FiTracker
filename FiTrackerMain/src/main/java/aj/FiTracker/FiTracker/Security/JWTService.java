@@ -58,7 +58,8 @@ public class JWTService {
         );
 
         Map<String, Object> claims = Map.of(
-                "sub", user.getName(),
+                "sub", user.getId(),
+                "name", user.getName(),
                 "iat", System.currentTimeMillis(),
                 "exp", System.currentTimeMillis() + expiration
         );
