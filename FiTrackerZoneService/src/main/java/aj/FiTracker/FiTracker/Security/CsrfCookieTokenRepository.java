@@ -15,13 +15,15 @@ public class CsrfCookieTokenRepository implements CsrfTokenRepository {
     private static final Logger lopgger = LoggerFactory.getLogger(CsrfToken.class);
     private static final String CSRF_COOKIE_NAME = "XSRF-TOKEN";
     private static final String CSRF_HEADER_NAME = "X-XSRF-TOKEN";
+
     @Override
     public CsrfToken generateToken(HttpServletRequest request) {
         lopgger.info("Generating a new CSRF token");
         System.out.println("ZZZZZZZZZZZZZ");
 
         String token = UUID.randomUUID().toString();
-        return new DefaultCsrfToken(CSRF_HEADER_NAME, CSRF_COOKIE_NAME, token);    }
+        return new DefaultCsrfToken(CSRF_HEADER_NAME, CSRF_COOKIE_NAME, token);
+    }
 
     @Override
     public void saveToken(CsrfToken token, HttpServletRequest request, HttpServletResponse response) {

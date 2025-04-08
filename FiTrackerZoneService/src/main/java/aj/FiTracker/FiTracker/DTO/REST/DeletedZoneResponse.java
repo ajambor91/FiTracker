@@ -9,9 +9,10 @@ import java.time.LocalDateTime;
 
 @Getter
 @Setter
-public class DeletedZoneResponse extends BaseZoneResponse{
+public class DeletedZoneResponse extends BaseZoneResponse {
     @NotBlank
     private LocalDateTime deletedAt;
+
     public DeletedZoneResponse(Zone zone) {
         super(zone);
         deletedAt = zone.getDeletedAt();

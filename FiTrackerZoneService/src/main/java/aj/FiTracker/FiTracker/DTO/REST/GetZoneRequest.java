@@ -9,6 +9,7 @@ import lombok.Setter;
 public class GetZoneRequest {
     @NotBlank
     private long id;
+
     public GetZoneRequest() {
 
     }

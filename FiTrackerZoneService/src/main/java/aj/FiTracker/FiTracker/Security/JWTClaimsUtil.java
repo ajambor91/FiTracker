@@ -5,10 +5,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.jwt.Jwt;
 
 public final class JWTClaimsUtil {
-    public record JWTClaims(String name, long userId){}
     public static JWTClaims getUsernameFromClaims(Authentication authentication) {
-        if (authentication.getPrincipal() instanceof Jwt) {
-            Jwt jwtClaims = (Jwt) authentication.getPrincipal();
+        if (authentication.getPrincipal() instanceof Jwt jwtClaims) {
             return new JWTClaims(
                     jwtClaims.getClaimAsString("name"),
                     parseStringToLong(jwtClaims.getClaimAsString("sub")));
@@ -18,5 +16,8 @@ public final class JWTClaimsUtil {
 
     private static long parseStringToLong(String data) {
         return Long.parseLong(data);
+    }
+
+    public record JWTClaims(String name, long userId) {
     }
 }

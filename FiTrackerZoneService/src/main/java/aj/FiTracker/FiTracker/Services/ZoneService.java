@@ -56,6 +56,8 @@ public class ZoneService {
                 throw new ZoneDoesntExistException("Zone does not exist");
             }
             return zone.get();
+        } catch (ZoneDoesntExistException e) {
+            throw e;
         } catch (Exception e) {
             throw new InternalServerException(e);
         }
@@ -74,6 +76,9 @@ public class ZoneService {
             zoneDocument.setDeletedAt(LocalDateTime.now());
             this.zoneRepository.save(zoneDocument);
             return zoneDocument;
+
+        } catch (ZoneDoesntExistException e) {
+            throw e;
         } catch (Exception e) {
             throw new InternalServerException(e);
         }
@@ -95,11 +100,14 @@ public class ZoneService {
             if (!updateZoneRequest.getZoneDescription().isEmpty()) {
                 zoneDocument.setDescription(updateZoneRequest.getZoneDescription());
             }
-            if (!updateZoneRequest.getMembers().isEmpty()) {
+            if (updateZoneRequest.getMembers() != null && !updateZoneRequest.getMembers().isEmpty()) {
                 zoneDocument = this.updateMembers(zoneDocument, updateZoneRequest);
             }
             this.zoneRepository.save(zoneDocument);
             return zoneDocument;
+
+        } catch (ZoneDoesntExistException e) {
+            throw e;
         } catch (Exception e) {
             throw new InternalServerException(e);
         }

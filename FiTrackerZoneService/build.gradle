@@ -2,6 +2,7 @@ plugins {
 	id 'java'
 	id 'org.springframework.boot' version '3.4.4'
 	id 'io.spring.dependency-management' version '1.1.7'
+	id 'jacoco'
 }
 
 group = 'aj.FiTrackerZone'
@@ -45,6 +46,64 @@ dependencies {
 	testImplementation 'org.testcontainers:junit-jupiter:1.20.6'
 }
 
-tasks.named('test') {
-	useJUnitPlatform()
+tasks.register('unitTest', Test) {
+	useJUnitPlatform {
+		excludeTags 'integration'
+	}
+	systemProperty 'spring.profiles.active', 'unit'
+}
+
+tasks.register('integrationTest', Test) {
+	useJUnitPlatform {
+		includeTags 'integration'
+	}
+	systemProperty 'spring.profiles.active', 'integration'
+	shouldRunAfter 'unitTest'
+}
+
+tasks.register('buildWithoutTests') {
+	group = 'build'
+	description = 'Builds the project without running any tests.'
+
+	dependsOn assemble
+}
+
+test {
+	dependsOn unitTest
+}
+
+tasks.jacocoTestReport {
+	dependsOn tasks.named('test'), tasks.named('integrationTest')
+	executionData fileTree(project.rootDir.absolutePath).include("**/build/jacoco/*.exec")
+
+	reports {
+		xml.required = true
+		csv.required = false
+		html.required = true
+		html.outputLocation = layout.buildDirectory.dir('reports/jacoco')
+	}
+}
+
+tasks.jacocoTestCoverageVerification {
+	dependsOn tasks.jacocoTestReport
+	violationRules {
+		rule {
+			limit {
+				minimum = 0.5
+			}
+		}
+	}
+}
+
+check {
+	dependsOn tasks.jacocoTestCoverageVerification
+}
+
+
+sourceSets {
+	test {
+		resources {
+			srcDirs = ['src/test/resources']
+		}
+	}
 }

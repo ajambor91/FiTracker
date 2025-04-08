@@ -6,7 +6,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class GetZoneResponse extends BaseZoneResponse{
+public class GetZoneResponse extends BaseZoneResponse {
 
     public GetZoneResponse(Zone zone) {
         super(zone);

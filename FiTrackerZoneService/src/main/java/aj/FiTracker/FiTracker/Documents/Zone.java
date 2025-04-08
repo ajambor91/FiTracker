@@ -12,6 +12,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+
 @Getter
 @Setter
 @Document(collection = "zone")
@@ -34,22 +35,8 @@ public class Zone {
     private LocalDateTime updatedAt;
     private LocalDateTime deletedAt;
 
-    @Getter
-    @Setter
-    public static class Member{
-        private long userId;
-        private MemberRole role;
-        private String name;
-        private LocalDateTime addedAt;
-        public Member(long userId, MemberRole role, String name) {
-            this.userId = userId;
-            this.role = role;
-            this.name = name;
-            this.addedAt = LocalDateTime.now();
-        }
+    public Zone() {
     }
-
-    public Zone(){}
 
     public Zone(NewZoneRequest newZoneRequest, long ownerId) {
         this.members = new ArrayList<>();
@@ -62,6 +49,21 @@ public class Zone {
         this.members.add(member);
     }
 
+    @Getter
+    @Setter
+    public static class Member {
+        private long userId;
+        private MemberRole role;
+        private String name;
+        private LocalDateTime addedAt;
+
+        public Member(long userId, MemberRole role, String name) {
+            this.userId = userId;
+            this.role = role;
+            this.name = name;
+            this.addedAt = LocalDateTime.now();
+        }
+    }
 
 
 }

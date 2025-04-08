@@ -11,17 +11,18 @@ import java.util.List;
 @Setter
 public class ZonesResponse {
     private List<ZoneResponse> zones;
-    private static class ZoneResponse extends BaseZoneResponse {
-
-        public ZoneResponse(Zone zone) {
-            super(zone);
-        }
-    }
 
     public ZonesResponse(List<Zone> resZones) {
         zones = new ArrayList<>();
         resZones.forEach(zone -> {
             zones.add(new ZoneResponse(zone));
         });
+    }
+
+    private static class ZoneResponse extends BaseZoneResponse {
+
+        public ZoneResponse(Zone zone) {
+            super(zone);
+        }
     }
 }

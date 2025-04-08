@@ -1,9 +1,12 @@
 package aj.FiTracker.FiTracker.Controllers;
+
 import aj.FiTracker.FiTracker.DTO.REST.*;
 import aj.FiTracker.FiTracker.Documents.Zone;
 import aj.FiTracker.FiTracker.Services.ZoneService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,10 +18,12 @@ import java.util.List;
 @RestController
 @RequestMapping("/zones")
 public class ZoneController {
+    private final Logger logger = LoggerFactory.getLogger(ZoneController.class);
     private final ZoneService zoneService;
 
     @Autowired
     public ZoneController(ZoneService zoneService) {
+        logger.info("Initializing ZoneController");
         this.zoneService = zoneService;
     }
 

@@ -24,11 +24,17 @@ import java.security.spec.RSAPublicKeySpec;
 import java.text.ParseException;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.*;
+import java.util.Base64;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
 
 public class JWTDecode implements JwtDecoder {
     private static JWTDecode jwtDecode;
 
+    static {
+        Security.addProvider(new BouncyCastleProvider());
+    }
 
     private final String SECURITY_ALGORITHM = "SHA256withRSAandMGF1";
     private final String PROVIDER = "BC";
@@ -40,9 +46,6 @@ public class JWTDecode implements JwtDecoder {
     private final Duration cacheDuration = Duration.ofHours(1);
     @Value("${jwks.api.uri}")
     private String jwksUri;
-    static {
-        Security.addProvider(new BouncyCastleProvider());
-    }
 
     private JWTDecode() {
         this.objectMapper = new ObjectMapper();
