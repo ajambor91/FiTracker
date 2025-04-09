@@ -4,7 +4,7 @@ import aj.FiTracker.FiTracker.AbstractTest.AbstractIntegrationTest;
 import aj.FiTracker.FiTracker.Documents.Zone;
 import aj.FiTracker.FiTracker.SecurityUtils.WithMockJwt;
 import aj.FiTracker.FiTracker.TestUtils.ZoneFactory;
-import aj.FiTracker.FiTracker.enums.MemberRole;
+import aj.FiTracker.FiTracker.Enums.MemberRole;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;

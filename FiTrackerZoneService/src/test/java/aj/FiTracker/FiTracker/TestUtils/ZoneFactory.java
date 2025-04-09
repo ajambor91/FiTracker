@@ -3,7 +3,7 @@ package aj.FiTracker.FiTracker.TestUtils;
 import aj.FiTracker.FiTracker.DTO.REST.NewZoneRequest;
 import aj.FiTracker.FiTracker.DTO.REST.UpdateZoneRequest;
 import aj.FiTracker.FiTracker.Documents.Zone;
-import aj.FiTracker.FiTracker.enums.MemberRole;
+import aj.FiTracker.FiTracker.Enums.MemberRole;
 
 import java.util.ArrayList;
 import java.util.List;

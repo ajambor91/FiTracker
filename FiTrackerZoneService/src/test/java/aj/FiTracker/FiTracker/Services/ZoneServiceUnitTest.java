@@ -9,10 +9,8 @@ import aj.FiTracker.FiTracker.Exceptions.ZoneAlreadyExistsException;
 import aj.FiTracker.FiTracker.Exceptions.ZoneDoesntExistException;
 import aj.FiTracker.FiTracker.Repositories.ZoneRepository;
 import aj.FiTracker.FiTracker.TestUtils.ZoneFactory;
-import aj.FiTracker.FiTracker.enums.MemberRole;
+import aj.FiTracker.FiTracker.Enums.MemberRole;
 import com.mongodb.DuplicateKeyException;
-import org.apache.zookeeper.Op;
-import org.bson.BsonDocument;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
@@ -41,16 +39,18 @@ public class ZoneServiceUnitTest {
     private Jwt jwtMock;
     private ZoneService zoneService;
     private ZoneRepository zoneRepositoryMock;
+    private KafkaProducerService kafkaProducerServiceMock;
     private Authentication authenticationMock;
     @BeforeEach
     public void setup() {
+        this.kafkaProducerServiceMock = mock(KafkaProducerService.class);
         this.jwtMock = mock(Jwt.class);
         when(this.jwtMock.getClaimAsString(eq("sub"))).thenReturn(String.valueOf(OWNER_TEST_ID));
         when(this.jwtMock.getClaimAsString(eq("name"))).thenReturn(USER_TEST_NAME);
         this.authenticationMock = mock(Authentication.class);
         when(this.authenticationMock.getPrincipal()).thenReturn(this.jwtMock);
         this.zoneRepositoryMock = mock(ZoneRepository.class);
-        this.zoneService = new ZoneService(zoneRepositoryMock);
+        this.zoneService = new ZoneService(zoneRepositoryMock, this.kafkaProducerServiceMock);
     }
 
     @Test

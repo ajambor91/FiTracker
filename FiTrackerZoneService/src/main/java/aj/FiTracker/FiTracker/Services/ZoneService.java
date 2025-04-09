@@ -6,9 +6,11 @@ import aj.FiTracker.FiTracker.Documents.Zone;
 import aj.FiTracker.FiTracker.Exceptions.InternalServerException;
 import aj.FiTracker.FiTracker.Exceptions.ZoneAlreadyExistsException;
 import aj.FiTracker.FiTracker.Exceptions.ZoneDoesntExistException;
+import aj.FiTracker.FiTracker.Factories.MembersFactory;
+import aj.FiTracker.FiTracker.Models.MemberTemplate;
 import aj.FiTracker.FiTracker.Repositories.ZoneRepository;
 import aj.FiTracker.FiTracker.Security.JWTClaimsUtil;
-import aj.FiTracker.FiTracker.enums.MemberRole;
+import aj.FiTracker.FiTracker.Enums.MemberRole;
 import com.mongodb.DuplicateKeyException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -24,10 +26,11 @@ import java.util.Optional;
 public class ZoneService {
 
     private final ZoneRepository zoneRepository;
-
+    private final KafkaProducerService kafkaProducerService;
     @Autowired
-    public ZoneService(ZoneRepository zoneRepository) {
+    public ZoneService(ZoneRepository zoneRepository, KafkaProducerService kafkaProducerService) {
         this.zoneRepository = zoneRepository;
+        this.kafkaProducerService = kafkaProducerService;
     }
 
     @Transactional
@@ -38,6 +41,8 @@ public class ZoneService {
             Zone zone = new Zone(newZoneRequest, claims.userId());
             zone.addMember(new Zone.Member(claims.userId(), MemberRole.ADMIN, claims.name()));
             zone = this.zoneRepository.save(zone);
+            MemberTemplate memberTemplate = MembersFactory.createMemberTemplate(zone);
+            this.kafkaProducerService.sendNewMember(memberTemplate);
             return zone;
         } catch (DuplicateKeyException exception) {
             throw new ZoneAlreadyExistsException(exception);

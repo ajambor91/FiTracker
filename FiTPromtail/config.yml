@@ -17,3 +17,11 @@ scrape_configs:
           job: fit-api
           app: fit-api
           __path__: /var/log/external/api/*
+  - job_name: fit-broker
+    static_configs:
+      - targets:
+          - localhost
+        labels:
+          job: fit-broker
+          app: fit-broker
+          __path__: /var/log/external/kafka/*

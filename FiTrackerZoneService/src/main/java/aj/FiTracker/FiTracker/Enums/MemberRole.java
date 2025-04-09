@@ -1,4 +1,4 @@
-package aj.FiTracker.FiTracker.enums;
+package aj.FiTracker.FiTracker.Enums;
 
 public enum MemberRole {
     ADMIN("admin"),

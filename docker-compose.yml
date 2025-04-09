@@ -92,6 +92,7 @@ services:
       context: './FiTPromtail'
     volumes:
       - fit-api:/var/log/external/api:ro
+      - fit-kafka-log:/var/log/external/kafka:ro
     networks:
       - fit
     depends_on:
@@ -133,6 +134,24 @@ services:
       - "fit-vault:/vault/data/"
     cap_add:
       - IPC_LOCK
+  fit-broker:
+    depends_on:
+      - fit-zookeeper
+    build:
+      context: './FitBroker'
+      dockerfile: './Dockerfile'
+    container_name: fit-broker
+    networks:
+      - fit
+    hostname: fit-broker
+    volumes:
+      - fit-kafka-log:/var/log/kafka:z
+  fit-zookeeper:
+    image: zookeeper:latest
+    container_name: fit-zookeeper
+    networks:
+      - fit
+    hostname: fit-zookeeper
 networks:
   fit:
     driver: bridge
@@ -154,4 +173,6 @@ volumes:
   fit-api:
     driver: local
   fit-zone-db:
+    driver: local
+  fit-kafka-log:
     driver: local
