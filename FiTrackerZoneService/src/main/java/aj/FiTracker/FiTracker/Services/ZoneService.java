@@ -37,7 +37,7 @@ public class ZoneService {
             JWTClaimsUtil.JWTClaims claims = JWTClaimsUtil.getUsernameFromClaims(authentication);
             Zone zone = new Zone(newZoneRequest, claims.userId());
             zone.addMember(new Zone.Member(claims.userId(), MemberRole.ADMIN, claims.name()));
-            this.zoneRepository.save(zone);
+            zone = this.zoneRepository.save(zone);
             return zone;
         } catch (DuplicateKeyException exception) {
             throw new ZoneAlreadyExistsException(exception);

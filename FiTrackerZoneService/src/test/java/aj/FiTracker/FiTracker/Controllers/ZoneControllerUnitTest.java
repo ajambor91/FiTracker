@@ -1,8 +1,7 @@
 package aj.FiTracker.FiTracker.Controllers;
 
 
-import aj.FiTracker.FiTracker.DTO.REST.NewZoneRequest;
-import aj.FiTracker.FiTracker.DTO.REST.NewZoneResponse;
+import aj.FiTracker.FiTracker.DTO.REST.*;
 import aj.FiTracker.FiTracker.Documents.Zone;
 import aj.FiTracker.FiTracker.Services.ZoneService;
 import aj.FiTracker.FiTracker.TestUtils.ZoneFactory;
@@ -18,9 +17,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.test.context.ActiveProfiles;
 
+import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 import static aj.FiTracker.FiTracker.TestUtils.ZoneFactory.*;
 import static aj.FiTracker.FiTracker.TestUtils.ZoneFactory.ZONE_TEST_ID;
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -41,14 +45,109 @@ public class ZoneControllerUnitTest {
     }
 
     @Test
-    @DisplayName("Should add new zone")
+    @DisplayName("Should return new Zone")
     public void testCreateZone() {
         NewZoneRequest newZoneRequest = ZoneFactory.createNewZoneTestRequest();
         Zone zone = new Zone(ZoneFactory.createNewZoneTestRequest(), OWNER_TEST_ID);
         zone.addMember(new Zone.Member(OWNER_TEST_ID, MemberRole.ADMIN, USER_TEST_NAME));
         zone.setId(ZONE_TEST_ID);
+        zone.setCreatedAt(LocalDateTime.now());
         when(this.zoneServiceMock.addNewZone(eq(newZoneRequest), any(Authentication.class))).thenReturn(zone);
         ResponseEntity<NewZoneResponse> response = this.zoneController.createZone(this.authenticationMock, newZoneRequest);
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
+        assertEquals(ZONE_TEST_ID, response.getBody().getZoneId());
+        assertEquals(ZONE_TEST_DESCRIPTION, response.getBody().getZoneDescription());
+        assertNotNull(response.getBody().getCreatedAt());
+        assertEquals(OWNER_TEST_ID, response.getBody().getOwnerId());
+        response.getBody().getMemberList().forEach(member -> {
+            assertEquals(OWNER_TEST_ID, member.getUserId());
+            assertEquals(MemberRole.ADMIN, member.getRole());
+            assertEquals(USER_TEST_NAME, member.getName());
+            assertNotNull(member.getAddedAt());
+        });
     }
+
+    @Test
+    @DisplayName("Should return found Zone")
+    public void testGetZone() {
+        Zone zone = new Zone(ZoneFactory.createNewZoneTestRequest(), OWNER_TEST_ID);
+        zone.addMember(new Zone.Member(OWNER_TEST_ID, MemberRole.ADMIN, USER_TEST_NAME));
+        zone.setId(ZONE_TEST_ID);
+        zone.setCreatedAt(LocalDateTime.now());
+        when(this.zoneServiceMock.getExistingZoneById(eq(ZONE_TEST_ID), any(Authentication.class))).thenReturn(zone);
+        ResponseEntity<GetZoneResponse> response = this.zoneController.getZone(this.authenticationMock, ZONE_TEST_ID);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(ZONE_TEST_ID, response.getBody().getZoneId());
+        assertEquals(ZONE_TEST_DESCRIPTION, response.getBody().getZoneDescription());
+        assertNotNull(response.getBody().getCreatedAt());
+        assertEquals(OWNER_TEST_ID, response.getBody().getOwnerId());
+        response.getBody().getMemberList().forEach(member -> {
+            assertEquals(OWNER_TEST_ID, member.getUserId());
+            assertEquals(MemberRole.ADMIN, member.getRole());
+            assertEquals(USER_TEST_NAME, member.getName());
+            assertNotNull(member.getAddedAt());
+        });
+    }
+
+    @Test
+    @DisplayName("Should return deleted Zone")
+    public void testDeleteZone() {
+        Zone zone = new Zone(ZoneFactory.createNewZoneTestRequest(), OWNER_TEST_ID);
+        zone.addMember(new Zone.Member(OWNER_TEST_ID, MemberRole.ADMIN, USER_TEST_NAME));
+        zone.setId(ZONE_TEST_ID);
+        zone.setCreatedAt(LocalDateTime.now());
+        zone.setDeletedAt(LocalDateTime.now());
+        when(this.zoneServiceMock.removeZoneById(eq(ZONE_TEST_ID), any(Authentication.class))).thenReturn(zone);
+        ResponseEntity<DeletedZoneResponse> response = this.zoneController.deleteZone(this.authenticationMock, ZONE_TEST_ID);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(ZONE_TEST_ID, response.getBody().getZoneId());
+        assertEquals(ZONE_TEST_DESCRIPTION, response.getBody().getZoneDescription());
+        assertNotNull(response.getBody().getCreatedAt());
+        assertNotNull(response.getBody().getDeletedAt());
+        assertEquals(OWNER_TEST_ID, response.getBody().getOwnerId());
+        response.getBody().getMemberList().forEach(member -> {
+            assertEquals(OWNER_TEST_ID, member.getUserId());
+            assertEquals(MemberRole.ADMIN, member.getRole());
+            assertEquals(USER_TEST_NAME, member.getName());
+            assertNotNull(member.getAddedAt());
+        });
+    }
+
+    @Test
+    @DisplayName("Should return patched Zone")
+    public void testUpdateZone() {
+        UpdateZoneRequest updateZoneRequest = ZoneFactory.createUpdateZoneTestRequest();
+        Zone zone = new Zone(ZoneFactory.createNewZoneTestRequest(), OWNER_TEST_ID);
+        zone.addMember(new Zone.Member(OWNER_TEST_ID, MemberRole.ADMIN, USER_TEST_NAME));
+        zone.setId(ZONE_TEST_ID);
+        zone.setCreatedAt(LocalDateTime.now());
+        when(this.zoneServiceMock.updateZone(eq(ZONE_TEST_ID), any(Authentication.class), eq(updateZoneRequest))).thenReturn(zone);
+        ResponseEntity<UpdateZoneResponse> response = this.zoneController.updateZone(this.authenticationMock,updateZoneRequest, ZONE_TEST_ID);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(ZONE_TEST_ID, response.getBody().getZoneId());
+        assertEquals(ZONE_TEST_DESCRIPTION, response.getBody().getZoneDescription());
+        assertNotNull(response.getBody().getCreatedAt());
+        assertEquals(OWNER_TEST_ID, response.getBody().getOwnerId());
+        response.getBody().getMemberList().forEach(member -> {
+            assertEquals(OWNER_TEST_ID, member.getUserId());
+            assertEquals(MemberRole.ADMIN, member.getRole());
+            assertEquals(USER_TEST_NAME, member.getName());
+            assertNotNull(member.getAddedAt());
+        });
+    }
+
+    @Test
+    @DisplayName("Should return found Zones array")
+    public void testGetAllUserZones() {
+        UpdateZoneRequest updateZoneRequest = ZoneFactory.createUpdateZoneTestRequest();
+        Zone zone = new Zone(ZoneFactory.createNewZoneTestRequest(), OWNER_TEST_ID);
+        zone.addMember(new Zone.Member(OWNER_TEST_ID, MemberRole.ADMIN, USER_TEST_NAME));
+        zone.setId(ZONE_TEST_ID);
+        when(this.zoneServiceMock.getAllZones(any(Authentication.class))).thenReturn(Arrays.asList(zone));
+        ResponseEntity<ZonesResponse> response = this.zoneController.getAllUserZones(this.authenticationMock);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertInstanceOf(List.class, response.getBody().getZones());
+    }
+
 }

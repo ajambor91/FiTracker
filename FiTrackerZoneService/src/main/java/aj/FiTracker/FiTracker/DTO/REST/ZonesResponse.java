@@ -18,7 +18,8 @@ public class ZonesResponse {
             zones.add(new ZoneResponse(zone));
         });
     }
-
+    @Getter
+    @Setter
     private static class ZoneResponse extends BaseZoneResponse {
 
         public ZoneResponse(Zone zone) {
