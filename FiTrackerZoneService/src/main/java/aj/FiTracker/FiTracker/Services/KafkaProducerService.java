@@ -16,7 +16,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class KafkaProducerService {
 
-    private final KafkaTemplate<String, String> kafkaTemplate;
+    private KafkaTemplate<String, String> kafkaTemplate;
     private final ObjectMapper objectMapper;
 
     @Autowired
@@ -25,8 +25,12 @@ public class KafkaProducerService {
         this.objectMapper = objectMapper;
     }
 
-    public void sendNewMember(MemberTemplate memberTemplate) {
+    public void sendNewMembers(MemberTemplate memberTemplate) throws JsonProcessingException {
+        this.sendMessage(memberTemplate, KafkaAction.ADD_MEMBER);
+    }
 
+    public void sendDeletedMembers(MemberTemplate memberTemplate) throws JsonProcessingException {
+        this.sendMessage(memberTemplate, KafkaAction.ADD_MEMBER);
     }
 
     private void sendMessage(KafkaModelTemplate kafkaModelTemplate, KafkaAction kafkaAction) throws JsonProcessingException {

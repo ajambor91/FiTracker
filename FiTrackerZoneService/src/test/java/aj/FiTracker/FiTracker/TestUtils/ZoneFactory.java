@@ -1,6 +1,7 @@
 package aj.FiTracker.FiTracker.TestUtils;
 
 import aj.FiTracker.FiTracker.DTO.REST.NewZoneRequest;
+import aj.FiTracker.FiTracker.DTO.REST.RemoveZoneMemberRequest;
 import aj.FiTracker.FiTracker.DTO.REST.UpdateZoneRequest;
 import aj.FiTracker.FiTracker.Documents.Zone;
 import aj.FiTracker.FiTracker.Enums.MemberRole;
@@ -52,7 +53,13 @@ public final class ZoneFactory {
     }
 
 
+    public static RemoveZoneMemberRequest createRemoveZoneMemberRequest() {
+        RemoveZoneMemberRequest zone = new RemoveZoneMemberRequest();
+        zone.setZoneId(ZONE_TEST_ID);
+        zone.setMembers(new ArrayList<>(List.of(new Zone.Member(MEMBER_TEST_ID, MemberRole.MEMBER, MEMBER_TEST_NAME))));
+        return zone;
 
+    }
     public static Zone.Member createSecondMember() {
         return new Zone.Member(MEMBER_TEST_ID, MemberRole.MEMBER, MEMBER_TEST_NAME);
     }

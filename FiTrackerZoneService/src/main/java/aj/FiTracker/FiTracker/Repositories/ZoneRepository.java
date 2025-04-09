@@ -10,6 +10,6 @@ import java.util.Optional;
 @Repository
 public interface ZoneRepository extends MongoRepository<Zone, String> {
     Optional<Zone> findByIdAndDeletedAtIsNullAndMembers_UserId(String id, long memberId);
-
-    List<Zone> findByMembers_UserId(long memberId);
+    Optional<Zone> findByIdAndOwnerIdAndDeletedAtIsNull(String zoneId, long ownerId);
+    List<Zone> findByDeletedAtIsNullAndMembers_UserId(long memberId);
 }

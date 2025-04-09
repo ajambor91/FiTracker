@@ -1,6 +1,7 @@
 package aj.FiTracker.FiTracker.Services;
 
 import aj.FiTracker.FiTracker.DTO.REST.NewZoneRequest;
+import aj.FiTracker.FiTracker.DTO.REST.RemoveZoneMemberRequest;
 import aj.FiTracker.FiTracker.DTO.REST.UpdateZoneRequest;
 import aj.FiTracker.FiTracker.Documents.Zone;
 import aj.FiTracker.FiTracker.Exceptions.InternalServerException;
@@ -42,7 +43,7 @@ public class ZoneService {
             zone.addMember(new Zone.Member(claims.userId(), MemberRole.ADMIN, claims.name()));
             zone = this.zoneRepository.save(zone);
             MemberTemplate memberTemplate = MembersFactory.createMemberTemplate(zone);
-            this.kafkaProducerService.sendNewMember(memberTemplate);
+            this.kafkaProducerService.sendNewMembers(memberTemplate);
             return zone;
         } catch (DuplicateKeyException exception) {
             throw new ZoneAlreadyExistsException(exception);
@@ -89,11 +90,33 @@ public class ZoneService {
         }
     }
 
+    @Transactional()
+    public Zone removeZoneMember(String id, RemoveZoneMemberRequest removeZoneMemberRequest, Authentication authentication) {
+        try {
+            JWTClaimsUtil.JWTClaims claims = JWTClaimsUtil.getUsernameFromClaims(authentication);
+
+            Optional<Zone> zone = this.zoneRepository.findByIdAndOwnerIdAndDeletedAtIsNull(id, claims.userId());
+            if (zone.isEmpty()) {
+                throw new ZoneDoesntExistException("Zone does not exist");
+            }
+            Zone zoneDocument = zone.get();
+            Zone updatedZone = this.removeMembers(zoneDocument, removeZoneMemberRequest);
+            this.zoneRepository.save(updatedZone);
+            MemberTemplate memberTemplate = MembersFactory.createMemberTemplate(removeZoneMemberRequest);
+            this.kafkaProducerService.sendDeletedMembers(memberTemplate);
+            return zoneDocument;
+
+        } catch (ZoneDoesntExistException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new InternalServerException(e);
+        }
+    }
     @Transactional
     public Zone updateZone(String id, Authentication authentication, UpdateZoneRequest updateZoneRequest) {
         try {
             JWTClaimsUtil.JWTClaims claims = JWTClaimsUtil.getUsernameFromClaims(authentication);
-
+            MemberTemplate memberTemplate = new MemberTemplate(id);
             Optional<Zone> zone = this.zoneRepository.findByIdAndDeletedAtIsNullAndMembers_UserId(id, claims.userId());
             if (zone.isEmpty()) {
                 throw new ZoneDoesntExistException("Zone does not exist");
@@ -106,9 +129,12 @@ public class ZoneService {
                 zoneDocument.setDescription(updateZoneRequest.getZoneDescription());
             }
             if (updateZoneRequest.getMembers() != null && !updateZoneRequest.getMembers().isEmpty()) {
-                zoneDocument = this.updateMembers(zoneDocument, updateZoneRequest);
+                zoneDocument = this.updateMembers(zoneDocument, updateZoneRequest, memberTemplate);
             }
             this.zoneRepository.save(zoneDocument);
+            if (!memberTemplate.getMemberList().isEmpty()) {
+                this.kafkaProducerService.sendNewMembers(memberTemplate);
+            }
             return zoneDocument;
 
         } catch (ZoneDoesntExistException e) {
@@ -123,14 +149,21 @@ public class ZoneService {
         try {
             JWTClaimsUtil.JWTClaims claims = JWTClaimsUtil.getUsernameFromClaims(authentication);
 
-            List<Zone> zones = this.zoneRepository.findByMembers_UserId(claims.userId());
+            List<Zone> zones = this.zoneRepository.findByDeletedAtIsNullAndMembers_UserId(claims.userId());
             return zones;
         } catch (Exception e) {
             throw new InternalServerException(e);
         }
     }
 
-    private Zone updateMembers(Zone existingZone, UpdateZoneRequest updateZone) {
+    private Zone removeMembers(Zone existingZone, RemoveZoneMemberRequest removeZoneMemberRequest) {
+        for (Zone.Member memberToRemove : removeZoneMemberRequest.getMembers()) {
+            existingZone.getMembers().removeIf(existingMember -> memberToRemove.getUserId() == existingMember.getUserId());
+        }
+        return existingZone;
+    }
+
+    private Zone updateMembers(Zone existingZone, UpdateZoneRequest updateZone, MemberTemplate memberTemplate) {
         List<Zone.Member> members = new ArrayList<>();
         for (Zone.Member updateMember : updateZone.getMembers()) {
             Zone.Member memberToSave = null;
@@ -143,6 +176,7 @@ public class ZoneService {
             }
             if (memberToSave == null) {
                 existingZone.addMember(updateMember);
+                memberTemplate.addMember(updateMember);
             }
         }
         return existingZone;

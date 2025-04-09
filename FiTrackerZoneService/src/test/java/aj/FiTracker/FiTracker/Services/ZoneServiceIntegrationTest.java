@@ -180,10 +180,50 @@ public class ZoneServiceIntegrationTest extends AbstractIntegrationTest {
         assertEquals("Zone does not exist", zoneDoesntExistException.getMessage());
     }
 
+    @Test
+    @DisplayName("Should remove members from zone")
+    public void testRemoveZoneMember() {
+        this.jwtMock = mock(Jwt.class);
+        when(this.jwtMock.getClaimAsString(eq("name"))).thenReturn(ZONE_TEST_NAME);
+        when(this.jwtMock.getClaimAsString(eq("sub"))).thenReturn(String.valueOf(OWNER_TEST_ID));
+        when(this.authenticationMock.getPrincipal()).thenReturn(jwtMock);
+        this.insertTestZoneIntoDB();
+        Zone zone = this.zoneService.removeZoneMember(ZONE_TEST_ID, ZoneFactory.createRemoveZoneMemberRequest(), authenticationMock);
+        assertNotNull(zone);
+        assertEquals(ZONE_TEST_ID, zone.getId());
+        assertEquals(ZONE_TEST_NAME, zone.getName());
+        assertEquals(ZONE_TEST_DESCRIPTION, zone.getDescription());
+        assertEquals(1, zone.getMembers().size());
+        assertEquals(OWNER_TEST_ID, zone.getMembers().getFirst().getUserId());
+    }
+
+    @Test
+    @DisplayName("Should throw ZoneDoesntExistException when removing zone can not be found")
+    public void testRemoveZoneMemberZoneDoesntExistException() {
+        this.jwtMock = mock(Jwt.class);
+        when(this.jwtMock.getClaimAsString(eq("name"))).thenReturn(ZONE_TEST_NAME);
+        when(this.jwtMock.getClaimAsString(eq("sub"))).thenReturn(String.valueOf(OWNER_TEST_ID));
+        when(this.authenticationMock.getPrincipal()).thenReturn(jwtMock);
+        ZoneDoesntExistException zoneDoesntExistException = assertThrows(ZoneDoesntExistException.class, () -> {
+            this.zoneService.removeZoneMember(ZONE_TEST_ID, ZoneFactory.createRemoveZoneMemberRequest(), this.authenticationMock);
+        });
+        assertEquals("Zone does not exist", zoneDoesntExistException.getMessage());
+    }
+
     private void insertTestZoneIntoDB() {
         Zone zone = new Zone(ZoneFactory.createNewZoneTestRequest(), OWNER_TEST_ID);
         zone.addMember(new Zone.Member(OWNER_TEST_ID, MemberRole.ADMIN, USER_TEST_NAME));
         zone.setId(ZONE_TEST_ID);
+        this.insertTestZoneWithAdditionalMemberIntoDB();
+
+    }
+
+    private void insertTestZoneWithAdditionalMemberIntoDB() {
+        Zone zone = new Zone(ZoneFactory.createNewZoneTestRequest(), OWNER_TEST_ID);
+        zone.addMember(new Zone.Member(OWNER_TEST_ID, MemberRole.ADMIN, USER_TEST_NAME));
+        zone.addMember(new Zone.Member(MEMBER_TEST_ID, MemberRole.MEMBER, MEMBER_TEST_NAME));
+        zone.setId(ZONE_TEST_ID);
         this.insertTestDataIntoDB(zone);
     }
+
 }

@@ -45,6 +45,12 @@ public class ZoneController {
         return ResponseEntity.status(HttpStatus.OK).body(new DeletedZoneResponse(zone));
     }
 
+    @DeleteMapping("/zone/{zoneId}/member")
+    public ResponseEntity<UpdateZoneResponse> deleteZoneMember(Authentication authentication, @RequestBody @Valid RemoveZoneMemberRequest removeZoneMemberRequest, @PathVariable @NotBlank String zoneId) {
+        Zone zone = this.zoneService.removeZoneMember(zoneId,removeZoneMemberRequest, authentication);
+        return ResponseEntity.status(HttpStatus.OK).body(new UpdateZoneResponse(zone));
+    }
+
     @PatchMapping("/zone/{zoneId}")
     public ResponseEntity<UpdateZoneResponse> updateZone(Authentication authentication, @RequestBody @Valid UpdateZoneRequest updateZoneRequest, @PathVariable @NotBlank String zoneId) {
         Zone zone = this.zoneService.updateZone(zoneId, authentication, updateZoneRequest);
