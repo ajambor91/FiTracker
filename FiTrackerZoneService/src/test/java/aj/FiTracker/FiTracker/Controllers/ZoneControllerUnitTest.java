@@ -67,7 +67,7 @@ public class ZoneControllerUnitTest {
 
         verify(this.zoneServiceMock, times(1)).addNewZone(eq(newZoneRequest), any(Authentication.class));
     }
-    
+
     @Test
     @DisplayName("Should return found Zone")
     public void testGetZone() {

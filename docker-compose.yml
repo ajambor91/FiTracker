@@ -135,8 +135,7 @@ services:
     cap_add:
       - IPC_LOCK
   fit-broker:
-    depends_on:
-      - fit-zookeeper
+
     build:
       context: './FitBroker'
       dockerfile: './Dockerfile'
@@ -145,13 +144,8 @@ services:
       - fit
     hostname: fit-broker
     volumes:
-      - fit-kafka-log:/var/log/kafka:z
-  fit-zookeeper:
-    image: zookeeper:latest
-    container_name: fit-zookeeper
-    networks:
-      - fit
-    hostname: fit-zookeeper
+      - fit-kafka-data:/kafka/data
+      - fit-kafka-log:/var/lib/kafka/data:z
 networks:
   fit:
     driver: bridge
@@ -175,4 +169,6 @@ volumes:
   fit-zone-db:
     driver: local
   fit-kafka-log:
+    driver: local
+  fit-kafka-data:
     driver: local
