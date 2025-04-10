@@ -193,12 +193,12 @@ public class ZoneServiceUnitTest {
         assertEquals(2, zone.getMembers().size());
         verify(this.zoneRepositoryMock, times(1)).findByIdAndDeletedAtIsNullAndMembers_UserId(eq(ZONE_TEST_ID), eq(OWNER_TEST_ID));
         ArgumentCaptor<MemberTemplate> argumentCaptor = ArgumentCaptor.forClass(MemberTemplate.class);
-        verify(this.kafkaProducerServiceMock).sendNewMembers(argumentCaptor.capture());
+        verify(this.kafkaProducerServiceMock, times(1)).sendNewMembers(argumentCaptor.capture());
         MemberTemplate memberTemplate = argumentCaptor.getValue();
-        //TODO Logic error
         assertEquals(1, memberTemplate.getMemberList().size());
         assertEquals(ZONE_TEST_ID, memberTemplate.getZoneId());
-        assertEquals(OWNER_TEST_ID, memberTemplate.getMemberList().getFirst().memberId());    }
+        assertEquals(MEMBER_TEST_ID, memberTemplate.getMemberList().getFirst().memberId());
+    }
 
     @Test
     @DisplayName("Should update zone with new name and description and then return")

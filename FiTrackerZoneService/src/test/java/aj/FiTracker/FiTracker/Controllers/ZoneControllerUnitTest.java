@@ -3,6 +3,7 @@ package aj.FiTracker.FiTracker.Controllers;
 
 import aj.FiTracker.FiTracker.DTO.REST.*;
 import aj.FiTracker.FiTracker.Documents.Zone;
+import aj.FiTracker.FiTracker.Exceptions.ZoneAlreadyExistsException;
 import aj.FiTracker.FiTracker.Services.ZoneService;
 import aj.FiTracker.FiTracker.TestUtils.ZoneFactory;
 import aj.FiTracker.FiTracker.Enums.MemberRole;
@@ -26,8 +27,7 @@ import static aj.FiTracker.FiTracker.TestUtils.ZoneFactory.ZONE_TEST_ID;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @ActiveProfiles("unit")
@@ -64,8 +64,10 @@ public class ZoneControllerUnitTest {
             assertEquals(USER_TEST_NAME, member.getName());
             assertNotNull(member.getAddedAt());
         });
-    }
 
+        verify(this.zoneServiceMock, times(1)).addNewZone(eq(newZoneRequest), any(Authentication.class));
+    }
+    
     @Test
     @DisplayName("Should return found Zone")
     public void testGetZone() {
@@ -86,6 +88,9 @@ public class ZoneControllerUnitTest {
             assertEquals(USER_TEST_NAME, member.getName());
             assertNotNull(member.getAddedAt());
         });
+
+        verify(this.zoneServiceMock, times(1)).getExistingZoneById(eq(ZONE_TEST_ID), any(Authentication.class));
+
     }
 
     @Test
@@ -110,6 +115,9 @@ public class ZoneControllerUnitTest {
             assertEquals(USER_TEST_NAME, member.getName());
             assertNotNull(member.getAddedAt());
         });
+
+        verify(this.zoneServiceMock, times(1)).removeZoneById(eq(ZONE_TEST_ID), any(Authentication.class));
+
     }
 
     @Test
@@ -133,6 +141,33 @@ public class ZoneControllerUnitTest {
             assertEquals(USER_TEST_NAME, member.getName());
             assertNotNull(member.getAddedAt());
         });
+        verify(this.zoneServiceMock, times(1)).updateZone(eq(ZONE_TEST_ID), any(Authentication.class), eq(updateZoneRequest));
+
+    }
+
+    @Test
+    @DisplayName("Should remove member from Zone")
+    public void testDeleteZoneMember() {
+        RemoveZoneMemberRequest removeZoneMemberRequest = ZoneFactory.createRemoveZoneMemberRequest();
+        Zone zone = new Zone(ZoneFactory.createNewZoneTestRequest(), OWNER_TEST_ID);
+        zone.addMember(new Zone.Member(OWNER_TEST_ID, MemberRole.ADMIN, USER_TEST_NAME));
+        zone.setId(ZONE_TEST_ID);
+        zone.setCreatedAt(LocalDateTime.now());
+        when(this.zoneServiceMock.removeZoneMember(eq(ZONE_TEST_ID), eq(removeZoneMemberRequest), any(Authentication.class))).thenReturn(zone);
+        ResponseEntity<UpdateZoneResponse> response = this.zoneController.deleteZoneMember(this.authenticationMock,removeZoneMemberRequest, ZONE_TEST_ID);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(ZONE_TEST_ID, response.getBody().getZoneId());
+        assertEquals(ZONE_TEST_DESCRIPTION, response.getBody().getZoneDescription());
+        assertNotNull(response.getBody().getCreatedAt());
+        assertEquals(OWNER_TEST_ID, response.getBody().getOwnerId());
+        assertEquals(1, response.getBody().getMemberList().size());
+        Zone.Member member = response.getBody().getMemberList().getFirst();
+        assertEquals(OWNER_TEST_ID, member.getUserId());
+        assertEquals(MemberRole.ADMIN, member.getRole());
+        assertEquals(USER_TEST_NAME, member.getName());
+        assertNotNull(member.getAddedAt());
+        verify(this.zoneServiceMock, times(1)).removeZoneMember(eq(ZONE_TEST_ID), eq(removeZoneMemberRequest), any(Authentication.class));
+
     }
 
     @Test
@@ -147,6 +182,8 @@ public class ZoneControllerUnitTest {
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
         assertInstanceOf(List.class, response.getBody().getZones());
+        verify(this.zoneServiceMock, times(1)).getAllZones(any(Authentication.class));
+
     }
 
 }

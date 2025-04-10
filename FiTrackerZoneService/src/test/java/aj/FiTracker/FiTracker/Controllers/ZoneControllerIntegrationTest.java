@@ -123,6 +123,8 @@ public class ZoneControllerIntegrationTest extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.path").value("/zones/zone/"));
     }
 
+
+
     @Test
     @DisplayName("Should throw not found, when zone does not exist")
     public void testGetZoneThrowNotFound() throws Exception {
@@ -232,6 +234,103 @@ public class ZoneControllerIntegrationTest extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.memberList[1].addedAt").exists())
                 .andExpect(jsonPath("$.zoneId").value(ZONE_TEST_ID))
                 .andExpect(jsonPath("$.zoneId").isNotEmpty());
+    }
+
+    @Test
+    @DisplayName("Should remove member from zone")
+    public void testDeleteZoneMember() throws Exception {
+        Zone zone = new Zone(ZoneFactory.createNewZoneTestRequest(), OWNER_TEST_ID);
+        zone.addMember(new Zone.Member(OWNER_TEST_ID, MemberRole.ADMIN, USER_TEST_NAME));
+        zone.addMember(new Zone.Member(MEMBER_TEST_ID, MemberRole.MEMBER, MEMBER_TEST_NAME));
+        zone.setId(ZONE_TEST_ID);
+        this.insertTestDataIntoDB(zone);
+        this.mockMvc.perform(
+                        delete("/zones/zone/" + ZONE_TEST_ID + "/member")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                        {
+                                            "zoneId": "67f3b66a59153d2661e64002",
+                                            "zoneName": "New zone",
+                                            "zoneDescription": "Test decscription",
+                                            "members": [
+                                                {
+                                                "userId": 2,
+                                                "role": "MEMBER",
+                                                "name": "Test member"
+                                                }
+                                        
+                                            ]
+                                        }
+                                        """)
+                                .header("Authorization", "Bearer TOKEN")
+                ).andExpect(status().isOk())
+                .andExpect(jsonPath("$.zoneName").value(ZONE_TEST_NAME))
+                .andExpect(jsonPath("$.zoneDescription").value(ZONE_TEST_DESCRIPTION))
+                .andExpect(jsonPath("$.ownerId").value(OWNER_TEST_ID))
+                .andExpect(jsonPath("$.memberList[0].userId").value(OWNER_TEST_ID))
+                .andExpect(jsonPath("$.memberList[0].role").value("ADMIN"))
+                .andExpect(jsonPath("$.memberList[0].name").value(USER_TEST_NAME))
+                .andExpect(jsonPath("$.memberList[0].addedAt").exists())
+                .andExpect(jsonPath("$.zoneId").value(ZONE_TEST_ID))
+                .andExpect(jsonPath("$.zoneId").isNotEmpty());
+    }
+
+    @Test
+    @DisplayName("Should return NotFound when deleting member from Zone and zone does not exist")
+    public void testDeleteZoneMemberNotFound() throws Exception {
+        Zone zone = new Zone(ZoneFactory.createNewZoneTestRequest(), OWNER_TEST_ID);
+        zone.addMember(new Zone.Member(OWNER_TEST_ID, MemberRole.ADMIN, USER_TEST_NAME));
+        zone.setId(ZONE_TEST_ID);
+        this.insertTestDataIntoDB(zone);
+        this.mockMvc.perform(
+                        delete("/zones/zone/xxxx/member")                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                        {
+                                            "zoneId": "67f3b66a59153d2661e64002",
+                                            "zoneName": "New name",
+                                            "zoneDescription": "Test decscription",
+                                                          "members": [
+                                                {
+                                                "userId": 2,
+                                                "role": "MEMBER",
+                                                "name": "Test member"
+                                                }
+                                        
+                                            ]
+                                        }
+                                        """)
+                                .header("Authorization", "Bearer TOKEN")
+                ).andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.message").value("Zone does not exist"))
+                .andExpect(jsonPath("$.error").value("Not Found"))
+                .andExpect(jsonPath("$.statusCode").value(404))
+                .andExpect(jsonPath("$.timestamp").exists())
+                .andExpect(jsonPath("$.path").exists());
+    }
+
+    @Test
+    @DisplayName("Should return NotFound when deleting member from Zone and zone does not exist")
+    public void testDeleteZoneMemberBadRequest() throws Exception {
+        Zone zone = new Zone(ZoneFactory.createNewZoneTestRequest(), OWNER_TEST_ID);
+        zone.addMember(new Zone.Member(OWNER_TEST_ID, MemberRole.ADMIN, USER_TEST_NAME));
+        zone.setId(ZONE_TEST_ID);
+        this.insertTestDataIntoDB(zone);
+        this.mockMvc.perform(
+                        delete("/zones/zone/"+ ZONE_TEST_ID +"/member")                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                        {
+                                            "zoneName": "New name",
+                                            "zoneDescription": "Test decscription"
+                    
+                                        }
+                                        """)
+                                .header("Authorization", "Bearer TOKEN")
+                ).andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message").value("400 BAD_REQUEST \"Validation failure\""))
+                .andExpect(jsonPath("$.error").value("Bad Request"))
+                .andExpect(jsonPath("$.statusCode").value(400))
+                .andExpect(jsonPath("$.timestamp").exists())
+                .andExpect(jsonPath("$.path").exists());
     }
 
     @Test
