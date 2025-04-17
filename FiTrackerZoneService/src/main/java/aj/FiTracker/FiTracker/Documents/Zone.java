@@ -27,7 +27,7 @@ public class Zone {
     private long ownerId;
 
     private String description;
-    private List<Member> members;
+    private List<Member> membersList;
 
     @NotNull
     private LocalDateTime createdAt;
@@ -39,14 +39,14 @@ public class Zone {
     }
 
     public Zone(NewZoneRequest newZoneRequest, long ownerId) {
-        this.members = new ArrayList<>();
+        this.membersList = new ArrayList<>();
         this.ownerId = ownerId;
         this.name = newZoneRequest.getZoneName();
         this.description = newZoneRequest.getZoneDescription();
     }
 
     public void addMember(Member member) {
-        this.members.add(member);
+        this.membersList.add(member);
     }
 
     @Getter

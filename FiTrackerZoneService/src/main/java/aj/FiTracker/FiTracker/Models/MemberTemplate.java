@@ -13,15 +13,22 @@ import java.util.List;
 @Setter
 public class MemberTemplate implements KafkaModelTemplate {
 
-    public record Member(long memberId){}
-    private List<Member> memberList;
+    private List<Member> membersList;
     private String zoneId;
     public MemberTemplate(String zoneId) {
         this.zoneId = zoneId;
-        this.memberList = new ArrayList<>();
+        this.membersList = new ArrayList<>();
     }
+
     public void addMember(Zone.Member member) {
-        this.memberList.add(new Member(member.getUserId()));
+        this.membersList.add(new Member(member.getUserId()));
+    }
+
+    public void addMembers(List<Zone.Member> members) {
+        members.forEach(this::addMember);
+    }
+
+    public record Member(long memberId) {
     }
 
 }

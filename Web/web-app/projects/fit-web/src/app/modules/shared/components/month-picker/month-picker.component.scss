@@ -1,0 +1,35 @@
+.month-picker {
+  &__month-item {
+    color: #cf27c3;
+    font-size: 1.25em;
+    font-weight: 700;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+  }
+
+  &__month-item:nth-of-type(2) {
+    font-size: 2.55em;
+    font-weight: 900;
+    text-align: center;
+  }
+
+  &__month-item:first-of-type {
+    color: green;
+    text-align: left;
+  }
+
+  &__month-item:last-of-type {
+    color: indianred;
+    text-align: right;
+  }
+
+  &__month-button {
+    background-color: transparent;
+    outline: none;
+    border: none;
+    color: inherit;
+    font-weight: inherit;
+    font-size: inherit;
+  }
+}

@@ -1,0 +1,94 @@
+<div class="content-container">
+  <app-form-container>
+    <div class="mb-5">
+
+      <app-header><h1 class="h1" i18n>Add friends to your zone</h1></app-header>
+    </div>
+    <form (submit)="submitForm()" [formGroup]="form" class="add-members-form">
+
+      <div [formGroup]="findUserForm" class="form-group">
+        <p class="typing-title">Start typing email to find your friends:</p>
+        <mat-form-field>
+          <mat-label>Search email</mat-label>
+          <input formControlName="email" matInput>
+        </mat-form-field>
+      </div>
+      <ng-container *ngIf="(foundUsers$ | async) as foundUsers">
+        <ng-container *ngIf="foundUsers.length > 0">
+
+          <div class="form-group members-list container mb-3">
+            <p class="user-list-title">Found users:</p>
+            <div class="headers row">
+              <div class="col-5 member">
+                <p>Name</p>
+              </div>
+              <div class="col-5 member">
+                <p>Email</p>
+              </div>
+            </div>
+            <ng-container *ngFor="let foundUser of foundUsers  ">
+              <div class="mfound row">
+                <div class="col-5 member">
+                  <p>
+                    {{ foundUser.name }}
+                  </p>
+                </div>
+                <div class="col-5 member">
+                  <p>
+                    {{ foundUser.email }}
+                  </p>
+                </div>
+                <div class="col-2">
+                  <button (click)="selectUser(foundUser)" class="action-button font-purple" type="button">
+                    <fa-icon [icon]="faPlus"></fa-icon>
+                  </button>
+                </div>
+              </div>
+            </ng-container>
+          </div>
+        </ng-container>
+      </ng-container>
+
+      <ng-container *ngIf="addedMembers.length > 0">
+
+        <div class="form-group members-list container mb-3">
+          <p class="user-list-title">Added friends:</p>
+          <ng-container *ngFor="let foundUserControl of addedMembers.controls; let i = index">
+            <div [formGroup]="foundUserControl" class="added row">
+              <div class="col-5 member">
+                <p>
+                  {{ foundUserControl.get('name')?.value }}
+                </p>
+              </div>
+              <div class="col-5 member">
+                <p>
+                  {{ foundUserControl.get('email')?.value }}
+                </p>
+              </div>
+              <div class="col-2">
+                <button (click)="removeMember(foundUserControl, i)" class="action-button font-purple" type="button">
+                  <fa-icon [icon]="faMinus"></fa-icon>
+                </button>
+              </div>
+            </div>
+          </ng-container>
+
+        </div>
+      </ng-container>
+
+      <div class="form-group row">
+        <div class="col-6">
+          <button (click)="skip()" i18n mat-flat-button type="button">
+            Skip
+          </button>
+        </div>
+        <div class="col-6">
+          <button i18n mat-flat-button type="submit">
+            Add members
+          </button>
+        </div>
+      </div>
+    </form>
+  </app-form-container>
+</div>
+

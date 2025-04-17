@@ -8,12 +8,14 @@ import {UsersRoutingModule} from './users-routing.module';
 import {MainContainerComponent} from './components/main-container/main-container.component';
 import {ReactiveFormsModule} from '@angular/forms';
 import {RegisterComponent} from './components/register-component/register.component';
+import {RegisterSuccessComponent} from './components/register-success/register-success.component';
 
 @NgModule({
   declarations: [
     AuthComponent,
     MainContainerComponent,
-    RegisterComponent
+    RegisterComponent,
+    RegisterSuccessComponent
   ],
   imports: [
     ReactiveFormsModule,

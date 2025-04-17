@@ -9,36 +9,28 @@ GRANT USAGE ON SCHEMA app_data TO exampleuser;
 
 CREATE TABLE fit.app_data.app_user (
     id BIGSERIAL PRIMARY KEY,
-    app_user_id  BIGINT NOT NULL UNIQUE,
-    app_zone_id BIGINT NOT NULL UNIQUE
+    app_user_id  BIGINT NOT NULL,
+    app_zone_id VARCHAR(255) NOT NULL
 );
 
 CREATE TABLE fit.app_data.categories (
     category_id BIGSERIAL PRIMARY KEY,
-    name VARCHAR(255) NOT NULL UNIQUE,
+    name VARCHAR(255) NOT NULL,
     description VARCHAR(255),
-    zone_id BIGINT NOT NULL,
+    zone_id VARCHAR(255) NOT NULL,
     created_at TIMESTAMP  NOT NULL,
     updated_at TIMESTAMP  NOT NULL
 );
 
-CREATE TABLE fit.app_data.users_exp_categories (
-    category_id BIGINT NOT NULL,
-    user_id BIGINT NOT NULL,
-    PRIMARY KEY (user_id, category_id),
-    FOREIGN KEY (user_id) REFERENCES app_data.app_user(app_user_id) ON DELETE CASCADE,
-    FOREIGN KEY (category_id) REFERENCES app_data.categories(category_id) ON DELETE CASCADE
-);
-
 CREATE TABLE fit.app_data.expenses (
     expense_id BIGSERIAL PRIMARY KEY,
-    zone_id BIGINT NOT NULL,
     user_id BIGINT NOT NULL,
     name VARCHAR(255) NOT NULL,
+    currency VARCHAR(3) NOT NULL,
     description VARCHAR(255),
+    value DECIMAL NOT NULL,
     created_at TIMESTAMP  NOT NULL,
-    updated_at TIMESTAMP  NOT NULL,
-    FOREIGN KEY (user_id) REFERENCES app_data.app_user(app_user_id) ON DELETE CASCADE
+    updated_at TIMESTAMP  NOT NULL
 );
 
 

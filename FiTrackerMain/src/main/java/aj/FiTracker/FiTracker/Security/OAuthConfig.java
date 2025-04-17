@@ -1,11 +1,11 @@
 package aj.FiTracker.FiTracker.Security;
+
 import com.nimbusds.jose.JWSAlgorithm;
 import com.nimbusds.jose.jwk.JWKSet;
 import com.nimbusds.jose.jwk.KeyUse;
 import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
-import org.apache.commons.codec.digest.DigestUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,27 +20,21 @@ import org.springframework.security.oauth2.server.authorization.client.Registere
 import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
 import org.springframework.security.oauth2.server.authorization.settings.ClientSettings;
 import org.springframework.vault.core.VaultTransitOperations;
-
 import org.springframework.vault.support.VaultTransitKey;
 
 import java.security.NoSuchAlgorithmException;
-import java.security.spec.InvalidKeySpecException;
-
-import java.util.UUID;
-
 import java.security.interfaces.RSAPublicKey;
+import java.security.spec.InvalidKeySpecException;
+import java.util.UUID;
 
 @Configuration
 public class OAuthConfig {
     private static final Logger lopgger = LoggerFactory.getLogger(OAuthConfig.class);
-
+    private final VaultTransitOperations vaultTransitOperations;
     @Value("${oauth.client.id}")
     private String clientId;
-
     @Value("${oauth.client.secret}")
     private String clientSecret;
-
-    private final VaultTransitOperations vaultTransitOperations;
 
     @Autowired
     public OAuthConfig(VaultTransitOperations vaultTransitOperations) {

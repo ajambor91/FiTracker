@@ -1,0 +1,179 @@
+services:
+  fit-main-app:
+    container_name: fit-main-app
+    hostname: fit-main-app
+    build:
+      context: "FiTrackerMain"
+      dockerfile: 'Dockerfile.prod'
+    ports:
+      - "8080:8080"
+    depends_on:
+      - fit-main-db
+    networks:
+      - fit
+      - fit-security
+      - fit-main
+  fit-main-db:
+    container_name: fit-main-db
+    hostname: fit-main-db
+    build:
+      context: 'FiTrackerMainDb'
+      dockerfile: 'Dockerfile.prod'
+    ports:
+      - "5432:5432"
+    networks:
+      - fit-main
+  fit-zone-app:
+    container_name: fit-zone-app
+    hostname: fit-zone-app
+    build:
+      context: "FiTrackerZoneService"
+      dockerfile: 'Dockerfile.prod'
+    ports:
+      - '9090:8080'
+    depends_on:
+      - fit-main-app
+      - fit-zone-db
+    networks:
+      - fit
+      - fit-zone
+  fit-zone-db:
+    container_name: fit-zone-db
+    hostname: fit-zone-db
+    build:
+      context: './FiTrackerZoneDb'
+      dockerfile: 'Dockerfile.prod'
+    ports:
+      - "27017:27017"
+    networks:
+      - fit-zone
+    volumes:
+      - fit-zone-db:/data/db
+  fit-expenses-db:
+    container_name: fit-expenses-db
+    hostname: fit-expenses-db
+    build:
+      context: 'FiTrackerExpensesDb'
+    ports:
+      - "5433:5432"
+    networks:
+      - fit-expenses
+  fit-expenses-app:
+    container_name: fit-expenses-app
+    hostname: fit-expenses-app
+    build:
+      context: "FiTrackerExpenses"
+    ports:
+      - '7090:8080'
+    depends_on:
+      - fit-expenses-db
+      - fit-main-app
+    networks:
+      - fit
+      - fit-expenses
+    volumes:
+      - './FiTrackerExpenses/cfg/application.properties:/usr/app/application.properties'
+  fit-api:
+    container_name: fit-api
+    hostname: fit-api
+    build:
+      context: 'FiTrackerApiGateway'
+    ports:
+      - '8090:80'
+      - '443:443'
+    depends_on:
+      - fit-main-app
+      - fit-zone-app
+      - fit-expenses-db
+    networks:
+      - fit
+    volumes:
+      - fit-api:/var/log/nginx
+  fit-promtail:
+    container_name: fit-promtail
+    hostname: fit-promtail
+    build:
+      context: './FiTPromtail'
+    volumes:
+      - fit-api:/var/log/external/api:ro
+      - fit-kafka-log:/var/log/external/kafka:ro
+    networks:
+      - fit
+    depends_on:
+      - fit-loki
+  fit-grafana:
+    build:
+      context: 'FiTGrafana'
+      dockerfile: 'Dockerfile.prod'
+    container_name: fit-grafana
+    hostname: fit-grafana
+    ports:
+      - '3000:3000'
+    networks:
+      - fit
+    volumes:
+      - 'fit-grafana:/var/lib/grafana'
+  fit-loki:
+    build:
+      context: 'FiTLoki'
+    container_name: fit-loki
+    hostname: fit-loki
+    ports:
+      - '3100:3100'
+    networks:
+      - fit
+  fit-vault:
+    build:
+      context: "FiTrackerVault"
+    container_name: fit-vault
+    hostname: fit-vault
+    ports:
+      - "8200:8200"
+      - "8201:8201"
+    networks:
+      - fit-security
+    volumes:
+      - "./FiTrackerVault/certs/:/vault/certs/"
+      - "./FiTrackerVault/config/config.hcl:/vault/config/config.hcl"
+      - "./FiTrackerVault/policies/:/vault/policies/"
+      - "fit-vault:/vault/data/"
+    cap_add:
+      - IPC_LOCK
+  fit-broker:
+
+    build:
+      context: './FitBroker'
+      dockerfile: './Dockerfile'
+    container_name: fit-broker
+    networks:
+      - fit
+    hostname: fit-broker
+    volumes:
+      - fit-kafka-data:/kafka/data
+      - fit-kafka-log:/var/lib/kafka/data:z
+networks:
+  fit:
+    driver: bridge
+  fit-security:
+    driver: bridge
+  fit-zone:
+    driver: bridge
+  fit-main:
+    driver: bridge
+  fit-expenses:
+    driver: bridge
+volumes:
+  fit-db:
+    driver: local
+  fit-vault:
+    driver: local
+  fit-grafana:
+    driver: local
+  fit-api:
+    driver: local
+  fit-zone-db:
+    driver: local
+  fit-kafka-log:
+    driver: local
+  fit-kafka-data:
+    driver: local

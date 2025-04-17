@@ -1,0 +1,12 @@
+<div class="dialog-container">
+  <div class="exit-button-container">
+    <button (click)="closeDialog()" class="action-button">
+      <fa-icon [icon]="faXmark" size="lg"></fa-icon>
+    </button>
+  </div>
+  <div [class]="(isLoaded$ | async) === true ? 'visible' : 'hidden'">
+    <router-outlet name="dialog"></router-outlet>
+
+  </div>
+</div>
+

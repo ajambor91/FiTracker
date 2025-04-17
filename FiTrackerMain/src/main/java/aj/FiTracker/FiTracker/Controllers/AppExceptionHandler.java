@@ -4,12 +4,15 @@ import aj.FiTracker.FiTracker.Exceptions.ErrorResponseDTO;
 import aj.FiTracker.FiTracker.Exceptions.UserAlreadyExistsException;
 import aj.FiTracker.FiTracker.Exceptions.UserDoesntExistException;
 import aj.FiTracker.FiTracker.Exceptions.UserUnauthorizedException;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-
-import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.web.method.annotation.HandlerMethodValidationException;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 @ControllerAdvice
 public class AppExceptionHandler {
@@ -19,7 +22,7 @@ public class AppExceptionHandler {
             Exception ex,
             HttpServletRequest request
     ) {
-        ErrorResponseDTO errorResponse =new ErrorResponseDTO(ex, request);
+        ErrorResponseDTO errorResponse = new ErrorResponseDTO(ex, request);
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
@@ -28,7 +31,7 @@ public class AppExceptionHandler {
             UserAlreadyExistsException ex,
             HttpServletRequest request
     ) {
-        ErrorResponseDTO errorResponse =new ErrorResponseDTO(ex, request);
+        ErrorResponseDTO errorResponse = new ErrorResponseDTO(ex, request);
         return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
     }
 
@@ -37,7 +40,7 @@ public class AppExceptionHandler {
             UserDoesntExistException ex,
             HttpServletRequest request
     ) {
-        ErrorResponseDTO errorResponse =new ErrorResponseDTO(ex, request);
+        ErrorResponseDTO errorResponse = new ErrorResponseDTO(ex, request);
         return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
 
@@ -46,7 +49,43 @@ public class AppExceptionHandler {
             UserUnauthorizedException ex,
             HttpServletRequest request
     ) {
-        ErrorResponseDTO errorResponse =new ErrorResponseDTO(ex, request);
+        ErrorResponseDTO errorResponse = new ErrorResponseDTO(ex, request);
         return new ResponseEntity<>(errorResponse, HttpStatus.UNAUTHORIZED);
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponseDTO> handleValidationException(
+            MethodArgumentNotValidException ex,
+            HttpServletRequest request
+    ) {
+        ErrorResponseDTO errorResponse = new ErrorResponseDTO(ex, request);
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(HandlerMethodValidationException.class)
+    public ResponseEntity<ErrorResponseDTO> handleValidationException(
+            HandlerMethodValidationException ex,
+            HttpServletRequest request
+    ) {
+        ErrorResponseDTO errorResponse = new ErrorResponseDTO(ex, request);
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ErrorResponseDTO> handleValidationException(
+            MethodArgumentTypeMismatchException ex,
+            HttpServletRequest request
+    ) {
+        ErrorResponseDTO errorResponse = new ErrorResponseDTO(ex, request);
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<ErrorResponseDTO> handleValidationException(
+            NoResourceFoundException ex,
+            HttpServletRequest request
+    ) {
+        ErrorResponseDTO errorResponse = new ErrorResponseDTO(ex, request);
+        return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
 }

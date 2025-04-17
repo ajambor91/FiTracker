@@ -12,9 +12,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-
 import org.springframework.test.context.ActiveProfiles;
-
 
 import static aj.FiTracker.FiTracker.TestUtils.ZoneFactory.*;
 
@@ -25,6 +23,7 @@ import static aj.FiTracker.FiTracker.TestUtils.ZoneFactory.*;
 public class KafkaProducerServiceIntegrationTest extends AbstractIntegrationTest {
     private final KafkaProducerService kafkaProducerService;
     private final ObjectMapper objectMapper;
+
     @Autowired
     public KafkaProducerServiceIntegrationTest(KafkaProducerService kafkaProducerService, ObjectMapper objectMapper) {
         this.kafkaProducerService = kafkaProducerService;
@@ -33,7 +32,7 @@ public class KafkaProducerServiceIntegrationTest extends AbstractIntegrationTest
 
     @Test
     @DisplayName("Should send a member message")
-    public void testSendNewMembers() throws JsonProcessingException  {
+    public void testSendNewMembers() throws JsonProcessingException {
         MemberTemplate memberTemplate = new MemberTemplate(ZONE_TEST_ID);
         Zone.Member member = new Zone.Member(OWNER_TEST_ID, MemberRole.ADMIN, USER_TEST_NAME);
         memberTemplate.addMember(member);

@@ -1,0 +1,21 @@
+.update-zone-form {
+  .typing-monit {
+    padding-left: 8px;
+    font-weight: 700;
+  }
+
+  .members-list {
+    background-color: #ecdada;
+    border-radius: 10px;
+
+    &-item {
+      padding: 4px 25px;
+    }
+
+    &-title {
+      padding: 4px 2px;
+      font-weight: 700;
+    }
+  }
+
+}

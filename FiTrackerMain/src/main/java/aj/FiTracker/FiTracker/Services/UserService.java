@@ -17,6 +17,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -26,6 +27,7 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final JWTService jwtService;
     private final UserRepository userRepository;
+
     @Autowired
     public UserService(
             PasswordEncoder passwordEncoder,
@@ -87,6 +89,29 @@ public class UserService {
             throw e;
         } catch (Exception e) {
             logger.error("Unexpected error during login for user: login={}. Error: {}", userToAuth.getLogin(), e.getMessage(), e);
+            throw new InternalServerException(e);
+        }
+    }
+
+    @Transactional(readOnly = true)
+    public List<User> findUsersByEmail(String email) {
+        logger.info("Finding users by email: email={}", email);
+        try {
+            String regexp = "^" + email;
+            return this.userRepository.findUsersByEmail(regexp);
+        } catch (Exception e) {
+            logger.error("Error while finding users by email: email={}. Error: {}", email, e.getMessage(), e);
+            throw new InternalServerException(e);
+        }
+    }
+
+    @Transactional(readOnly = true)
+    public List<User> findUsersByIds(List<Long> ids) {
+        logger.info("Finding users by IDs: ids={}", ids);
+        try {
+            return this.userRepository.findUsersByIds(ids);
+        } catch (Exception e) {
+            logger.error("Error while finding users by IDs: ids={}. Error: {}", ids, e.getMessage(), e);
             throw new InternalServerException(e);
         }
     }

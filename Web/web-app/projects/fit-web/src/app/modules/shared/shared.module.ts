@@ -6,27 +6,41 @@ import {MatButton} from '@angular/material/button';
 import {provideAnimationsAsync} from '@angular/platform-browser/animations/async';
 import {providePrimeNG} from 'primeng/config';
 import Aura from '@primeng/themes/aura';
+import {FormContainerComponent} from './components/form-container/form-container.component';
+import {HeaderComponent} from './components/header/header.component';
+import {FontAwesomeModule} from '@fortawesome/angular-fontawesome';
+import {MonthPickerComponent} from './components/month-picker/month-picker.component';
 
 
 @NgModule({
-  declarations: [],
+  declarations: [
+    FormContainerComponent,
+    HeaderComponent,
+    MonthPickerComponent
+  ],
   imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    FontAwesomeModule,
+    MatFormField,
+    MatInput,
+    MatLabel,
+    MatButton
+
+
+  ],
+  exports: [
+    FontAwesomeModule,
     CommonModule,
     ReactiveFormsModule,
     MatFormField,
     MatInput,
     MatLabel,
     MatButton,
+    FormContainerComponent,
+    HeaderComponent,
+    MonthPickerComponent
 
-
-  ],
-  exports: [
-    CommonModule,
-    ReactiveFormsModule,
-    MatFormField,
-    MatInput,
-    MatLabel,
-    MatButton
 
   ],
   providers: [

@@ -28,7 +28,7 @@ public class User implements UserData {
     @Column(nullable = false, unique = true)
     private String login;
 
-    @Column( nullable = false, unique = false)
+    @Column(nullable = false, unique = false)
     private String name;
 
     @Column(nullable = false)
@@ -43,6 +43,10 @@ public class User implements UserData {
     @Column(nullable = false)
     private String salt;
 
+
+    @Column(nullable = false, name = "email")
+    private String email;
+
     @Column(nullable = false, name = "unique_id")
     private UUID uniqueId;
 
@@ -53,12 +57,14 @@ public class User implements UserData {
     private LocalDateTime updatedAt;
 
 
-    public User() {}
+    public User() {
+    }
 
     public User(RegisterUserRequest userRequest) {
         this.login = userRequest.getLogin();
         this.name = userRequest.getName();
         this.rawPassword = userRequest.getRawPassword();
+        this.email = userRequest.getEmail();
     }
 
     public User(LoginRequest loginRequest) {

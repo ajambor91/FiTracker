@@ -2,13 +2,11 @@ package aj.FiTracker.FiTracker.Services;
 
 
 import aj.FiTracker.FiTracker.AbstractTest.AbstractIntegrationTest;
-import aj.FiTracker.FiTracker.DTO.REST.NewZoneRequest;
 import aj.FiTracker.FiTracker.DTO.REST.UpdateZoneRequest;
 import aj.FiTracker.FiTracker.Documents.Zone;
-import aj.FiTracker.FiTracker.Exceptions.ZoneAlreadyExistsException;
+import aj.FiTracker.FiTracker.Enums.MemberRole;
 import aj.FiTracker.FiTracker.Exceptions.ZoneDoesntExistException;
 import aj.FiTracker.FiTracker.TestUtils.ZoneFactory;
-import aj.FiTracker.FiTracker.Enums.MemberRole;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -30,6 +28,7 @@ public class ZoneServiceIntegrationTest extends AbstractIntegrationTest {
     private final ZoneService zoneService;
     private Authentication authenticationMock;
     private Jwt jwtMock;
+
     @Autowired
     public ZoneServiceIntegrationTest(ZoneService zoneService) {
         this.zoneService = zoneService;
@@ -135,7 +134,7 @@ public class ZoneServiceIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("Should update Zone and then return")
+    @DisplayName("Should update Zone and then return with new members")
     public void testUpdateZoneWithMembers() {
         this.jwtMock = mock(Jwt.class);
         when(this.jwtMock.getClaimAsString(eq("name"))).thenReturn(ZONE_TEST_NAME);
@@ -148,7 +147,7 @@ public class ZoneServiceIntegrationTest extends AbstractIntegrationTest {
         assertEquals(ZONE_TEST_ID, zone.getId());
         assertEquals(ZONE_TEST_NAME, zone.getName());
         assertEquals(ZONE_TEST_DESCRIPTION, zone.getDescription());
-        assertEquals(2, zone.getMembers().size());
+        assertEquals(1, zone.getMembersList().size());
     }
 
     @Test
@@ -193,8 +192,8 @@ public class ZoneServiceIntegrationTest extends AbstractIntegrationTest {
         assertEquals(ZONE_TEST_ID, zone.getId());
         assertEquals(ZONE_TEST_NAME, zone.getName());
         assertEquals(ZONE_TEST_DESCRIPTION, zone.getDescription());
-        assertEquals(1, zone.getMembers().size());
-        assertEquals(OWNER_TEST_ID, zone.getMembers().getFirst().getUserId());
+        assertEquals(1, zone.getMembersList().size());
+        assertEquals(OWNER_TEST_ID, zone.getMembersList().getFirst().getUserId());
     }
 
     @Test

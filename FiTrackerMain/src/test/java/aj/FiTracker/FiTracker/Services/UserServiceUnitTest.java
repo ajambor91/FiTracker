@@ -15,24 +15,27 @@ import aj.FiTracker.FiTracker.TestUtils.UserDataTestFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.test.context.ActiveProfiles;
-
-import static aj.FiTracker.FiTracker.TestUtils.TestData.*;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import org.junit.jupiter.api.Tag;
 import org.springframework.test.util.ReflectionTestUtils;
 
 import java.security.NoSuchAlgorithmException;
 import java.security.spec.InvalidKeySpecException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
+import static aj.FiTracker.FiTracker.TestUtils.TestData.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
+
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 
 @ExtendWith(MockitoExtension.class)
@@ -64,8 +67,9 @@ public class UserServiceUnitTest {
     public void testRegisterUserThrowsUserAlreadyExistsException() {
         when(userRepository.saveAndFlush(any(User.class))).thenThrow(DataIntegrityViolationException.class);
         assertThrows(UserAlreadyExistsException.class, () -> {
-             this.userService.registerUser(this.registerUserRequest);
+            this.userService.registerUser(this.registerUserRequest);
         });
+        verify(this.userRepository, times(1)).saveAndFlush(any(User.class));
     }
 
     @Test
@@ -75,6 +79,7 @@ public class UserServiceUnitTest {
         assertThrows(InternalServerException.class, () -> {
             this.userService.registerUser(this.registerUserRequest);
         });
+        verify(this.userRepository, times(1)).saveAndFlush(any(User.class));
     }
 
     @Test
@@ -84,6 +89,8 @@ public class UserServiceUnitTest {
         User user = userService.registerUser(this.registerUserRequest);
         assertEquals(TEST_USER_NAME, user.getName());
         assertEquals(TEST_USER_LOGIN, user.getLogin());
+        verify(this.userRepository, times(1)).saveAndFlush(any(User.class));
+
     }
 
     @Test
@@ -99,6 +106,8 @@ public class UserServiceUnitTest {
         assertEquals(TEST_USER_NAME, user.getName());
         assertEquals(TEST_USER_LOGIN, user.getLogin());
         assertEquals("TEST", user.getJwt());
+        verify(this.userRepository, times(1)).findOneByLogin(any(String.class));
+        verify(passwordEncoderMock, times(1)).checkPass(any(User.class), any(User.class));
     }
 
     @Test
@@ -110,8 +119,9 @@ public class UserServiceUnitTest {
         when(this.userRepository.findOneByLogin(any(String.class))).thenReturn(Optional.of(this.user));
         assertThrows(UserUnauthorizedException.class, () -> {
             User user = userService.loginUser(this.loginRequest);
-
         });
+        verify(this.userRepository, times(1)).findOneByLogin(any(String.class));
+        verify(passwordEncoderMock, times(1)).checkPass(any(User.class), any(User.class));
     }
 
     @Test
@@ -122,6 +132,8 @@ public class UserServiceUnitTest {
             User user = userService.loginUser(this.loginRequest);
 
         });
+        verify(this.userRepository, times(1)).findOneByLogin(any(String.class));
+
     }
 
     @Test
@@ -130,6 +142,8 @@ public class UserServiceUnitTest {
         assertThrows(NullPointerException.class, () -> {
             userService.loginUser(null);
         });
+        verify(this.userRepository, never()).findOneByLogin(any(String.class));
+
     }
 
     @Test
@@ -138,6 +152,8 @@ public class UserServiceUnitTest {
         assertThrows(NullPointerException.class, () -> {
             userService.registerUser(null);
         });
+        verify(this.userRepository, never()).saveAndFlush(any(User.class));
+
     }
 
     @Test
@@ -147,5 +163,99 @@ public class UserServiceUnitTest {
         assertThrows(InternalServerException.class, () -> {
             this.userService.loginUser(this.loginRequest);
         });
+        verify(this.userRepository, times(1)).findOneByLogin(any(String.class));
     }
+
+    @Test
+    @DisplayName("Should return found users by email")
+    public void testFindUsersByEmail() {
+        String emailsRegExp = "^" + TEST_USER_EMAIL;
+        List<User> testUsers = new ArrayList<>(List.of(UserDataTestFactory.createTestUser(), UserDataTestFactory.createSecondTestUser()));
+        when(this.userRepository.findUsersByEmail(eq(emailsRegExp))).thenReturn(testUsers);
+        List<User> users = this.userService.findUsersByEmail(TEST_USER_EMAIL);
+        verify(this.userRepository, times(1)).findUsersByEmail(eq(emailsRegExp));
+        assertEquals(2, users.size());
+        User firstUser = users.getFirst();
+        User secondUser = users.getLast();
+        assertEquals(TEST_USER_ID, firstUser.getId());
+        assertEquals(TEST_USER_NAME, firstUser.getName());
+        assertEquals(TEST_USER_LOGIN, firstUser.getLogin());
+        assertEquals(TEST_USER_EMAIL, firstUser.getEmail());
+        assertEquals(TEST_USER_SECOND_ID, secondUser.getId());
+        assertEquals(TEST_USER_SECOND_NAME, secondUser.getName());
+        assertEquals(TEST_USER_SECOND_LOGIN, secondUser.getLogin());
+        assertEquals(TEST_USER_SECOND_EMAIL, secondUser.getEmail());
+    }
+
+    @Test
+    @DisplayName("Should return empty array when users not found")
+    public void testFindUsersByEmailShouldReturnEmptyList() {
+        List<User> testUsers = new ArrayList<>();
+        String emailsRegExp = "^" + TEST_USER_EMAIL;
+
+        when(this.userRepository.findUsersByEmail(eq(emailsRegExp))).thenReturn(testUsers);
+        List<User> users = this.userService.findUsersByEmail(TEST_USER_EMAIL);
+        verify(this.userRepository, times(1)).findUsersByEmail(eq(emailsRegExp));
+        assertEquals(0, users.size());
+    }
+
+    @Test
+    @DisplayName("Should return InternalServerException on any exception")
+    public void testFindUsersByEmailInternalServerException() {
+        String emailsRegExp = "^" + TEST_USER_EMAIL;
+
+        when(this.userRepository.findUsersByEmail(eq(emailsRegExp))).thenThrow(RuntimeException.class);
+        assertThrows(InternalServerException.class, () -> {
+            this.userService.findUsersByEmail(TEST_USER_EMAIL);
+        });
+        verify(this.userRepository, times(1)).findUsersByEmail(eq(emailsRegExp));
+
+    }
+
+    @Test
+    @DisplayName("Should return found users by ids")
+    public void testFindUsersByIds() {
+        List<Long> ids = new ArrayList<>(List.of(TEST_USER_ID, TEST_USER_SECOND_ID));
+        List<User> testUsers = new ArrayList<>(List.of(UserDataTestFactory.createTestUser(), UserDataTestFactory.createSecondTestUser()));
+        when(this.userRepository.findUsersByIds(eq(ids))).thenReturn(testUsers);
+        List<User> users = this.userService.findUsersByIds(ids);
+        verify(this.userRepository, times(1)).findUsersByIds(eq(ids));
+        assertEquals(2, users.size());
+        User firstUser = users.getFirst();
+        User secondUser = users.getLast();
+        assertEquals(TEST_USER_NAME, firstUser.getName());
+        assertEquals(TEST_USER_LOGIN, firstUser.getLogin());
+
+        assertEquals(TEST_USER_EMAIL, firstUser.getEmail());
+        assertEquals(TEST_USER_SECOND_NAME, secondUser.getName());
+        assertEquals(TEST_USER_SECOND_LOGIN, secondUser.getLogin());
+        assertEquals(TEST_USER_SECOND_EMAIL, secondUser.getEmail());
+    }
+
+    @Test
+    @DisplayName("Should return empty array when users by ids not found")
+    public void testFindUsersByIdsShouldReturnEmptyList() {
+        List<User> testUsers = new ArrayList<>();
+        List<Long> ids = new ArrayList<>(List.of(TEST_USER_ID, TEST_USER_SECOND_ID));
+
+        when(this.userRepository.findUsersByIds(eq(ids))).thenReturn(testUsers);
+        List<User> users = this.userService.findUsersByIds(ids);
+        verify(this.userRepository, times(1)).findUsersByIds(eq(ids));
+        assertEquals(0, users.size());
+    }
+
+    @Test
+    @DisplayName("Should return InternalServerException on any exception when try find users by ids")
+    public void testFindUsersByIdsInternalServerException() {
+        List<Long> ids = new ArrayList<>(List.of(TEST_USER_ID, TEST_USER_SECOND_ID));
+
+        List<User> testUsers = new ArrayList<>();
+        when(this.userRepository.findUsersByIds(eq(ids))).thenThrow(RuntimeException.class);
+        assertThrows(InternalServerException.class, () -> {
+            this.userService.findUsersByIds(ids);
+        });
+        verify(this.userRepository, times(1)).findUsersByIds(eq(ids));
+
+    }
+
 }

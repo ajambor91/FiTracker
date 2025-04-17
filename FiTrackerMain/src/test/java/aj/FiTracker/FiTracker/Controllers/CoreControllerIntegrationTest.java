@@ -11,7 +11,6 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @AutoConfigureMockMvc
@@ -19,8 +18,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @Tag("integration")
 @ActiveProfiles("integration")
 public class CoreControllerIntegrationTest extends AbstractIntegrationTest {
-    private MockMvc mockMvc;
     private final CoreController coreContoller;
+    private MockMvc mockMvc;
 
     @Autowired
     public CoreControllerIntegrationTest(MockMvc mockMvc, CoreController coreContoller) {

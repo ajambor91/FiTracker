@@ -6,6 +6,6 @@ COPY gradlew .
 COPY gradle gradle
 COPY . .
 
-RUN ./gradlew build -x test
+RUN ./gradlew buildWithoutTest
 
 ENTRYPOINT ["java", "-jar", "build/libs/FiTrackerExpenses-0.0.1-SNAPSHOT.jar", "--spring.config.additional-location=/usr/app/application.properties"]

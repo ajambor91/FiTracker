@@ -1,0 +1,110 @@
+<app-dialog-content>
+  <ng-container *ngIf="(zone$ | async ) as zone">
+    <div class="mb-5">
+
+      <app-header><h1 class="h1 font-purple" i18n>Zone {{ zone.zoneName }} options</h1></app-header>
+    </div>
+
+    <form (submit)="submitForm()" [formGroup]="form" class="update-zone-form">
+
+      <div [formGroup]="zoneData" class="form-group">
+        <div class="form-group">
+          <mat-form-field>
+            <mat-label i18n>Zone name</mat-label>
+            <input formControlName="zoneName" matInput>
+          </mat-form-field>
+        </div>
+        <div class="form-group">
+          <mat-form-field>
+            <mat-label i18n>Zone description</mat-label>
+            <input formControlName="zoneDescription" matInput>
+          </mat-form-field>
+        </div>
+      </div>
+      <div [formGroup]="findUserForm" class="form-group ">
+        <p class="typing-monit">Start typing email to found your friends:</p>
+        <mat-form-field>
+          <mat-label>Search email</mat-label>
+          <input formControlName="email" matInput>
+        </mat-form-field>
+      </div>
+      <div class="form-group members-list container mb-3">
+        <ng-container *ngIf="(foundUsers$ | async) as foundUsers">
+          <ng-container *ngIf="foundUsers.length > 0">
+            <p class="members-list-title">Found users:</p>
+            <div class="members-list headers row">
+              <div class="col-5 members-list-item">
+                <p>Name</p>
+              </div>
+              <div class="col-5 members-list-item">
+                <p>Email</p>
+              </div>
+            </div>
+            <ng-container *ngFor="let foundUser of foundUsers  ">
+              <div class="members-list row">
+                <div class="col-5 members-list-item">
+                  <p>
+                    {{ foundUser.name }}
+                  </p>
+                </div>
+                <div class="col-5 members-list-item">
+                  <p>
+                    {{ foundUser.email }}
+                  </p>
+                </div>
+                <div class="col-2">
+                  <button (click)="selectUser(foundUser)" class="action-button font-purple" type="button">
+                    <fa-icon [icon]="faPlus"></fa-icon>
+                  </button>
+                </div>
+              </div>
+            </ng-container>
+          </ng-container>
+        </ng-container>
+      </div>
+      <div class="form-group members-list container mb-3">
+        <ng-container *ngIf="addedMembers.length > 0">
+          <p class="members-list-title">Added friends:</p>
+          <div class="members-list headers row">
+            <div class="col-5 members-list-item">
+              <p>Name</p>
+            </div>
+            <div class="col-5 members-list-item">
+              <p>Email</p>
+            </div>
+          </div>
+          <ng-container *ngFor="let foundUserControl of addedMembers.controls; let i = index">
+
+            <div [formGroup]="foundUserControl" class="row">
+              <div class="col-5 members-list-item">
+                <p>
+                  {{ foundUserControl.get('name')?.value }}
+                </p>
+              </div>
+              <div class="col-5 members-list-item">
+                <p>
+                  {{ foundUserControl.get('email')?.value }}
+                </p>
+              </div>
+              <div class="col-2 members-list-item">
+                <button (click)="removeMember(foundUserControl, i)" class="action-button font-purple" type="button">
+                  <fa-icon [icon]="faMinus"></fa-icon>
+                </button>
+              </div>
+            </div>
+          </ng-container>
+        </ng-container>
+
+      </div>
+      <div class="form-group row justify-content-end">
+        <div class="col-6 justify-content-end row">
+          <button i18n mat-flat-button type="submit">
+            Update
+          </button>
+        </div>
+      </div>
+    </form>
+  </ng-container>
+
+</app-dialog-content>
+

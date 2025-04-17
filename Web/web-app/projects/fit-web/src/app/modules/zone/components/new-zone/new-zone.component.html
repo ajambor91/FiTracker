@@ -1,0 +1,28 @@
+<div class="content-container">
+  <app-form-container>
+    <div class="mb-5">
+      <app-header><h1 class="h1" i18n>Add new zone</h1></app-header>
+    </div>
+    <form (submit)="submitForm()" [formGroup]="form">
+      <div class="form-group">
+        <mat-form-field>
+          <mat-label>Zone name</mat-label>
+          <input formControlName="zoneName" matInput>
+        </mat-form-field>
+      </div>
+      <div class="form-group">
+        <mat-form-field>
+          <mat-label>Zone description</mat-label>
+          <input formControlName="zoneDescription" matInput>
+        </mat-form-field>
+      </div>
+      <div class="form-group row justify-content-end">
+        <div class="col-6 row justify-content-end">
+          <button i18n mat-button mat-flat-button type="submit">
+            Next
+          </button>
+        </div>
+      </div>
+    </form>
+  </app-form-container>
+</div>

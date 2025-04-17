@@ -16,10 +16,11 @@ public class PasswordValidator implements ConstraintValidator<PasswordValidatorA
         }
     }
 
-    private final int minimumPasswwordLen  = 8;
+    private final int minimumPasswwordLen = 8;
+
     @Override
     public boolean isValid(char[] password, ConstraintValidatorContext context) {
-        if (password == null || password.length < minimumPasswwordLen ) {
+        if (password == null || password.length < minimumPasswwordLen) {
             return false;
         }
         boolean hasUpper = false;
@@ -29,11 +30,11 @@ public class PasswordValidator implements ConstraintValidator<PasswordValidatorA
         for (char c : password) {
             if (!hasUpper && Character.isUpperCase(c)) {
                 hasUpper = true;
-            } else if (!hasLower && Character.isLowerCase(c) ) {
+            } else if (!hasLower && Character.isLowerCase(c)) {
                 hasLower = true;
             } else if (!hasDigit && Character.isDigit(c)) {
                 hasDigit = true;
-            } else if (!hasSpecial && SPECIAL_CHARACTERS.contains(c)){
+            } else if (!hasSpecial && SPECIAL_CHARACTERS.contains(c)) {
                 hasSpecial = true;
             }
             if (hasUpper && hasLower && hasDigit && hasSpecial) {

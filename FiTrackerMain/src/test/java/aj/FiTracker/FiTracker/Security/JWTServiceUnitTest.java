@@ -5,7 +5,8 @@ import aj.FiTracker.FiTracker.TestUtils.UserDataTestFactory;
 import aj.FiTracker.FiTracker.TestUtils.VaultDataFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.jsonwebtoken.*;
+import io.jsonwebtoken.JwtParser;
+import io.jsonwebtoken.Jwts;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
@@ -19,7 +20,6 @@ import org.springframework.vault.support.Signature;
 import org.springframework.vault.support.VaultTransitKey;
 
 import javax.crypto.SecretKey;
-
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
@@ -60,7 +60,7 @@ public class JWTServiceUnitTest {
         when(this.vaultTransitOperations.sign(eq("jwt-rsa-key"), any(Plaintext.class))).thenReturn(signatureMock);
         this.testUser = UserDataTestFactory.createTestUser();
         this.parser = Jwts.parser().verifyWith(this.pair.getPublic()).build();
-        this.jwtService= new JWTService(vaultTransitOperations, objectMapper, tokenExpiration);
+        this.jwtService = new JWTService(vaultTransitOperations, objectMapper, tokenExpiration);
     }
 
     @Test

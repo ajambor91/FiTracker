@@ -1,0 +1,30 @@
+.dashboard-nav {
+  width: 100vw;
+  position: relative;
+  padding: 0;
+
+  .menu-list {
+    padding: 0;
+    padding-left: 10px;
+    list-style-type: none;
+    display: flex;
+    gap: 10px;
+
+    .nav-dashboard-link {
+      font-weight: 900;
+      color: #cf27c3;
+      cursor: pointer;
+      text-decoration: underline;
+
+    }
+  }
+}
+
+.dashboard-nav::after {
+  position: absolute;
+  content: '';
+  border-radius: 50%;
+  height: 2px;
+  width: 100%;
+  background-image: linear-gradient(to right, #cf27c3 0%, transparent 40%);
+}

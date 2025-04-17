@@ -1,0 +1,22 @@
+<div class="container-fluid w-100 month-picker">
+  <div class="row">
+    <div class="col-12">{{ currentYear }}</div>
+  </div>
+  <div class="row month-picker__month-row">
+    <div class="col-3 month-picker__month-item">
+      <button (click)="changeMonth.emit(currentMonth - 1)" class="month-picker__month-button">
+        <fa-icon [icon]="arrowLeft"></fa-icon>
+        <fa-icon [icon]="arrowLeft"></fa-icon>
+        {{ getPrevMonth }}
+      </button>
+    </div>
+    <div class="col-6 month-picker__month-item">{{ getCurrentMonth }}</div>
+    <div class="col-3 month-picker__month-item">
+      <button (click)="changeMonth.emit(currentMonth + 1)" class="month-picker__month-button">
+        {{ getNextMonth }}
+        <fa-icon [icon]="arrowRight"></fa-icon>
+        <fa-icon [icon]="arrowRight"></fa-icon>
+      </button>
+    </div>
+  </div>
+</div>

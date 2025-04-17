@@ -9,6 +9,7 @@ import org.springframework.security.oauth2.server.authorization.settings.Authori
 @Configuration
 public class OAuthServer {
     private final static Logger loggger = LoggerFactory.getLogger(OAuthServer.class);
+
     @Bean
     public AuthorizationServerSettings authorizationServerSettings() {
         loggger.info("Building AuthorizationServer");

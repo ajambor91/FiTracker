@@ -3,10 +3,10 @@ package aj.FiTracker.FiTracker.Abstract;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.test.context.DynamicPropertyRegistry;
+import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.wait.strategy.Wait;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import org.testcontainers.containers.GenericContainer;
 
 @Testcontainers
 public class VaultTestContainer extends GenericContainer<VaultTestContainer> {
@@ -16,9 +16,9 @@ public class VaultTestContainer extends GenericContainer<VaultTestContainer> {
     private static final int VAULT_PORT = 8200;
 
     @Container
-    private static VaultTestContainer vaultContainer =  new VaultTestContainer()
+    private static VaultTestContainer vaultContainer = new VaultTestContainer()
             .withExposedPorts(8200)
-            .withEnv("VAULT_DEV_ROOT_TOKEN_ID",VAULT_TOKEN)
+            .withEnv("VAULT_DEV_ROOT_TOKEN_ID", VAULT_TOKEN)
             .withEnv("VAULT_DEV_LISTEN_ADDRESS", "0.0.0.0:" + VAULT_PORT)
             .withEnv("VAULT_ADDR", "http://0.0.0.0:" + VAULT_PORT)
             .waitingFor(Wait.forHttp("/v1/sys/health").forStatusCode(200))
@@ -35,14 +35,14 @@ public class VaultTestContainer extends GenericContainer<VaultTestContainer> {
 
     static void vaultProperties(DynamicPropertyRegistry registry) throws Exception {
 
-            String vaultUrl = "http://" + vaultContainer.getHost() + ":" + vaultContainer.getMappedPort(8200);
-            registry.add("spring.cloud.vault.uri", () -> vaultUrl);
-            registry.add("spring.cloud.vault.token", () -> VAULT_TOKEN);
-            registry.add("spring.cloud.vault.authentication", () -> "TOKEN");
-            registry.add("spring.cloud.vault.transit.enabled", () -> "true");
-            registry.add("spring.cloud.vault.transit.key-name", () -> TRANSIT_KEY_NAME);
+        String vaultUrl = "http://" + vaultContainer.getHost() + ":" + vaultContainer.getMappedPort(8200);
+        registry.add("spring.cloud.vault.uri", () -> vaultUrl);
+        registry.add("spring.cloud.vault.token", () -> VAULT_TOKEN);
+        registry.add("spring.cloud.vault.authentication", () -> "TOKEN");
+        registry.add("spring.cloud.vault.transit.enabled", () -> "true");
+        registry.add("spring.cloud.vault.transit.key-name", () -> TRANSIT_KEY_NAME);
 
-            initializeTransitEngineWithRetry();
+        initializeTransitEngineWithRetry();
     }
 
     private static void initializeTransitEngineWithRetry() throws Exception {

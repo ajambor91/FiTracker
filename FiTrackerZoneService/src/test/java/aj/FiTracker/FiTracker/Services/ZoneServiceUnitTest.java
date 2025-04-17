@@ -5,13 +5,13 @@ import aj.FiTracker.FiTracker.DTO.REST.NewZoneRequest;
 import aj.FiTracker.FiTracker.DTO.REST.RemoveZoneMemberRequest;
 import aj.FiTracker.FiTracker.DTO.REST.UpdateZoneRequest;
 import aj.FiTracker.FiTracker.Documents.Zone;
+import aj.FiTracker.FiTracker.Enums.MemberRole;
 import aj.FiTracker.FiTracker.Exceptions.InternalServerException;
 import aj.FiTracker.FiTracker.Exceptions.ZoneAlreadyExistsException;
 import aj.FiTracker.FiTracker.Exceptions.ZoneDoesntExistException;
 import aj.FiTracker.FiTracker.Models.MemberTemplate;
 import aj.FiTracker.FiTracker.Repositories.ZoneRepository;
 import aj.FiTracker.FiTracker.TestUtils.ZoneFactory;
-import aj.FiTracker.FiTracker.Enums.MemberRole;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.mongodb.DuplicateKeyException;
 import org.junit.jupiter.api.BeforeEach;
@@ -21,6 +21,9 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.test.context.ActiveProfiles;
@@ -34,7 +37,6 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
-import static org.springframework.test.web.client.ExpectedCount.once;
 
 @ActiveProfiles("unit")
 @Tag("unit")
@@ -45,6 +47,7 @@ public class ZoneServiceUnitTest {
     private ZoneRepository zoneRepositoryMock;
     private KafkaProducerService kafkaProducerServiceMock;
     private Authentication authenticationMock;
+
     @BeforeEach
     public void setup() {
         this.kafkaProducerServiceMock = mock(KafkaProducerService.class);
@@ -70,7 +73,7 @@ public class ZoneServiceUnitTest {
         assertEquals(ZONE_TEST_NAME, zone.getName());
         assertEquals(ZONE_TEST_DESCRIPTION, zone.getDescription());
         assertEquals(OWNER_TEST_ID, zone.getOwnerId());
-        zone.getMembers().forEach(member -> {
+        zone.getMembersList().forEach(member -> {
             assertEquals(MemberRole.ADMIN, member.getRole());
             assertEquals(USER_TEST_NAME, member.getName());
             assertEquals(OWNER_TEST_ID, member.getUserId());
@@ -80,9 +83,9 @@ public class ZoneServiceUnitTest {
         ArgumentCaptor<MemberTemplate> argumentCaptor = ArgumentCaptor.forClass(MemberTemplate.class);
         verify(this.kafkaProducerServiceMock).sendNewMembers(argumentCaptor.capture());
         MemberTemplate memberTemplate = argumentCaptor.getValue();
-        assertEquals(1, memberTemplate.getMemberList().size());
+        assertEquals(1, memberTemplate.getMembersList().size());
         assertEquals(ZONE_TEST_ID, memberTemplate.getZoneId());
-        assertEquals(OWNER_TEST_ID, memberTemplate.getMemberList().getFirst().memberId());
+        assertEquals(OWNER_TEST_ID, memberTemplate.getMembersList().getFirst().memberId());
     }
 
     @Test
@@ -123,53 +126,53 @@ public class ZoneServiceUnitTest {
         NewZoneRequest newZoneRequest = ZoneFactory.createNewZoneTestRequest();
         Zone testZone = new Zone(newZoneRequest, OWNER_TEST_ID);
         testZone.setId(ZONE_TEST_ID);
-        when(this.zoneRepositoryMock.findByIdAndDeletedAtIsNullAndMembers_UserId(eq(ZONE_TEST_ID), eq(OWNER_TEST_ID))).thenReturn(Optional.of(testZone));
+        when(this.zoneRepositoryMock.findByIdAndDeletedAtIsNullAndMembersList_UserId(eq(ZONE_TEST_ID), eq(OWNER_TEST_ID))).thenReturn(Optional.of(testZone));
         Zone zone = this.zoneService.getExistingZoneById(ZONE_TEST_ID, this.authenticationMock);
         assertEquals(ZONE_TEST_ID, zone.getId());
         assertEquals(ZONE_TEST_NAME, zone.getName());
         assertEquals(ZONE_TEST_DESCRIPTION, zone.getDescription());
         assertEquals(OWNER_TEST_ID, zone.getOwnerId());
-        zone.getMembers().forEach(member -> {
+        zone.getMembersList().forEach(member -> {
             assertEquals(MemberRole.ADMIN, member.getRole());
             assertEquals(USER_TEST_NAME, member.getName());
             assertEquals(OWNER_TEST_ID, member.getUserId());
             assertNotNull(member.getAddedAt());
         });
-        verify(this.zoneRepositoryMock, times(1)).findByIdAndDeletedAtIsNullAndMembers_UserId(eq(ZONE_TEST_ID), eq(OWNER_TEST_ID));
+        verify(this.zoneRepositoryMock, times(1)).findByIdAndDeletedAtIsNullAndMembersList_UserId(eq(ZONE_TEST_ID), eq(OWNER_TEST_ID));
     }
 
     @Test
     @DisplayName("Should throw ZoneDoesntExistException existing Zone")
     public void testGetExistingZoneByIdNotFound() {
-        when(this.zoneRepositoryMock.findByIdAndDeletedAtIsNullAndMembers_UserId(eq(ZONE_TEST_ID), eq(OWNER_TEST_ID))).thenReturn(Optional.empty());
+        when(this.zoneRepositoryMock.findByIdAndDeletedAtIsNullAndMembersList_UserId(eq(ZONE_TEST_ID), eq(OWNER_TEST_ID))).thenReturn(Optional.empty());
         ZoneDoesntExistException zoneDoesntExistException = assertThrows(ZoneDoesntExistException.class, () -> {
             this.zoneService.getExistingZoneById(ZONE_TEST_ID, this.authenticationMock);
         });
         assertEquals("Zone does not exist", zoneDoesntExistException.getMessage());
-        verify(this.zoneRepositoryMock, times(1)).findByIdAndDeletedAtIsNullAndMembers_UserId(eq(ZONE_TEST_ID), eq(OWNER_TEST_ID));
+        verify(this.zoneRepositoryMock, times(1)).findByIdAndDeletedAtIsNullAndMembersList_UserId(eq(ZONE_TEST_ID), eq(OWNER_TEST_ID));
 
     }
 
     @Test
     @DisplayName("Should update Zone and return")
-    public void testUpdateZone()  {
+    public void testUpdateZone() {
         NewZoneRequest newZoneRequest = ZoneFactory.createNewZoneTestRequest();
         UpdateZoneRequest updateZoneRequest = ZoneFactory.createUpdateZoneTestRequest();
         Zone testZone = new Zone(newZoneRequest, OWNER_TEST_ID);
         testZone.setId(ZONE_TEST_ID);
-        when(this.zoneRepositoryMock.findByIdAndDeletedAtIsNullAndMembers_UserId(eq(ZONE_TEST_ID), eq(OWNER_TEST_ID))).thenReturn(Optional.of(testZone));
+        when(this.zoneRepositoryMock.findByIdAndDeletedAtIsNullAndMembersList_UserId(eq(ZONE_TEST_ID), eq(OWNER_TEST_ID))).thenReturn(Optional.of(testZone));
         Zone zone = this.zoneService.updateZone(ZONE_TEST_ID, authenticationMock, updateZoneRequest);
         assertEquals(ZONE_TEST_ID, zone.getId());
         assertEquals(ZONE_TEST_NAME, zone.getName());
         assertEquals(ZONE_TEST_DESCRIPTION, zone.getDescription());
         assertEquals(OWNER_TEST_ID, zone.getOwnerId());
-        zone.getMembers().forEach(member -> {
+        zone.getMembersList().forEach(member -> {
             assertEquals(MemberRole.ADMIN, member.getRole());
             assertEquals(USER_TEST_NAME, member.getName());
             assertEquals(OWNER_TEST_ID, member.getUserId());
             assertNotNull(member.getAddedAt());
         });
-        verify(this.zoneRepositoryMock, times(1)).findByIdAndDeletedAtIsNullAndMembers_UserId(eq(ZONE_TEST_ID), eq(OWNER_TEST_ID));
+        verify(this.zoneRepositoryMock, times(1)).findByIdAndDeletedAtIsNullAndMembersList_UserId(eq(ZONE_TEST_ID), eq(OWNER_TEST_ID));
 
     }
 
@@ -181,23 +184,23 @@ public class ZoneServiceUnitTest {
 
         Zone testZone = new Zone(newZoneRequest, OWNER_TEST_ID);
         testZone.setId(ZONE_TEST_ID);
-        List<Zone.Member> members = new ArrayList<>();
-        members.add(new Zone.Member(OWNER_TEST_ID, MemberRole.ADMIN, USER_TEST_NAME));
-        testZone.setMembers(members);
-        when(this.zoneRepositoryMock.findByIdAndDeletedAtIsNullAndMembers_UserId(eq(ZONE_TEST_ID), eq(OWNER_TEST_ID))).thenReturn(Optional.of(testZone));
+        List<Zone.Member> membersList = new ArrayList<>();
+        membersList.add(new Zone.Member(OWNER_TEST_ID, MemberRole.ADMIN, USER_TEST_NAME));
+        testZone.setMembersList(membersList);
+        when(this.zoneRepositoryMock.findByIdAndDeletedAtIsNullAndMembersList_UserId(eq(ZONE_TEST_ID), eq(OWNER_TEST_ID))).thenReturn(Optional.of(testZone));
         Zone zone = this.zoneService.updateZone(ZONE_TEST_ID, authenticationMock, updateZoneRequest);
         assertEquals(ZONE_TEST_ID, zone.getId());
         assertEquals(ZONE_TEST_NAME, zone.getName());
         assertEquals(ZONE_TEST_DESCRIPTION, zone.getDescription());
         assertEquals(OWNER_TEST_ID, zone.getOwnerId());
-        assertEquals(2, zone.getMembers().size());
-        verify(this.zoneRepositoryMock, times(1)).findByIdAndDeletedAtIsNullAndMembers_UserId(eq(ZONE_TEST_ID), eq(OWNER_TEST_ID));
+        assertEquals(1, zone.getMembersList().size());
+        verify(this.zoneRepositoryMock, times(1)).findByIdAndDeletedAtIsNullAndMembersList_UserId(eq(ZONE_TEST_ID), eq(OWNER_TEST_ID));
         ArgumentCaptor<MemberTemplate> argumentCaptor = ArgumentCaptor.forClass(MemberTemplate.class);
         verify(this.kafkaProducerServiceMock, times(1)).sendNewMembers(argumentCaptor.capture());
         MemberTemplate memberTemplate = argumentCaptor.getValue();
-        assertEquals(1, memberTemplate.getMemberList().size());
+        assertEquals(1, memberTemplate.getMembersList().size());
         assertEquals(ZONE_TEST_ID, memberTemplate.getZoneId());
-        assertEquals(MEMBER_TEST_ID, memberTemplate.getMemberList().getFirst().memberId());
+        assertEquals(MEMBER_TEST_ID, memberTemplate.getMembersList().getFirst().memberId());
     }
 
     @Test
@@ -207,13 +210,13 @@ public class ZoneServiceUnitTest {
         UpdateZoneRequest updateZoneRequest = ZoneFactory.createUpdateZoneTestRequestWithNameAndDescription();
         Zone testZone = new Zone(newZoneRequest, OWNER_TEST_ID);
         testZone.setId(ZONE_TEST_ID);
-        when(this.zoneRepositoryMock.findByIdAndDeletedAtIsNullAndMembers_UserId(eq(ZONE_TEST_ID), eq(OWNER_TEST_ID))).thenReturn(Optional.of(testZone));
+        when(this.zoneRepositoryMock.findByIdAndDeletedAtIsNullAndMembersList_UserId(eq(ZONE_TEST_ID), eq(OWNER_TEST_ID))).thenReturn(Optional.of(testZone));
         Zone zone = this.zoneService.updateZone(ZONE_TEST_ID, authenticationMock, updateZoneRequest);
         assertEquals(ZONE_TEST_ID, zone.getId());
         assertEquals(ZONE_TEST_NAME_SECOND, zone.getName());
         assertEquals(ZONE_TEST_DESCRIPTION_SECOND, zone.getDescription());
         assertEquals(OWNER_TEST_ID, zone.getOwnerId());
-        verify(this.zoneRepositoryMock, times(1)).findByIdAndDeletedAtIsNullAndMembers_UserId(eq(ZONE_TEST_ID), eq(OWNER_TEST_ID));
+        verify(this.zoneRepositoryMock, times(1)).findByIdAndDeletedAtIsNullAndMembersList_UserId(eq(ZONE_TEST_ID), eq(OWNER_TEST_ID));
         verify(this.kafkaProducerServiceMock, never()).sendDeletedMembers(any(MemberTemplate.class));
 
     }
@@ -221,11 +224,12 @@ public class ZoneServiceUnitTest {
     @Test
     @DisplayName("Should throw ZoneDoesntExistException updating Zone")
     public void testUpdateZonedNotFound() throws JsonProcessingException {
-        when(this.zoneRepositoryMock.findByIdAndDeletedAtIsNullAndMembers_UserId(eq(ZONE_TEST_ID), eq(OWNER_TEST_ID))).thenReturn(Optional.empty());
+        when(this.zoneRepositoryMock.findByIdAndDeletedAtIsNullAndMembersList_UserId(eq(ZONE_TEST_ID), eq(OWNER_TEST_ID))).thenReturn(Optional.empty());
         ZoneDoesntExistException zoneDoesntExistException = assertThrows(ZoneDoesntExistException.class, () -> {
-            this.zoneService.getExistingZoneById(ZONE_TEST_ID, this.authenticationMock);        });
+            this.zoneService.getExistingZoneById(ZONE_TEST_ID, this.authenticationMock);
+        });
         assertEquals("Zone does not exist", zoneDoesntExistException.getMessage());
-        verify(this.zoneRepositoryMock, times(1)).findByIdAndDeletedAtIsNullAndMembers_UserId(eq(ZONE_TEST_ID), eq(OWNER_TEST_ID));
+        verify(this.zoneRepositoryMock, times(1)).findByIdAndDeletedAtIsNullAndMembersList_UserId(eq(ZONE_TEST_ID), eq(OWNER_TEST_ID));
         verify(this.kafkaProducerServiceMock, never()).sendDeletedMembers(any(MemberTemplate.class));
 
     }
@@ -233,12 +237,12 @@ public class ZoneServiceUnitTest {
     @Test
     @DisplayName("Should throw InternalServerException existing Zone")
     public void testUpdateZoneInternalServerError() throws JsonProcessingException {
-        when(this.zoneRepositoryMock.findByIdAndDeletedAtIsNullAndMembers_UserId(eq(ZONE_TEST_ID), eq(OWNER_TEST_ID))).thenThrow(new RuntimeException("Boom!"));
+        when(this.zoneRepositoryMock.findByIdAndDeletedAtIsNullAndMembersList_UserId(eq(ZONE_TEST_ID), eq(OWNER_TEST_ID))).thenThrow(new RuntimeException("Boom!"));
         InternalServerException internalServerException = assertThrows(InternalServerException.class, () -> {
             this.zoneService.getExistingZoneById(ZONE_TEST_ID, this.authenticationMock);
         });
         assertEquals("Boom!", internalServerException.getMessage());
-        verify(this.zoneRepositoryMock, times(1)).findByIdAndDeletedAtIsNullAndMembers_UserId(eq(ZONE_TEST_ID), eq(OWNER_TEST_ID));
+        verify(this.zoneRepositoryMock, times(1)).findByIdAndDeletedAtIsNullAndMembersList_UserId(eq(ZONE_TEST_ID), eq(OWNER_TEST_ID));
         verify(this.kafkaProducerServiceMock, never()).sendDeletedMembers(any(MemberTemplate.class));
 
 
@@ -250,45 +254,72 @@ public class ZoneServiceUnitTest {
         NewZoneRequest newZoneRequest = ZoneFactory.createNewZoneTestRequest();
         Zone testZone = new Zone(newZoneRequest, OWNER_TEST_ID);
         testZone.setId(ZONE_TEST_ID);
-        when(this.zoneRepositoryMock.findByDeletedAtIsNullAndMembers_UserId(eq(OWNER_TEST_ID))).thenReturn(List.of(testZone));
-        List<Zone> zones = this.zoneService.getAllZones( authenticationMock);
+        when(this.zoneRepositoryMock.findByDeletedAtIsNullAndMembersList_UserId(eq(OWNER_TEST_ID))).thenReturn(List.of(testZone));
+        List<Zone> zones = this.zoneService.getAllZones(authenticationMock);
         assertInstanceOf(List.class, zones);
         zones.forEach(zone -> {
             assertEquals(ZONE_TEST_ID, zone.getId());
             assertEquals(ZONE_TEST_NAME, zone.getName());
             assertEquals(ZONE_TEST_DESCRIPTION, zone.getDescription());
             assertEquals(OWNER_TEST_ID, zone.getOwnerId());
-            zone.getMembers().forEach(member -> {
+            zone.getMembersList().forEach(member -> {
                 assertEquals(MemberRole.ADMIN, member.getRole());
                 assertEquals(USER_TEST_NAME, member.getName());
                 assertEquals(OWNER_TEST_ID, member.getUserId());
                 assertNotNull(member.getAddedAt());
             });
         });
-        verify(this.zoneRepositoryMock, times(1)).findByDeletedAtIsNullAndMembers_UserId(eq(OWNER_TEST_ID));
+        verify(this.zoneRepositoryMock, times(1)).findByDeletedAtIsNullAndMembersList_UserId(eq(OWNER_TEST_ID));
+
+    }
+
+    @Test
+    @DisplayName("Should return last four zones")
+    public void testGetLastFourZones() {
+        NewZoneRequest newZoneRequest = ZoneFactory.createNewZoneTestRequest();
+        Zone testZone = new Zone(newZoneRequest, OWNER_TEST_ID);
+        testZone.setId(ZONE_TEST_ID);
+        Pageable pageable = PageRequest.of(0, 4, Sort.by(Sort.Direction.DESC, "createdAt"));
+
+        when(this.zoneRepositoryMock.findByDeletedAtIsNullAndMembersList_UserId(eq(OWNER_TEST_ID), eq(pageable))).thenReturn(List.of(testZone));
+        List<Zone> zones = this.zoneService.getLastFourZones(authenticationMock);
+        assertInstanceOf(List.class, zones);
+        zones.forEach(zone -> {
+            assertEquals(ZONE_TEST_ID, zone.getId());
+            assertEquals(ZONE_TEST_NAME, zone.getName());
+            assertEquals(ZONE_TEST_DESCRIPTION, zone.getDescription());
+            assertEquals(OWNER_TEST_ID, zone.getOwnerId());
+            zone.getMembersList().forEach(member -> {
+                assertEquals(MemberRole.ADMIN, member.getRole());
+                assertEquals(USER_TEST_NAME, member.getName());
+                assertEquals(OWNER_TEST_ID, member.getUserId());
+                assertNotNull(member.getAddedAt());
+            });
+        });
+        verify(this.zoneRepositoryMock, times(1)).findByDeletedAtIsNullAndMembersList_UserId(eq(OWNER_TEST_ID), any(Pageable.class));
 
     }
 
     @Test
     @DisplayName("Should return empty zones list when anyone was not found")
     public void testGetAllZonesEmptyList() {
-        when(this.zoneRepositoryMock.findByDeletedAtIsNullAndMembers_UserId(eq(OWNER_TEST_ID))).thenReturn(List.of());
-        List<Zone> zones = this.zoneService.getAllZones( authenticationMock);
+        when(this.zoneRepositoryMock.findByDeletedAtIsNullAndMembersList_UserId(eq(OWNER_TEST_ID))).thenReturn(List.of());
+        List<Zone> zones = this.zoneService.getAllZones(authenticationMock);
         assertInstanceOf(List.class, zones);
         assertEquals(0, zones.size());
-        verify(this.zoneRepositoryMock, times(1)).findByDeletedAtIsNullAndMembers_UserId(eq(OWNER_TEST_ID));
+        verify(this.zoneRepositoryMock, times(1)).findByDeletedAtIsNullAndMembersList_UserId(eq(OWNER_TEST_ID));
 
     }
 
     @Test
     @DisplayName("Should return throw InternalServerException")
     public void testGetAllZonesEmptyListInternalServerException() {
-        when(this.zoneRepositoryMock.findByDeletedAtIsNullAndMembers_UserId(eq(OWNER_TEST_ID))).thenThrow(new RuntimeException("Boom!"));
+        when(this.zoneRepositoryMock.findByDeletedAtIsNullAndMembersList_UserId(eq(OWNER_TEST_ID))).thenThrow(new RuntimeException("Boom!"));
         InternalServerException internalServerException = assertThrows(InternalServerException.class, () -> {
             this.zoneService.getAllZones(this.authenticationMock);
         });
         assertEquals("Boom!", internalServerException.getMessage());
-        verify(this.zoneRepositoryMock, times(1)).findByDeletedAtIsNullAndMembers_UserId(eq(OWNER_TEST_ID));
+        verify(this.zoneRepositoryMock, times(1)).findByDeletedAtIsNullAndMembersList_UserId(eq(OWNER_TEST_ID));
 
     }
 
@@ -301,17 +332,17 @@ public class ZoneServiceUnitTest {
         testZone.addMember(new Zone.Member(MEMBER_TEST_ID, MemberRole.MEMBER, MEMBER_TEST_NAME));
         RemoveZoneMemberRequest removeZoneMemberRequest = ZoneFactory.createRemoveZoneMemberRequest();
         when(this.zoneRepositoryMock.findByIdAndOwnerIdAndDeletedAtIsNull(eq(ZONE_TEST_ID), eq(OWNER_TEST_ID))).thenReturn(Optional.of(testZone));
-        Zone zone = this.zoneService.removeZoneMember(ZONE_TEST_ID,removeZoneMemberRequest, this.authenticationMock);
+        Zone zone = this.zoneService.removeZoneMember(ZONE_TEST_ID, removeZoneMemberRequest, this.authenticationMock);
         assertEquals(ZONE_TEST_ID, zone.getId());
         assertEquals(ZONE_TEST_NAME, zone.getName());
-        assertEquals(1, zone.getMembers().size());
-        assertNotEquals(MEMBER_TEST_ID, zone.getMembers().getFirst().getUserId());
+        assertEquals(1, zone.getMembersList().size());
+        assertNotEquals(MEMBER_TEST_ID, zone.getMembersList().getFirst().getUserId());
         ArgumentCaptor<MemberTemplate> argumentCaptor = ArgumentCaptor.forClass(MemberTemplate.class);
         verify(this.kafkaProducerServiceMock).sendDeletedMembers(argumentCaptor.capture());
         MemberTemplate memberTemplate = argumentCaptor.getValue();
-        assertEquals(1, memberTemplate.getMemberList().size());
+        assertEquals(1, memberTemplate.getMembersList().size());
         assertEquals(ZONE_TEST_ID, memberTemplate.getZoneId());
-        assertEquals(MEMBER_TEST_ID, memberTemplate.getMemberList().getFirst().memberId());
+        assertEquals(MEMBER_TEST_ID, memberTemplate.getMembersList().getFirst().memberId());
 
     }
 
@@ -322,7 +353,7 @@ public class ZoneServiceUnitTest {
 
         when(this.zoneRepositoryMock.findByIdAndOwnerIdAndDeletedAtIsNull(any(String.class), anyLong())).thenReturn(Optional.empty());
         ZoneDoesntExistException zoneDoesntExistException = assertThrows(ZoneDoesntExistException.class, () -> {
-           this.zoneService.removeZoneMember(ZONE_TEST_ID, removeZoneMemberRequest, this.authenticationMock);
+            this.zoneService.removeZoneMember(ZONE_TEST_ID, removeZoneMemberRequest, this.authenticationMock);
         });
 
         assertEquals("Zone does not exist", zoneDoesntExistException.getMessage());

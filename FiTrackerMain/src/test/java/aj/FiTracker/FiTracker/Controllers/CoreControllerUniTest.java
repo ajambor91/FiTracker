@@ -29,7 +29,7 @@ public class CoreControllerUniTest {
     @DisplayName("Should return CSRF Token")
     public void testGetCsrfToken() {
         CsrfToken token = mock(CsrfToken.class);
-        ResponseEntity<?> response =  this.corContoller.getCsrfToken(token);
+        ResponseEntity<?> response = this.corContoller.getCsrfToken(token);
         assertInstanceOf(ResponseEntity.class, response);
     }
 }

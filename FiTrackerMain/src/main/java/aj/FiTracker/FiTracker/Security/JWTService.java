@@ -3,7 +3,6 @@ package aj.FiTracker.FiTracker.Security;
 import aj.FiTracker.FiTracker.Entities.User;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +11,6 @@ import org.springframework.stereotype.Component;
 import org.springframework.vault.core.VaultTransitOperations;
 import org.springframework.vault.support.Plaintext;
 import org.springframework.vault.support.VaultTransitKey;
-
 
 import java.security.NoSuchAlgorithmException;
 import java.security.interfaces.RSAPublicKey;
@@ -26,12 +24,13 @@ public class JWTService {
     private final ObjectMapper objectMapper;
     private final VaultTransitOperations vaultTransitOperations;
     private final long tokenExpiration;
+
     @Autowired
     public JWTService(
             VaultTransitOperations vaultTransitOperations,
             ObjectMapper objectMapper,
             @Value("${login.expiration}"
-                         ) Long tokenExpiration) {
+            ) Long tokenExpiration) {
         this.logger = LoggerFactory.getLogger(JWTService.class);
         this.vaultTransitOperations = vaultTransitOperations;
         this.tokenExpiration = tokenExpiration;

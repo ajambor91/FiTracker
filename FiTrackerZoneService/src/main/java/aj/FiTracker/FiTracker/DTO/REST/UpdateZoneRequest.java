@@ -12,7 +12,7 @@ import java.util.List;
 public class UpdateZoneRequest extends BaseZoneRequest {
     @NotBlank
     private String zoneId;
-    private List<Zone.Member> members;
+    private List<Zone.Member> membersList;
 
     public UpdateZoneRequest() {
     }

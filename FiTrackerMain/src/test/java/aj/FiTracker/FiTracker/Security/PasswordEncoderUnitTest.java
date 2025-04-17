@@ -22,8 +22,8 @@ public class PasswordEncoderUnitTest {
 
     @BeforeEach
     public void setup() {
-      passwordEncoder = new PasswordEncoder();
-      user = UserDataTestFactory.createTestUser();
+        passwordEncoder = new PasswordEncoder();
+        user = UserDataTestFactory.createTestUser();
     }
 
     @Test

@@ -21,7 +21,6 @@ export class AuthComponent {
   }
 
   public submitForm(): void {
-    console.log("FORTM,", this._authForm.getRawValue());
     this.usersService.auth(this.authForm.getRawValue() as LoginRequest)
   }
 }

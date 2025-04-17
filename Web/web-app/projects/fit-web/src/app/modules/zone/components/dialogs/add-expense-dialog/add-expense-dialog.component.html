@@ -1,0 +1,36 @@
+<app-dialog-content>
+  <div class="mb-5">
+    <app-header><h1 class="h1 font-purple" i18n>Add new expense</h1></app-header>
+  </div>
+  <form (submit)="submitForm()" [formGroup]="form">
+    <div class="form-group">
+      <mat-form-field>
+        <mat-label>Expense title:</mat-label>
+        <input formControlName="name" matInput>
+      </mat-form-field>
+    </div>
+    <div class="form-group">
+      <mat-form-field>
+        <mat-label>Expense value:</mat-label>
+        <input formControlName="value" matInput>
+      </mat-form-field>
+    </div>
+    <div class="form-group">
+      <mat-form-field>
+        <mat-label>Categories</mat-label>
+        <mat-select formControlName="categoriesIds" multiple>
+          <ng-container *ngFor="let category of categories$ | async">
+            <mat-option [value]="category.categoryId">{{ category.name }}</mat-option>
+          </ng-container>
+        </mat-select>
+      </mat-form-field>
+    </div>
+    <div class="form-group row justify-content-end">
+      <div class="col-6 row justify-content-end">
+        <button i18n mat-button mat-flat-button type="submit">
+          Add expense
+        </button>
+      </div>
+    </div>
+  </form>
+</app-dialog-content>

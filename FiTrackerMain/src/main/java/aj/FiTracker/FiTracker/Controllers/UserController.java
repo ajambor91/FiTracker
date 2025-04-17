@@ -1,24 +1,20 @@
 package aj.FiTracker.FiTracker.Controllers;
 
-import aj.FiTracker.FiTracker.DTO.REST.LoginRequest;
-import aj.FiTracker.FiTracker.DTO.REST.LoginResponseSuccess;
-import aj.FiTracker.FiTracker.DTO.REST.RegisterSuccess;
-import aj.FiTracker.FiTracker.DTO.REST.RegisterUserRequest;
+import aj.FiTracker.FiTracker.DTO.REST.*;
 import aj.FiTracker.FiTracker.Entities.User;
-
 import aj.FiTracker.FiTracker.Services.UserService;
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotEmpty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/users")
@@ -51,4 +47,22 @@ public class UserController {
                 .header(HttpHeaders.AUTHORIZATION, authUser.getJwt())
                 .body(new LoginResponseSuccess(authUser, "Login successfully"));
     }
+
+    @GetMapping("/user/find")
+    public ResponseEntity<FindUserResponse> findUserByEmail(@RequestParam("email") @NotBlank String email) {
+        logger.info("Received new request for finding user by email{}", email);
+        List<User> users = this.userService.findUsersByEmail(email);
+        logger.info("Found {} users matches with email {}", users.size(), email);
+
+        return ResponseEntity.status(HttpStatus.OK).body(new FindUserResponse(users));
+    }
+
+    @GetMapping("/user/find/multi")
+    public ResponseEntity<FindUserResponse> findUsersByIds(@RequestParam("ids") @NotEmpty List<Long> ids) {
+        logger.info("Received new request for finding user by ids {}", ids);
+        List<User> users = this.userService.findUsersByIds(ids);
+        logger.info("Found {} users matches ids {}", users.size(), ids);
+        return ResponseEntity.status(HttpStatus.OK).body(new FindUserResponse(users));
+    }
+
 }

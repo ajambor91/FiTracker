@@ -18,7 +18,7 @@ public class AppExceptionHandler {
             Exception ex,
             HttpServletRequest request
     ) {
-        ErrorResponseDTO errorResponse =new ErrorResponseDTO(ex, request);
+        ErrorResponseDTO errorResponse = new ErrorResponseDTO(ex, request);
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
@@ -27,7 +27,7 @@ public class AppExceptionHandler {
             UserAlreadyExistsException ex,
             HttpServletRequest request
     ) {
-        ErrorResponseDTO errorResponse =new ErrorResponseDTO(ex, request);
+        ErrorResponseDTO errorResponse = new ErrorResponseDTO(ex, request);
         return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
     }
 
@@ -36,7 +36,7 @@ public class AppExceptionHandler {
             UserDoesntExistException ex,
             HttpServletRequest request
     ) {
-        ErrorResponseDTO errorResponse =new ErrorResponseDTO(ex, request);
+        ErrorResponseDTO errorResponse = new ErrorResponseDTO(ex, request);
         return new ResponseEntity<>(errorResponse, HttpStatus.NOT_FOUND);
     }
 
@@ -45,7 +45,7 @@ public class AppExceptionHandler {
             UserUnauthorizedException ex,
             HttpServletRequest request
     ) {
-        ErrorResponseDTO errorResponse =new ErrorResponseDTO(ex, request);
+        ErrorResponseDTO errorResponse = new ErrorResponseDTO(ex, request);
         return new ResponseEntity<>(errorResponse, HttpStatus.UNAUTHORIZED);
     }
 }

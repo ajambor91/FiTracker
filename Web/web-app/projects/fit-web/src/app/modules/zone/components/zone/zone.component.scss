@@ -1,0 +1,49 @@
+.zone-dashboard {
+  &__category-chart-canvas {
+    max-width: 500px;
+    margin: auto;
+  }
+
+  &__date-chart-canvas {
+    max-width: 95%;
+    margin: auto;
+    min-height: 350px;
+  }
+
+  .expenses-list {
+    width: 500px;
+    margin: auto;
+
+    &__list {
+      border-radius: 20px;
+      overflow: hidden;
+
+    }
+
+    &__header {
+      font-weight: 900;
+      font-size: 1.7em;
+      text-align: center;
+    }
+
+    &__item {
+      padding: 12px;
+      padding-left: 30px;
+      color: #fff;
+
+    }
+
+    &__row:nth-child(even) {
+      background: #cf27c3;
+    }
+
+    &__row:nth-child(odd) {
+      background: #f9d2f0;
+    }
+
+    &__row:first-of-type {
+      background-color: #FF4500 !important;
+      font-weight: 700;
+    }
+  }
+}

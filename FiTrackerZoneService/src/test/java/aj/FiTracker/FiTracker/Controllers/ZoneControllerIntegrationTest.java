@@ -2,9 +2,9 @@ package aj.FiTracker.FiTracker.Controllers;
 
 import aj.FiTracker.FiTracker.AbstractTest.AbstractIntegrationTest;
 import aj.FiTracker.FiTracker.Documents.Zone;
+import aj.FiTracker.FiTracker.Enums.MemberRole;
 import aj.FiTracker.FiTracker.SecurityUtils.WithMockJwt;
 import aj.FiTracker.FiTracker.TestUtils.ZoneFactory;
-import aj.FiTracker.FiTracker.Enums.MemberRole;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
@@ -56,10 +56,10 @@ public class ZoneControllerIntegrationTest extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.zoneName").value("New zone"))
                 .andExpect(jsonPath("$.zoneDescription").value("Description"))
                 .andExpect(jsonPath("$.ownerId").value(1))
-                .andExpect(jsonPath("$.memberList[0].userId").value(1))
-                .andExpect(jsonPath("$.memberList[0].role").value("ADMIN"))
-                .andExpect(jsonPath("$.memberList[0].name").value("Test User"))
-                .andExpect(jsonPath("$.memberList[0].addedAt").exists())
+                .andExpect(jsonPath("$.membersList[0].userId").value(1))
+                .andExpect(jsonPath("$.membersList[0].role").value("ADMIN"))
+                .andExpect(jsonPath("$.membersList[0].name").value("Test User"))
+                .andExpect(jsonPath("$.membersList[0].addedAt").exists())
                 .andExpect(jsonPath("$.zoneId").isString())
                 .andExpect(jsonPath("$.zoneId").isNotEmpty())
                 .andExpect(jsonPath("$.createdAt").exists());
@@ -100,10 +100,10 @@ public class ZoneControllerIntegrationTest extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.zoneName").value(ZONE_TEST_NAME))
                 .andExpect(jsonPath("$.zoneDescription").value(ZONE_TEST_DESCRIPTION))
                 .andExpect(jsonPath("$.ownerId").value(OWNER_TEST_ID))
-                .andExpect(jsonPath("$.memberList[0].userId").value(OWNER_TEST_ID))
-                .andExpect(jsonPath("$.memberList[0].role").value("ADMIN"))
-                .andExpect(jsonPath("$.memberList[0].name").value(USER_TEST_NAME))
-                .andExpect(jsonPath("$.memberList[0].addedAt").exists())
+                .andExpect(jsonPath("$.membersList[0].userId").value(OWNER_TEST_ID))
+                .andExpect(jsonPath("$.membersList[0].role").value("ADMIN"))
+                .andExpect(jsonPath("$.membersList[0].name").value(USER_TEST_NAME))
+                .andExpect(jsonPath("$.membersList[0].addedAt").exists())
                 .andExpect(jsonPath("$.zoneId").value(ZONE_TEST_ID))
                 .andExpect(jsonPath("$.zoneId").isNotEmpty());
     }
@@ -122,7 +122,6 @@ public class ZoneControllerIntegrationTest extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.timestamp").exists())
                 .andExpect(jsonPath("$.path").value("/zones/zone/"));
     }
-
 
 
     @Test
@@ -155,10 +154,10 @@ public class ZoneControllerIntegrationTest extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.zoneName").value(ZONE_TEST_NAME))
                 .andExpect(jsonPath("$.zoneDescription").value(ZONE_TEST_DESCRIPTION))
                 .andExpect(jsonPath("$.ownerId").value(OWNER_TEST_ID))
-                .andExpect(jsonPath("$.memberList[0].userId").value(OWNER_TEST_ID))
-                .andExpect(jsonPath("$.memberList[0].role").value("ADMIN"))
-                .andExpect(jsonPath("$.memberList[0].name").value(USER_TEST_NAME))
-                .andExpect(jsonPath("$.memberList[0].addedAt").exists())
+                .andExpect(jsonPath("$.membersList[0].userId").value(OWNER_TEST_ID))
+                .andExpect(jsonPath("$.membersList[0].role").value("ADMIN"))
+                .andExpect(jsonPath("$.membersList[0].name").value(USER_TEST_NAME))
+                .andExpect(jsonPath("$.membersList[0].addedAt").exists())
                 .andExpect(jsonPath("$.zoneId").value(ZONE_TEST_ID))
                 .andExpect(jsonPath("$.zoneId").isNotEmpty())
                 .andExpect(jsonPath("$.deletedAt").exists());
@@ -209,7 +208,12 @@ public class ZoneControllerIntegrationTest extends AbstractIntegrationTest {
                                             "zoneId": "67f3b66a59153d2661e64002",
                                             "zoneName": "New zone",
                                             "zoneDescription": "Test decscription",
-                                            "members": [
+                                            "membersList": [
+                                               {
+                                                "userId": 1,
+                                                "role": "ADMIN",
+                                                "name": "Test user"
+                                                },
                                                 {
                                                 "userId": 2,
                                                 "role": "MEMBER",
@@ -224,14 +228,14 @@ public class ZoneControllerIntegrationTest extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.zoneName").value(ZONE_TEST_NAME))
                 .andExpect(jsonPath("$.zoneDescription").value(ZONE_TEST_DESCRIPTION))
                 .andExpect(jsonPath("$.ownerId").value(OWNER_TEST_ID))
-                .andExpect(jsonPath("$.memberList[0].userId").value(OWNER_TEST_ID))
-                .andExpect(jsonPath("$.memberList[0].role").value("ADMIN"))
-                .andExpect(jsonPath("$.memberList[0].name").value(USER_TEST_NAME))
-                .andExpect(jsonPath("$.memberList[0].addedAt").exists())
-                .andExpect(jsonPath("$.memberList[1].userId").value(MEMBER_TEST_ID))
-                .andExpect(jsonPath("$.memberList[1].role").value("MEMBER"))
-                .andExpect(jsonPath("$.memberList[1].name").value(MEMBER_TEST_NAME))
-                .andExpect(jsonPath("$.memberList[1].addedAt").exists())
+                .andExpect(jsonPath("$.membersList[0].userId").value(OWNER_TEST_ID))
+                .andExpect(jsonPath("$.membersList[0].role").value("ADMIN"))
+                .andExpect(jsonPath("$.membersList[0].name").value(USER_TEST_NAME))
+                .andExpect(jsonPath("$.membersList[0].addedAt").exists())
+                .andExpect(jsonPath("$.membersList[1].userId").value(MEMBER_TEST_ID))
+                .andExpect(jsonPath("$.membersList[1].role").value("MEMBER"))
+                .andExpect(jsonPath("$.membersList[1].name").value(MEMBER_TEST_NAME))
+                .andExpect(jsonPath("$.membersList[1].addedAt").exists())
                 .andExpect(jsonPath("$.zoneId").value(ZONE_TEST_ID))
                 .andExpect(jsonPath("$.zoneId").isNotEmpty());
     }
@@ -245,14 +249,14 @@ public class ZoneControllerIntegrationTest extends AbstractIntegrationTest {
         zone.setId(ZONE_TEST_ID);
         this.insertTestDataIntoDB(zone);
         this.mockMvc.perform(
-                        delete("/zones/zone/" + ZONE_TEST_ID + "/member")
+                        patch("/zones/zone/" + ZONE_TEST_ID + "/member")
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
                                         {
                                             "zoneId": "67f3b66a59153d2661e64002",
                                             "zoneName": "New zone",
                                             "zoneDescription": "Test decscription",
-                                            "members": [
+                                            "membersList": [
                                                 {
                                                 "userId": 2,
                                                 "role": "MEMBER",
@@ -267,10 +271,10 @@ public class ZoneControllerIntegrationTest extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.zoneName").value(ZONE_TEST_NAME))
                 .andExpect(jsonPath("$.zoneDescription").value(ZONE_TEST_DESCRIPTION))
                 .andExpect(jsonPath("$.ownerId").value(OWNER_TEST_ID))
-                .andExpect(jsonPath("$.memberList[0].userId").value(OWNER_TEST_ID))
-                .andExpect(jsonPath("$.memberList[0].role").value("ADMIN"))
-                .andExpect(jsonPath("$.memberList[0].name").value(USER_TEST_NAME))
-                .andExpect(jsonPath("$.memberList[0].addedAt").exists())
+                .andExpect(jsonPath("$.membersList[0].userId").value(OWNER_TEST_ID))
+                .andExpect(jsonPath("$.membersList[0].role").value("ADMIN"))
+                .andExpect(jsonPath("$.membersList[0].name").value(USER_TEST_NAME))
+                .andExpect(jsonPath("$.membersList[0].addedAt").exists())
                 .andExpect(jsonPath("$.zoneId").value(ZONE_TEST_ID))
                 .andExpect(jsonPath("$.zoneId").isNotEmpty());
     }
@@ -283,13 +287,13 @@ public class ZoneControllerIntegrationTest extends AbstractIntegrationTest {
         zone.setId(ZONE_TEST_ID);
         this.insertTestDataIntoDB(zone);
         this.mockMvc.perform(
-                        delete("/zones/zone/xxxx/member")                                .contentType(MediaType.APPLICATION_JSON)
+                        patch("/zones/zone/xxxx/member").contentType(MediaType.APPLICATION_JSON)
                                 .content("""
                                         {
                                             "zoneId": "67f3b66a59153d2661e64002",
                                             "zoneName": "New name",
                                             "zoneDescription": "Test decscription",
-                                                          "members": [
+                                                          "membersList": [
                                                 {
                                                 "userId": 2,
                                                 "role": "MEMBER",
@@ -316,12 +320,12 @@ public class ZoneControllerIntegrationTest extends AbstractIntegrationTest {
         zone.setId(ZONE_TEST_ID);
         this.insertTestDataIntoDB(zone);
         this.mockMvc.perform(
-                        delete("/zones/zone/"+ ZONE_TEST_ID +"/member")                                .contentType(MediaType.APPLICATION_JSON)
+                        patch("/zones/zone/" + ZONE_TEST_ID + "/member").contentType(MediaType.APPLICATION_JSON)
                                 .content("""
                                         {
                                             "zoneName": "New name",
                                             "zoneDescription": "Test decscription"
-                    
+                                        
                                         }
                                         """)
                                 .header("Authorization", "Bearer TOKEN")
@@ -355,10 +359,10 @@ public class ZoneControllerIntegrationTest extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.zoneName").value("New name"))
                 .andExpect(jsonPath("$.zoneDescription").value(ZONE_TEST_DESCRIPTION))
                 .andExpect(jsonPath("$.ownerId").value(OWNER_TEST_ID))
-                .andExpect(jsonPath("$.memberList[0].userId").value(OWNER_TEST_ID))
-                .andExpect(jsonPath("$.memberList[0].role").value("ADMIN"))
-                .andExpect(jsonPath("$.memberList[0].name").value(USER_TEST_NAME))
-                .andExpect(jsonPath("$.memberList[0].addedAt").exists())
+                .andExpect(jsonPath("$.membersList[0].userId").value(OWNER_TEST_ID))
+                .andExpect(jsonPath("$.membersList[0].role").value("ADMIN"))
+                .andExpect(jsonPath("$.membersList[0].name").value(USER_TEST_NAME))
+                .andExpect(jsonPath("$.membersList[0].addedAt").exists())
                 .andExpect(jsonPath("$.zoneId").value(ZONE_TEST_ID))
                 .andExpect(jsonPath("$.zoneId").isNotEmpty());
     }
@@ -436,8 +440,8 @@ public class ZoneControllerIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("Should return all found zones")
-    public void testGetAllUserZones() throws Exception {
+    @DisplayName("Should return last four user zones")
+    public void testGetUserZones() throws Exception {
         Zone zone = new Zone(ZoneFactory.createNewZoneTestRequest(), OWNER_TEST_ID);
         zone.addMember(new Zone.Member(OWNER_TEST_ID, MemberRole.ADMIN, USER_TEST_NAME));
         zone.setId(ZONE_TEST_ID);
@@ -450,10 +454,33 @@ public class ZoneControllerIntegrationTest extends AbstractIntegrationTest {
                 .andExpect(jsonPath("$.zones[0].zoneName").value("New zone"))
                 .andExpect(jsonPath("$.zones[0].zoneDescription").value(ZONE_TEST_DESCRIPTION))
                 .andExpect(jsonPath("$.zones[0].ownerId").value(OWNER_TEST_ID))
-                .andExpect(jsonPath("$.zones[0].memberList[0].userId").value(OWNER_TEST_ID))
-                .andExpect(jsonPath("$.zones[0].memberList[0].role").value("ADMIN"))
-                .andExpect(jsonPath("$.zones[0].memberList[0].name").value(USER_TEST_NAME))
-                .andExpect(jsonPath("$.zones[0].memberList[0].addedAt").exists())
+                .andExpect(jsonPath("$.zones[0].membersList[0].userId").value(OWNER_TEST_ID))
+                .andExpect(jsonPath("$.zones[0].membersList[0].role").value("ADMIN"))
+                .andExpect(jsonPath("$.zones[0].membersList[0].name").value(USER_TEST_NAME))
+                .andExpect(jsonPath("$.zones[0].membersList[0].addedAt").exists())
+                .andExpect(jsonPath("$.zones[0].zoneId").value(ZONE_TEST_ID))
+                .andExpect(jsonPath("$.zones[0].zoneId").isNotEmpty());
+    }
+
+    @Test
+    @DisplayName("Should return all found user zones")
+    public void testGetUserZonesAll() throws Exception {
+        Zone zone = new Zone(ZoneFactory.createNewZoneTestRequest(), OWNER_TEST_ID);
+        zone.addMember(new Zone.Member(OWNER_TEST_ID, MemberRole.ADMIN, USER_TEST_NAME));
+        zone.setId(ZONE_TEST_ID);
+        this.insertTestDataIntoDB(zone);
+        this.mockMvc.perform(
+                        get("/zones/?all=true")
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .header("Authorization", "Bearer token")
+                ).andExpect(status().isOk())
+                .andExpect(jsonPath("$.zones[0].zoneName").value("New zone"))
+                .andExpect(jsonPath("$.zones[0].zoneDescription").value(ZONE_TEST_DESCRIPTION))
+                .andExpect(jsonPath("$.zones[0].ownerId").value(OWNER_TEST_ID))
+                .andExpect(jsonPath("$.zones[0].membersList[0].userId").value(OWNER_TEST_ID))
+                .andExpect(jsonPath("$.zones[0].membersList[0].role").value("ADMIN"))
+                .andExpect(jsonPath("$.zones[0].membersList[0].name").value(USER_TEST_NAME))
+                .andExpect(jsonPath("$.zones[0].membersList[0].addedAt").exists())
                 .andExpect(jsonPath("$.zones[0].zoneId").value(ZONE_TEST_ID))
                 .andExpect(jsonPath("$.zones[0].zoneId").isNotEmpty());
     }

@@ -18,13 +18,14 @@ public class ErrorResponseDTO {
     private final String path;
 
 
-    public ErrorResponseDTO(HttpException exception,  HttpServletRequest httpServletRequest) {
+    public ErrorResponseDTO(HttpException exception, HttpServletRequest httpServletRequest) {
         this.message = exception.getMessage();
         this.statusCode = exception.getStatus().value();
         this.path = httpServletRequest.getRequestURI();
         this.error = exception.getStatus().getReasonPhrase();
         this.timestamp = getTime();
     }
+
     public ErrorResponseDTO(Exception e, HttpServletRequest httpServletRequest) {
         this.message = e.getMessage();
         this.statusCode = 500;
@@ -32,7 +33,6 @@ public class ErrorResponseDTO {
         this.error = HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase();
         this.timestamp = getTime();
     }
-
 
 
     private String getTime() {

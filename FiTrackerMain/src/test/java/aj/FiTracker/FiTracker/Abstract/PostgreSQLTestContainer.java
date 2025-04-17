@@ -5,19 +5,24 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
+import java.sql.Statement;
 
 @Testcontainers
 public class PostgreSQLTestContainer extends PostgreSQLContainer<PostgreSQLTestContainer> {
 
     private static final String IMAGE_VERSION = "postgres:17.4-alpine3.21";
-    private Connection connection;
     @Container
     private static PostgreSQLTestContainer container = new PostgreSQLTestContainer()
             .withUsername("exampleUser")
             .withPassword("examplePassword")
-            .withDatabaseName("fit");;
-    private PostgreSQLTestContainer()  {
+            .withDatabaseName("fit");
+    private Connection connection;
+    ;
+
+    private PostgreSQLTestContainer() {
         super(IMAGE_VERSION);
     }
 

@@ -35,13 +35,14 @@ public final class ZoneFactory {
         zone.setZoneDescription(ZONE_TEST_DESCRIPTION);
         return zone;
     }
+
     public static UpdateZoneRequest createUpdateZoneTestRequestWithMember() {
         UpdateZoneRequest zone = new UpdateZoneRequest();
         zone.setZoneName(ZONE_TEST_NAME);
         zone.setZoneDescription(ZONE_TEST_DESCRIPTION);
         List<Zone.Member> list = new ArrayList<>();
         list.add(createSecondMember());
-        zone.setMembers(list);
+        zone.setMembersList(list);
         return zone;
     }
 
@@ -56,14 +57,14 @@ public final class ZoneFactory {
     public static RemoveZoneMemberRequest createRemoveZoneMemberRequest() {
         RemoveZoneMemberRequest zone = new RemoveZoneMemberRequest();
         zone.setZoneId(ZONE_TEST_ID);
-        zone.setMembers(new ArrayList<>(List.of(new Zone.Member(MEMBER_TEST_ID, MemberRole.MEMBER, MEMBER_TEST_NAME))));
+        zone.setMembersList(new ArrayList<>(List.of(new Zone.Member(MEMBER_TEST_ID, MemberRole.MEMBER, MEMBER_TEST_NAME))));
         return zone;
 
     }
+
     public static Zone.Member createSecondMember() {
         return new Zone.Member(MEMBER_TEST_ID, MemberRole.MEMBER, MEMBER_TEST_NAME);
     }
-
 
 
 }

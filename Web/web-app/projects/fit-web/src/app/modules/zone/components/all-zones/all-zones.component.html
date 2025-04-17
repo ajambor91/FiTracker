@@ -1,0 +1,55 @@
+<div class="dashboard-container mt-5">
+  <div class="mt-5">
+    <app-header>
+      <h1 class="h1 font-purple">All zones:</h1>
+    </app-header>
+  </div>
+
+  <ng-container *ngIf="zones$ | async as zones">
+    <ng-container *ngIf="zones.length > 0; else zoneNotFound">
+      <div class="container zones">
+        <ng-container *ngFor="let zone of zones">
+          <div class="row zones__zone zone">
+            <div class="col-12 zone__headers">
+              <p class="zone__name">{{ zone.zoneName }}</p>
+              <p *ngIf="zone.zoneDescription" class="zone__description">{{ zone.zoneDescription }}</p>
+            </div>
+            <div class="col-12 zone__info">
+              <p>Created: {{ zone.createdAt | date:'shortDate' }}</p>
+            </div>
+            <div class="col-6 zone__members">
+              <p class="zone__members-header">Zone members:</p>
+              <ng-container *ngFor="let member of zone.membersList">
+                <div class="row zone__members-list">
+                  <div class="col-xs-12 col-md-5">
+                    <p>
+                      {{ member.name }}
+                    </p>
+                  </div>
+                  <div class="col-xs-12 col-md-3">
+                    <p>
+                      {{ member.role }}
+                    </p>
+                  </div>
+                </div>
+              </ng-container>
+            </div>
+            <div class="zone__link">
+              <a (click)="show(zone.zoneId)" class="">Show</a>
+            </div>
+
+          </div>
+        </ng-container>
+      </div>
+    </ng-container>
+  </ng-container>
+</div>
+<ng-template #zoneNotFound>
+  <div class="container empty-zone">
+    <div class="empty-zone__monit">
+      <p>You don't have any zones!</p>
+      <a routerLink="/dashboard/zones/add">Add one!</a>
+    </div>
+
+  </div>
+</ng-template>

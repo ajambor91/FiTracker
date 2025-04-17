@@ -10,7 +10,7 @@ export const coreReducer = createReducer(
   coreInitialState,
   on(setUser, (state, {user}) => ({
     ...state,
-    user // Directly use destructured "user" from payload
+    user
   }))
 )
 

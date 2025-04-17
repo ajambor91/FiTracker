@@ -26,18 +26,18 @@ public final class VaultUtils {
     }
 
     private static String removeHeaders(String pubKey) {
-       String key = pubKey
-               .replace(KEY_HEADER, "")
-               .replace(KEY_FOOTER,"")
-               .replaceAll("\\s", "")
-               .trim();
-       return key;
+        String key = pubKey
+                .replace(KEY_HEADER, "")
+                .replace(KEY_FOOTER, "")
+                .replaceAll("\\s", "")
+                .trim();
+        return key;
     }
 
     private static Map<String, String> getRSAKey(VaultTransitKey key) {
-        int latestVersion =  key.getLatestVersion();
-        Map<String, Object> keys =  key.getKeys();
-        Map<String, String> extractedKey =extractValue(keys.get(String.valueOf(latestVersion)));
+        int latestVersion = key.getLatestVersion();
+        Map<String, Object> keys = key.getKeys();
+        Map<String, String> extractedKey = extractValue(keys.get(String.valueOf(latestVersion)));
         return extractedKey;
 
     }

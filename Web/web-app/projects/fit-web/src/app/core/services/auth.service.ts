@@ -21,6 +21,7 @@ export class AuthService {
   }
 
   public logoutUser(): void {
+    localStorage.removeItem('token');
     this._state.dispatch(setUser(null));
   }
 }

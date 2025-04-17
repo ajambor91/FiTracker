@@ -1,1 +1,31 @@
-<h1>dsadsakjdhskadhkjshdkjshdkjhsakjdhkjashdkjsahd</h1>
+<div class="container-fluid">
+  <ng-container *ngIf="(zones$ | async) as zones">
+    <mat-tab-nav-panel #tabPanel></mat-tab-nav-panel>
+
+    <ng-container *ngIf="zones.length > 0; else zoneNotFound">
+      <nav [tabPanel]="tabPanel" animationDuration="0ms" mat-tab-nav-bar>
+        <ng-container *ngFor="let zone of zones">
+          <a
+            (click)="selectCurrentZoneAndGo(zone)"
+            [active]="activeZoneId === zone.zoneId"
+            [class]="activeZoneId === zone.zoneId ? 'active-tab' : 'tab'"
+            mat-tab-link
+          >{{ zone.zoneName }}</a>
+
+        </ng-container>
+      </nav>
+    </ng-container>
+  </ng-container>
+  <router-outlet></router-outlet>
+
+</div>
+
+<ng-template #zoneNotFound>
+  <div class="container empty-zone">
+    <div class="empty-zone__monit">
+      <p>You don't have any zones!</p>
+      <a routerLink="/dashboard/zones/add">Add one!</a>
+    </div>
+
+  </div>
+</ng-template>

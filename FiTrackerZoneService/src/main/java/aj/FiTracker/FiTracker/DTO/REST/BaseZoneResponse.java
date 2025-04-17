@@ -15,7 +15,7 @@ public abstract class BaseZoneResponse {
     private String zoneDescription;
     private LocalDateTime createdAt;
     private long ownerId;
-    private List<Zone.Member> memberList;
+    private List<Zone.Member> membersList;
 
     public BaseZoneResponse(Zone zone) {
         this.zoneDescription = zone.getDescription();
@@ -23,6 +23,6 @@ public abstract class BaseZoneResponse {
         this.createdAt = zone.getCreatedAt();
         this.ownerId = zone.getOwnerId();
         this.zoneName = zone.getName();
-        this.memberList = zone.getMembers();
+        this.membersList = zone.getMembersList();
     }
 }

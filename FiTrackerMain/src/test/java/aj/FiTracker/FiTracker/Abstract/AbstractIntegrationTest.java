@@ -15,9 +15,14 @@ public abstract class AbstractIntegrationTest {
 
     }
 
-    protected AbstractIntegrationTest(){
+    protected AbstractIntegrationTest() {
     }
 
+    @DynamicPropertySource
+    public static void registerProperties(DynamicPropertyRegistry registry) throws Exception {
+        PostgreSQLTestContainer.registerProperties(registry);
+        VaultTestContainer.vaultProperties(registry);
+    }
 
     protected void truncateTable(String tableName) {
         AbstractIntegrationTest.postgreSQLTestContainer.truncateTable(tableName);
@@ -25,12 +30,6 @@ public abstract class AbstractIntegrationTest {
 
     protected void insertTestData(String sql) {
         AbstractIntegrationTest.postgreSQLTestContainer.insertTestData(sql);
-    }
-
-    @DynamicPropertySource
-    public static void registerProperties(DynamicPropertyRegistry registry) throws Exception {
-        PostgreSQLTestContainer.registerProperties(registry);
-        VaultTestContainer.vaultProperties(registry);
     }
 
 }

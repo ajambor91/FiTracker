@@ -14,11 +14,16 @@ public abstract class BaseUser implements UserData {
     @NotBlank
     private String name;
 
-    public BaseUser() {}
+    @NotBlank
+    private String email;
+
+    public BaseUser() {
+    }
 
     public BaseUser(User user) {
         this.name = user.getName();
         this.login = user.getLogin();
+        this.email = user.getEmail();
     }
 
 }

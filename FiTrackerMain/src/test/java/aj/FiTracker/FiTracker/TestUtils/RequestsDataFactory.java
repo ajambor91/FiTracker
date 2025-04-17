@@ -3,6 +3,7 @@ package aj.FiTracker.FiTracker.TestUtils;
 import aj.FiTracker.FiTracker.DTO.REST.LoginRequest;
 import aj.FiTracker.FiTracker.DTO.REST.RegisterSuccess;
 import aj.FiTracker.FiTracker.DTO.REST.RegisterUserRequest;
+
 import static aj.FiTracker.FiTracker.TestUtils.TestData.*;
 
 
@@ -12,6 +13,7 @@ public class RequestsDataFactory {
     public static RegisterUserRequest createTestRegisterUserRequest() {
         RegisterUserRequest request = new RegisterUserRequest();
         request.setName(TEST_USER_NAME);
+        request.setEmail(TEST_USER_EMAIL);
         request.setLogin(TEST_USER_LOGIN);
         request.setRawPassword(TEST_CORRECT_PASSWORD.toCharArray());
 
@@ -21,6 +23,7 @@ public class RequestsDataFactory {
     public static RegisterUserRequest createTestDuplicatedRegisterUserRequest() {
         RegisterUserRequest request = new RegisterUserRequest();
         request.setName(TEST_USER_NAME);
+        request.setEmail(TEST_USER_EMAIL);
         request.setLogin(TEST_DUPLICATED_USER_LOGIN);
         request.setRawPassword(TEST_CORRECT_PASSWORD.toCharArray());
 

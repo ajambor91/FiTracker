@@ -1,12 +1,11 @@
 package aj.FiTracker.FiTracker.Enums;
 
-import com.fasterxml.jackson.annotation.JsonValue;
-
 public enum KafkaAction {
     ADD_MEMBER("add_member"),
-    DELETE_MEMBER("delete_member");
+    REMOVE_MEMBER("REMOVE_MEMBER");
 
     private final String action;
+
     KafkaAction(String action) {
         this.action = action;
     }

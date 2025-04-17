@@ -14,11 +14,10 @@ import java.util.Base64;
 @Component
 public class PasswordEncoder {
     private final Logger logger = LoggerFactory.getLogger(PasswordEncoder.class);
-    @Value("${password.pepper}")
-    private String passwordPepper;
-
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
     private final SecureRandom random = new SecureRandom();
+    @Value("${password.pepper}")
+    private String passwordPepper;
 
     public User encryptPassword(User user) {
         logger.info("Starting password encryption for user: {}", user.getId());
@@ -79,7 +78,7 @@ public class PasswordEncoder {
         String salt = generateSalt();
         user.setSalt(salt);
         String rawPassString = new String(user.getRawPassword());
-        String saltedPassString = user.getLogin() + rawPassString  + salt;
+        String saltedPassString = user.getLogin() + rawPassString + salt;
         char[] saltedPass = saltedPassString.toCharArray();
         Arrays.fill(user.getRawPassword(), '0');
         rawPassString = null;
@@ -92,7 +91,7 @@ public class PasswordEncoder {
     private char[] getSalt(User userToAuth, User userToCheck) {
         logger.debug("Retrieving salt for user: {}", userToAuth.getId());
         String rawPassString = new String(userToAuth.getRawPassword());
-        String saltedPassString = userToAuth.getLogin() + rawPassString  + userToCheck.getSalt();
+        String saltedPassString = userToAuth.getLogin() + rawPassString + userToCheck.getSalt();
         char[] saltedPass = saltedPassString.toCharArray();
         Arrays.fill(userToAuth.getRawPassword(), '0');
         rawPassString = null;

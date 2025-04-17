@@ -7,6 +7,7 @@ import {User} from '../models/user.model';
 
 @Injectable()
 export class UsersService {
+
   constructor(
     private apiUsersService: ApiUsersService,
     private authService: AuthService,
@@ -28,6 +29,8 @@ export class UsersService {
   }
 
   public register(form: RegisterUserRequest): void {
-    this.apiUsersService.registerUser(form).subscribe();
+    this.apiUsersService.registerUser(form).subscribe(() => {
+      this.router.navigate(['/users/register/success'])
+    });
   }
 }

@@ -1,0 +1,19 @@
+.empty-zone {
+  width: 100%;
+  min-height: calc(100vh - 100px);
+  display: flex;
+
+  flex-direction: column;
+  justify-content: center;
+
+  &__monit {
+    text-align: center;
+    font-size: 1.4em;
+    font-weight: 700;
+    color: #8a1181;
+
+    a {
+      color: inherit;
+    }
+  }
+}

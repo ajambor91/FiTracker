@@ -14,7 +14,8 @@ public class RemoveZoneMemberRequest {
     @NotBlank
     private String zoneId;
     @NotEmpty
-    private List<Zone.Member> members;
+    private List<Zone.Member> membersList;
 
-    public RemoveZoneMemberRequest() {}
+    public RemoveZoneMemberRequest() {
+    }
 }

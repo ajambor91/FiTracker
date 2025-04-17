@@ -28,10 +28,11 @@ public class CsrfCookieTokenRepositoryUnitTest {
     private CsrfToken csrfTokenMock;
     private Cookie testCookie;
     private String testCookieValue;
+
     @BeforeEach
     public void setup() {
 
-        CSRF_COOKIE_NAME  = "XSRF-TOKEN";
+        CSRF_COOKIE_NAME = "XSRF-TOKEN";
         CSRF_HEADER_NAME = "X-XSRF-TOKEN";
         testCookieValue = "TestCookieValue";
         this.testCookie = new Cookie(CSRF_COOKIE_NAME, testCookieValue);

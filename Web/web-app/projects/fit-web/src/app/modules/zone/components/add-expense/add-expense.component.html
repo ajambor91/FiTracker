@@ -1,0 +1,34 @@
+<div class="content-container">
+  <app-form-container>
+    <div class="mb-5">
+
+      <app-header><h1 class="h1" i18n>Add new expense</h1></app-header>
+    </div>
+    <form (submit)="submitForm()" [formGroup]="form">
+      <div class="form-group">
+        <mat-form-field>
+          <mat-label>Expense title:</mat-label>
+          <input formControlName="name" matInput>
+        </mat-form-field>
+      </div>
+      <div class="form-group">
+        <mat-form-field>
+          <mat-label>Expense value:</mat-label>
+          <input formControlName="value" matInput>
+        </mat-form-field>
+      </div>
+      <div class="form-group row">
+        <div class="col-6">
+          <button i18n mat-button mat-flat-button type="button">
+            Skip
+          </button>
+        </div>
+        <div class="col-6">
+          <button i18n mat-button mat-flat-button type="submit">
+            Finish
+          </button>
+        </div>
+      </div>
+    </form>
+  </app-form-container>
+</div>

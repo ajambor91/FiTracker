@@ -76,15 +76,18 @@ build/
 **/out/
 !**/src/main/**/out/
 !**/src/test/**/out/
-
+Dockerfile.prod
 ### NetBeans ###
 /nbproject/private/
 /nbbuild/
 /dist/
 /nbdist/
 /.nb-gradle/
-
+application.properties
+application.prod.properties
+grafana.prod.ini
 ### VS Code ###
 .vscode/
 nginx-host/certs/
 out/
+operator_keys.txt

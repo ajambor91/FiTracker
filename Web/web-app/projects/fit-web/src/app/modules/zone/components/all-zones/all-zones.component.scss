@@ -1,0 +1,85 @@
+.zones {
+  border-radius: 15px;
+  padding: 20px 0;
+  overflow: hidden;
+  border: 2px #8a1181 solid;
+
+  &__zone:nth-of-type(even) {
+    background-color: #8a1181;
+    color: #fff;
+  }
+
+  &__zone:nth-of-type(odd) {
+    background-color: #fff;
+    color: #8a1181;
+  }
+
+  .zone {
+    padding-top: 0;
+    padding-bottom: 0;
+
+    &__headers {
+      padding-top: 0;
+      padding-bottom: 0;
+      text-align: center;
+    }
+
+    &__name {
+      text-align: inherit;
+      font-size: 2em;
+      font-weight: 900;
+    }
+
+    &__info {
+      padding-top: 0;
+      padding-bottom: 0;
+      font-weight: 700;
+      padding-left: 20px;
+    }
+
+    &__link {
+      cursor: pointer;
+      padding: 10px;
+      padding-left: 20px;
+      font-weight: 700;
+    }
+
+    &__description {
+      text-align: inherit;
+      font-size: 1.7em;
+      font-weight: 700;
+    }
+
+    &__members-header {
+      font-weight: 700;
+    }
+
+    &__members {
+      padding-left: 20px;
+    }
+
+    &__members-list {
+      padding-left: 40px;
+    }
+  }
+}
+
+.empty-zone {
+  width: 100%;
+  min-height: calc(100vh - 300px);
+  display: flex;
+
+  flex-direction: column;
+  justify-content: center;
+
+  &__monit {
+    text-align: center;
+    font-size: 1.4em;
+    font-weight: 700;
+    color: #8a1181;
+
+    a {
+      color: inherit;
+    }
+  }
+}

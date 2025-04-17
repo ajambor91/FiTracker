@@ -13,9 +13,9 @@ import org.springframework.test.context.ActiveProfiles;
 @Tag("integration")
 @ActiveProfiles("integration")
 class FiTrackerApplicationTests extends AbstractIntegrationTest {
-	@Test
-	void contextLoads() {
+    @Test
+    void contextLoads() {
 
-	}
+    }
 
 }

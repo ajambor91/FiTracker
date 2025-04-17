@@ -6,12 +6,10 @@ import org.springframework.test.context.DynamicPropertySource;
 
 public abstract class AbstractIntegrationTest {
     private static final MongoDBTestContainer mongoTestContainer;
-    private static final OAuthServerTestContainer oauServer;
     private static final KafkaTestContainer kafkaTestContainer;
 
     static {
         mongoTestContainer = MongoDBTestContainer.getInstance();
-        oauServer = OAuthServerTestContainer.getInstance();
         kafkaTestContainer = KafkaTestContainer.getInstance();
     }
 
@@ -20,7 +18,6 @@ public abstract class AbstractIntegrationTest {
     public static void registerProps(DynamicPropertyRegistry props) {
 
         MongoDBTestContainer.registerProperties(props);
-        OAuthServerTestContainer.registerProperties(props);
         KafkaTestContainer.setDynamicProperties(props);
     }
 

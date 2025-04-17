@@ -17,6 +17,7 @@ import {NgbModule} from '@ng-bootstrap/ng-bootstrap';
 import {jwtResponseInterceptor} from './core/interceptors/jwt-response.interceptor';
 import {AuthService} from './core/services/auth.service';
 import {jwtRequestInterceptor} from './core/interceptors/jwt-request.interceptor';
+import {FontAwesomeModule} from '@fortawesome/angular-fontawesome';
 
 @NgModule({
   declarations: [
@@ -28,6 +29,7 @@ import {jwtRequestInterceptor} from './core/interceptors/jwt-request.interceptor
     EffectsModule.forRoot([]),
     StoreModule.forRoot({core: coreReducer}),
     NgbModule,
+    FontAwesomeModule,
 
 
   ],

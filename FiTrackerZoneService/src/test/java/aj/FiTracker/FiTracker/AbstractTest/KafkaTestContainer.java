@@ -3,17 +3,18 @@ package aj.FiTracker.FiTracker.AbstractTest;
 import org.springframework.test.context.DynamicPropertyRegistry;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import org.testcontainers.kafka.ConfluentKafkaContainer;
-import org.testcontainers.kafka.KafkaContainer;
 import org.testcontainers.utility.DockerImageName;
 
 @Testcontainers
 public class KafkaTestContainer extends ConfluentKafkaContainer {
-    private static KafkaTestContainer instance;
     private static final String IMAGE_NAME = "confluentinc/cp-kafka:7.4.0";
+    private static KafkaTestContainer instance;
+
     private KafkaTestContainer() {
         super(DockerImageName.parse(IMAGE_NAME));
         this.start();
     }
+
     public static KafkaTestContainer getInstance() {
         if (instance == null) {
             instance = new KafkaTestContainer();

@@ -13,6 +13,7 @@ CREATE TABLE fit.app_core.app_user (
     login VARCHAR(255) NOT NULL UNIQUE,
     name VARCHAR(255) NOT NULL,
     password VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL,
     salt VARCHAR(255) NOT NULL,
     unique_id UUID NOT NULL UNIQUE,
     created_at TIMESTAMP  NOT NULL,
