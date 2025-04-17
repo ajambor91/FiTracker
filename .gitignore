@@ -86,7 +86,11 @@ Dockerfile.prod
 application.properties
 application.prod.properties
 grafana.prod.ini
+<<<<<<< Updated upstream
 init.prod.sql
+=======
+
+>>>>>>> Stashed changes
 ### VS Code ###
 .vscode/
 nginx-host/certs/
