@@ -71,10 +71,6 @@ export class ZoneService {
     this.store.dispatch(getZones());
   }
 
-  public refreshZone(zoneId: string) {
-
-  }
-
   public getInitialZoneData(zoneId: string, date?: Date): Observable<InitialZone> {
     return this.getCurrentZoneById(zoneId).pipe(
       filter(zone => !!zone),
@@ -191,5 +187,4 @@ export class ZoneService {
       })
     );
   }
-
 }

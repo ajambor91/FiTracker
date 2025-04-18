@@ -11,26 +11,17 @@ import {ActivatedRoute} from '@angular/router';
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss'
 })
-export class DashboardComponent implements OnInit, AfterViewInit {
+export class DashboardComponent implements OnInit {
   public zones$!: Observable<Zone[]>;
   public activeZoneId!: string;
 
   constructor(private zonesService: ZoneService, private activatedRoute: ActivatedRoute, private routeService: RouteService) {
   }
-
-  public addNewZone(): void {
-
-  }
-
   public ngOnInit(): void {
     this.zonesService.fetchAllUserZones();
     this.zones$ = this.routeService.onOverview$.pipe(
       filter(zone => !zone),
       switchMap(() => this.zonesService.getAllUserZonesOnInit()));
-
-  }
-
-  public ngAfterViewInit(): void {
 
   }
 

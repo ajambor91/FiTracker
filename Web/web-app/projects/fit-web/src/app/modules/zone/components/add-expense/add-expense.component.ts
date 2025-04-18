@@ -14,19 +14,18 @@ import {ActivatedRoute, Router} from '@angular/router';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AddExpenseComponent {
+
+
+  private _form: FormGroup<AddExpenseForm> = addExpenseForm;
+  public get form(): FormGroup<AddExpenseForm> {
+    return this._form;
+  }
   constructor(
     private zoneService: ZoneService,
     private activatedRoute: ActivatedRoute,
     private expensesService: ExpensesService,
     private router: Router) {
   }
-
-  private _form: FormGroup<AddExpenseForm> = addExpenseForm;
-
-  public get form(): FormGroup<AddExpenseForm> {
-    return this._form;
-  }
-
   public skip(): void {
     this.activatedRoute.params.pipe(
       map(param => param['id'])

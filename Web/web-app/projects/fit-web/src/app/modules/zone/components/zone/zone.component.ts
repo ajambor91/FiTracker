@@ -15,19 +15,13 @@ import {DestroyableAbstract} from '../../../shared/components/abstract/destroyab
 })
 export class ZoneComponent extends DestroyableAbstract implements AfterViewInit {
   public zone$!: Observable<InitialZone | null>;
-  @ViewChild('chartByCategory') chartByCategory!: ElementRef;
-  @ViewChild('chartByDate') chartByDate!: ElementRef;
-  categoriesChart!: Chart<"bar" | "line" | "scatter" | "bubble" | "pie" | "doughnut" | "polarArea" | "radar", [ChartTypeRegistry["bar" | "line" | "scatter" | "bubble" | "pie" | "doughnut" | "polarArea" | "radar"]["defaultDataPoint"]] extends [unknown] ? Array<ChartTypeRegistry["bar" | "line" | "scatter" | "bubble" | "pie" | "doughnut" | "polarArea" | "radar"]["defaultDataPoint"]> : never, any>;
-  dateChart!: Chart<"bar" | "line" | "scatter" | "bubble" | "pie" | "doughnut" | "polarArea" | "radar", [ChartTypeRegistry["bar" | "line" | "scatter" | "bubble" | "pie" | "doughnut" | "polarArea" | "radar"]["defaultDataPoint"]] extends [unknown] ? Array<ChartTypeRegistry["bar" | "line" | "scatter" | "bubble" | "pie" | "doughnut" | "polarArea" | "radar"]["defaultDataPoint"]> : never, any>;
+  @ViewChild('chartByCategory') private chartByCategory!: ElementRef;
+  @ViewChild('chartByDate') private chartByDate!: ElementRef;
+  private categoriesChart!: Chart<"bar" | "line" | "scatter" | "bubble" | "pie" | "doughnut" | "polarArea" | "radar", [ChartTypeRegistry["bar" | "line" | "scatter" | "bubble" | "pie" | "doughnut" | "polarArea" | "radar"]["defaultDataPoint"]] extends [unknown] ? Array<ChartTypeRegistry["bar" | "line" | "scatter" | "bubble" | "pie" | "doughnut" | "polarArea" | "radar"]["defaultDataPoint"]> : never, any>;
+  private dateChart!: Chart<"bar" | "line" | "scatter" | "bubble" | "pie" | "doughnut" | "polarArea" | "radar", [ChartTypeRegistry["bar" | "line" | "scatter" | "bubble" | "pie" | "doughnut" | "polarArea" | "radar"]["defaultDataPoint"]] extends [unknown] ? Array<ChartTypeRegistry["bar" | "line" | "scatter" | "bubble" | "pie" | "doughnut" | "polarArea" | "radar"]["defaultDataPoint"]> : never, any>;
   private today: Date = new Date();
   private dateSubject: Subject<Date | null> = new Subject<Date | null>();
   private selectedDate: Date = this.today;
-  private _expensesByCategory!: TotalSummaryByCategory[];
-
-  constructor(private zonesService: ZoneService, private route: ActivatedRoute) {
-    super();
-  }
-
   public get currentMonth(): number {
     return this.selectedDate.getMonth();
   }
@@ -39,6 +33,11 @@ export class ZoneComponent extends DestroyableAbstract implements AfterViewInit 
   private get date$(): Observable<Date | null> {
     return this.dateSubject.asObservable();
   }
+  constructor(private zonesService: ZoneService, private route: ActivatedRoute) {
+    super();
+  }
+
+
 
   public ngAfterViewInit(): void {
     this.iniCharts();
@@ -114,7 +113,7 @@ export class ZoneComponent extends DestroyableAbstract implements AfterViewInit 
         datasets: []
       },
       options: {
-        maintainAspectRatio: false
+        maintainAspectRatio: false,
       },
     });
   }

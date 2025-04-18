@@ -11,13 +11,13 @@ import {NewZoneRequest} from 'api';
   styleUrl: './new-zone.component.scss'
 })
 export class NewZoneComponent {
-  constructor(private zoneService: ZoneService) {
-  }
 
   private _form: FormGroup<NewZoneForm> = newZoneForm;
 
   public get form(): FormGroup<NewZoneForm> {
     return this._form;
+  }
+  constructor(private zoneService: ZoneService) {
   }
 
   public submitForm(): void {

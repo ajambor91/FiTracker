@@ -23,17 +23,10 @@ export class UpdateZoneDialogComponent implements OnInit {
   public zone$!: Observable<Zone>;
   public faMinus = faMinus;
   public faPlus = faPlus
+
   private zone!: Zone;
-
-  constructor(
-    private membersService: MembersService,
-    private zoneService: ZoneService,
-    private activatedRoute: ActivatedRoute,
-    private navSevice: NavService
-  ) {
-  }
-
   private _form: FormGroup<UpdateZoneForm> = updateZoneForm;
+
 
   public get form(): FormGroup<UpdateZoneForm> {
     return this._form;
@@ -58,11 +51,13 @@ export class UpdateZoneDialogComponent implements OnInit {
   public get zoneData(): FormGroup<ZoneDataForm> {
     return this._form.get('zoneData') as FormGroup<ZoneDataForm>;
   }
-
-  public get findUser(): FormGroup<FindUserForm> {
-    return this._form.get('findUser') as FormGroup<FindUserForm>;
+  constructor(
+    private membersService: MembersService,
+    private zoneService: ZoneService,
+    private activatedRoute: ActivatedRoute,
+    private navSevice: NavService
+  ) {
   }
-
   public ngOnInit(): void {
     this.fillForm();
     this.membersService.findUser(this._form);

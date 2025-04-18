@@ -11,15 +11,12 @@ import {Router} from '@angular/router';
 
 @Injectable()
 export class MembersService {
+  private _foundMembers: BehaviorSubject<FindUser[]> = new BehaviorSubject<FindUser[]>([]);
 
   constructor(
-    private usersService: ApiUsersService,
-    private zoneApiService: ZoneApiService,
-    private store: Store<ZonesState>,
-    private router: Router) {
+    private usersService: ApiUsersService){
   }
 
-  private _foundMembers: BehaviorSubject<FindUser[]> = new BehaviorSubject<FindUser[]>([]);
 
   public get foundMembers(): Observable<FindUser[]> {
     return this._foundMembers.asObservable();
@@ -37,10 +34,6 @@ export class MembersService {
         this.addFoundMemberToForm(result)
       }
     );
-  }
-
-  public updateFullZoneData(formData: any): void {
-
   }
 
   public findMembersData(members: Member[]): Observable<FindUserResponse> {

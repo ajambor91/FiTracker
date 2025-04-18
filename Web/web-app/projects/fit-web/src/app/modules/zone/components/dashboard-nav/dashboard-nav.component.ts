@@ -12,7 +12,7 @@ import {RouteService} from '../../services/route.service';
   templateUrl: './dashboard-nav.component.html',
   styleUrl: './dashboard-nav.component.scss'
 })
-export class DashboardNavComponent implements OnInit, AfterViewInit {
+export class DashboardNavComponent implements OnInit {
 
   public currentZone$!: Observable<Zone | null>
   public onOverview$!: Observable<boolean>;
@@ -33,9 +33,5 @@ export class DashboardNavComponent implements OnInit, AfterViewInit {
   public openAddCategoryDialog(routes: string[]): void {
     this.navService.openCategoryDialog(routes);
   }
-
-  ngAfterViewInit(): void {
-  }
-
 
 }

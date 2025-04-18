@@ -13,17 +13,12 @@ import {ExpensesService} from '../../services/expenses.service';
   styleUrl: './add-expense-category.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class AddExpenseCategoryComponent implements OnInit {
-  constructor(private expenseService: ExpensesService, private router: Router, private activatedRoute: ActivatedRoute) {
-  }
-
+export class AddExpenseCategoryComponent {
   private _form: FormGroup<AddExpenseCategoryForm> = addExpenseCategoryForm;
-
   public get form(): FormGroup<AddExpenseCategoryForm> {
     return this._form as FormGroup<AddExpenseCategoryForm>;
   }
-
-  public ngOnInit(): void {
+  constructor(private expenseService: ExpensesService, private router: Router, private activatedRoute: ActivatedRoute) {
   }
 
   public skip(): void {
@@ -33,7 +28,6 @@ export class AddExpenseCategoryComponent implements OnInit {
       this.router.navigate(['dashboard', 'zones', 'overview', id]);
     });
   }
-
 
   public submitForm(): void {
     this.activatedRoute.params.pipe(

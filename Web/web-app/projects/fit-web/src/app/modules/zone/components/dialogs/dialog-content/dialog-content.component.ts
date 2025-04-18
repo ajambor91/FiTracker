@@ -15,19 +15,10 @@ export class DialogContentComponent implements OnInit {
 
   public isLoaded$!: Observable<boolean>;
 
-  constructor(private navService: NavService, private zoneService: ZoneService) {
+  constructor(private navService: NavService) {
   }
 
   public ngOnInit(): void {
     this.isLoaded$ = this.navService.isLoaded$;
   }
-
-  public closeDialog(): void {
-    this.zoneService.getCurrentZone().pipe(
-      map(zone => zone?.zoneId),
-      take(1),
-      filter(zoneId => !!zoneId)
-    ).subscribe(id => this.navService.closeDialog(id as string))
-  }
-
 }

@@ -15,7 +15,7 @@ export class MainContainerComponent extends DestroyableAbstract implements OnIni
     super();
   }
 
-  ngOnInit(): void {
+  public ngOnInit(): void {
     this.router.events.pipe(
       filter((event) => event instanceof NavigationEnd),
       takeUntil(this.destroy$)

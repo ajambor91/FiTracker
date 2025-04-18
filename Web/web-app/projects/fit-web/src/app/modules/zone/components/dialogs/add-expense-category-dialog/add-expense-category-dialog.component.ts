@@ -14,13 +14,13 @@ import {NavService} from '../../../services/nav.service';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class AddExpenseCategoryDialogComponent {
-  constructor(private expenseService: ExpensesService, private router: Router, private activatedRoute: ActivatedRoute, private navService: NavService) {
-  }
 
   private _form: FormGroup<AddExpenseCategoryForm> = addExpenseCategoryForm;
 
   public get form(): FormGroup<AddExpenseCategoryForm> {
     return this._form as FormGroup<AddExpenseCategoryForm>;
+  }
+  constructor(private expenseService: ExpensesService, private router: Router, private activatedRoute: ActivatedRoute, private navService: NavService) {
   }
 
   public submitForm(): void {

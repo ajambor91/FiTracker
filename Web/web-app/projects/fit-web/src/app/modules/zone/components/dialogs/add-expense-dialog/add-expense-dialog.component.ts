@@ -19,18 +19,17 @@ import {NavService} from '../../../services/nav.service';
 export class AddExpenseDialogComponent implements OnInit {
   public categories$!: Observable<Category[]>;
 
+  private _form: FormGroup<AddExpenseMultiCategoriesForm> = addExpenseMultiCategoriesForm;
+  public get form(): FormGroup<AddExpenseMultiCategoriesForm> {
+    return this._form;
+  }
+
   constructor(
     private zoneService: ZoneService,
     private activatedRoute: ActivatedRoute,
     private expensesService: ExpensesService,
     private router: Router,
     private navService: NavService) {
-  }
-
-  private _form: FormGroup<AddExpenseMultiCategoriesForm> = addExpenseMultiCategoriesForm;
-
-  public get form(): FormGroup<AddExpenseMultiCategoriesForm> {
-    return this._form;
   }
 
   public ngOnInit(): void {
