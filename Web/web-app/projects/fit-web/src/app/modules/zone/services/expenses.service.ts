@@ -11,7 +11,7 @@ import {
   TotalSummariesByCategory,
   TotalSummariesByDate
 } from "api"
-import {forkJoin, map, Observable} from 'rxjs';
+import {forkJoin, map, Observable, tap} from 'rxjs';
 import {InitialExpenses} from '../models/initial-expenses.model';
 import {AddExpenseCategoryForm} from '../forms/add-expense-category.form';
 import {FormGroup} from '@angular/forms';
@@ -19,12 +19,17 @@ import {AddExpenseForm, AddExpenseMultiCategoriesForm} from '../forms/add-expens
 import {Currency} from '../types/currency.type';
 import {Dateutil} from '../../shared/utils/date.util';
 import {TransformedSum} from '../models/transformed-sum.model';
+import {ZoneService} from './zone.service';
+import {Store} from '@ngrx/store';
+import {ZonesState} from '../store/zone.reducer';
+import {refreshZone} from '../store/zone.actions';
 
 @Injectable()
 export class ExpensesService {
   constructor(
     private expensesApiService: ExpensesApiService,
-    private categoriesApiService: CategoriesApiService) {
+    private categoriesApiService: CategoriesApiService,
+    private store: Store<ZonesState>) {
   }
 
   public getInitialData(zoneId: string, date?: Date): Observable<InitialExpenses> {
@@ -99,7 +104,9 @@ export class ExpensesService {
       currency: 'PLN',
       value: value,
       categoriesIds: categoriesIds.map(id => +id)
-    }, zoneId);
+    }, zoneId).pipe(
+      tap(zone => this.store.dispatch(refreshZone(zoneId)))
+    );
   }
 
   public getCategories(zoneId: string): Observable<GetCategoriesResponse> {

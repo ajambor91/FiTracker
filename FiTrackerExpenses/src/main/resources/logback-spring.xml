@@ -5,7 +5,7 @@
         </http>
         <format>
             <label>
-                <pattern>app=main,host=${HOSTNAME}</pattern>
+                <pattern>app=expenses,host=${HOSTNAME}</pattern>
             </label>
             <message>
                 <pattern>%-5level [%.5(${HOSTNAME})] %.10thread %logger{20} | %msg %ex</pattern>

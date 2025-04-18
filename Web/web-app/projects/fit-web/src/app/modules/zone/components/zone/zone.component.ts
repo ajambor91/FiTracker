@@ -41,6 +41,7 @@ export class ZoneComponent extends DestroyableAbstract implements AfterViewInit 
 
   public ngAfterViewInit(): void {
     this.iniCharts();
+    this.zonesService.getCurrentZone().pipe(tap(zone => console.log(zone)))
     const paramsOrDate$ = merge(
       this.route.params.pipe(
         map(params => ({type: 'id', value: params['id']})),

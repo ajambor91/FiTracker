@@ -12,7 +12,7 @@ import {Router} from '@angular/router';
 import {catchError, filter, forkJoin, map, Observable, of, shareReplay, switchMap, take, tap} from 'rxjs';
 import {select, Store} from '@ngrx/store';
 import {ZonesState} from '../store/zone.reducer';
-import {addZone, getZones, setCurrentZone, updateZone} from '../store/zone.actions';
+import {addZone, getZones, refreshZone, setCurrentZone, updateZone} from '../store/zone.actions';
 import {Zone} from '../models/zone.model';
 import {selectCurrentZone, selectZoneById, selectZones} from '../store/zone.selectors';
 
@@ -85,6 +85,10 @@ export class ZoneService {
     )
   }
 
+  public refreshZone(zoneId: string): void {
+    this.store.dispatch(refreshZone(zoneId))
+  }
+
   public getCurrentZoneById(zoneId: string): Observable<Zone | null> {
     return this.store.pipe(select(selectZoneById(zoneId))).pipe(
       switchMap(zone => {
@@ -119,6 +123,7 @@ export class ZoneService {
     };
     return this.zoneApi.updateZone(zoneId, updateZoneRequest).pipe(
       tap(responseZone => {
+
         this.store.dispatch(updateZone(responseZone));
         this.store.dispatch(setCurrentZone(responseZone))
       }));

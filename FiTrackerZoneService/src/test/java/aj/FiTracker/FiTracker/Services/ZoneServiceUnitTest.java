@@ -201,6 +201,12 @@ public class ZoneServiceUnitTest {
         assertEquals(1, memberTemplate.getMembersList().size());
         assertEquals(ZONE_TEST_ID, memberTemplate.getZoneId());
         assertEquals(MEMBER_TEST_ID, memberTemplate.getMembersList().getFirst().memberId());
+        argumentCaptor = ArgumentCaptor.forClass(MemberTemplate.class);
+        verify(this.kafkaProducerServiceMock, times(1)).sendDeletedMembers(argumentCaptor.capture());
+        memberTemplate = argumentCaptor.getValue();
+        assertEquals(1, memberTemplate.getMembersList().size());
+        assertEquals(ZONE_TEST_ID, memberTemplate.getZoneId());
+        assertEquals(OWNER_TEST_ID, memberTemplate.getMembersList().getFirst().memberId());
     }
 
     @Test

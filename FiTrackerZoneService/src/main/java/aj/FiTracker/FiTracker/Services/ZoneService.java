@@ -148,7 +148,8 @@ public class ZoneService {
         logger.debug("Update zone request details: {}", updateZoneRequest);
         try {
             JWTClaimsUtil.JWTClaims claims = JWTClaimsUtil.getUsernameFromClaims(authentication);
-            MemberTemplate memberTemplate = new MemberTemplate(id);
+            MemberTemplate memberTemplateToAdd = new MemberTemplate(id);
+            MemberTemplate memberTemplateToRemove = new MemberTemplate(id);
             Optional<Zone> zone = this.zoneRepository.findByIdAndDeletedAtIsNullAndMembersList_UserId(id, claims.userId());
             if (zone.isEmpty()) {
                 logger.warn("Cannot update zone with ID: {}. Zone not found for user: {}.", id, authentication.getName());
@@ -168,14 +169,21 @@ public class ZoneService {
             if (updateZoneRequest.getMembersList() != null && !updateZoneRequest.getMembersList().isEmpty()) {
                 logger.info("Updating members list for zone ID: {}.", id);
                 zoneDocument = this.updateMembers(zoneDocument, updateZoneRequest, membersToAdd, membersToRemove);
-                memberTemplate.addMembers(membersToAdd);
                 logger.debug("Members to add: {}", membersToAdd);
             }
             this.zoneRepository.save(zoneDocument);
             logger.info("Successfully updated zone with ID: {}.", zoneDocument.getId());
             if (!membersToAdd.isEmpty()) {
-                this.kafkaProducerService.sendNewMembers(memberTemplate);
+                memberTemplateToAdd.addMembers(membersToAdd);
+
+                this.kafkaProducerService.sendNewMembers(memberTemplateToAdd);
                 logger.info("Sent new members event to Kafka for zone ID: {}.", zoneDocument.getId());
+            }
+            if (!membersToRemove.isEmpty()) {
+                memberTemplateToRemove.addMembers(membersToRemove);
+                this.kafkaProducerService.sendDeletedMembers(memberTemplateToRemove);
+                logger.info("Sent members to remove event to Kafka for zone ID: {}.", zoneDocument.getId());
+
             }
             return zoneDocument;
 
@@ -230,7 +238,6 @@ public class ZoneService {
 
     private Zone updateMembers(Zone existingZone, UpdateZoneRequest updateZone, List<Zone.Member> membersToAdd, List<Zone.Member> membersToRemove) {
         logger.info("Updating members for zone ID: {}. Number of members to add: {}", existingZone.getId(), updateZone.getMembersList().size());
-        membersToAdd.addAll(updateZone.getMembersList());
         logger.debug("Members to add to zone ID {}: {}", existingZone.getId(), membersToAdd);
         List<Zone.Member> currentMembers = new ArrayList<>(existingZone.getMembersList());
         for (Zone.Member existingMember : currentMembers) {
@@ -244,6 +251,21 @@ public class ZoneService {
             if (!found) {
                 membersToRemove.add(existingMember);
                 logger.debug("Member with user ID: {} will be removed from zone ID: {}", existingMember.getUserId(), existingZone.getId());
+            }
+        }
+
+        for (Zone.Member updateMember : updateZone.getMembersList()) {
+            boolean found = false;
+            for (Zone.Member currentMember: existingZone.getMembersList()) {
+                if (currentMember.getUserId() == updateMember.getUserId()) {
+                    found = true;
+                    break;
+                }
+            }
+            if (!found) {
+                membersToAdd.add(updateMember);
+                logger.debug("Member with user ID: {} will be added to zone ID: {}", updateMember.getUserId(), existingZone.getId());
+
             }
         }
         existingZone.setMembersList(updateZone.getMembersList());
