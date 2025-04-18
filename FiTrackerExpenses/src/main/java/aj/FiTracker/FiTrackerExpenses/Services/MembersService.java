@@ -44,6 +44,22 @@ public class MembersService {
         }
     }
 
+    @Transactional
+    public void removeMembers(MemberTemplate memberTemplate) {
+        List<User> users = new ArrayList<>();
+        logger.info("Started removing new members {} to zoneId {}", memberTemplate.getMembersList(), memberTemplate.getZoneId());
+        try {
+            for (MemberTemplate.Member member : memberTemplate.getMembersList()) {
+                this.membersRepository.removeMember(member.memberId(), memberTemplate.getZoneId());
+            }
+            logger.error("Removes members {} to zone {} successfull ", users, memberTemplate.getZoneId());
+
+        } catch (Exception e) {
+            logger.error("Cannot remove members {} to zone {}, exception: {}", memberTemplate.getMembersList(), memberTemplate.getZoneId(), e.getMessage());
+            throw new InternalServerException(e);
+        }
+    }
+
     @Transactional(readOnly = true)
     public User getUserByZoneIdAndId(long userId, String zoneId) {
         logger.info("Get user {} for zone {}", userId, zoneId);

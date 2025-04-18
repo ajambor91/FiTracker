@@ -23,7 +23,6 @@ public class PostgreSQLTestContainer extends PostgreSQLContainer<PostgreSQLTestC
 
     private PostgreSQLTestContainer() {
         super(IMAGE_VERSION);
-        this.start();
     }
 
     public static void registerProperties(DynamicPropertyRegistry registry) {

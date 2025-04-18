@@ -102,4 +102,18 @@ public class MembersServiceUnitTest {
         assertInstanceOf(UserUnauthorizedException.class, exception);
         assertEquals("User does not have privileges to zone", exception.getMessage());
     }
+
+    @Test
+    @DisplayName("Should remove users")
+    public void testRemoveMembers() {
+        MemberTemplate memberTemplate = TestUtils.createMemberTemplateOneMember();
+        ArgumentCaptor<Long> captor = ArgumentCaptor.forClass(Long.class);
+        ArgumentCaptor<String> stringCaptor = ArgumentCaptor.forClass(String.class);
+        this.membersService.removeMembers(memberTemplate);
+        verify(this.membersRepositoryMock, times(1)).removeMember(captor.capture(), stringCaptor.capture());
+        String zoneId = stringCaptor.getValue();
+        long userId = captor.getValue();
+        assertEquals(ZONE_TEST_ID, zoneId);
+        assertEquals(MEMBER_TEST_ID, userId);
+    }
 }
