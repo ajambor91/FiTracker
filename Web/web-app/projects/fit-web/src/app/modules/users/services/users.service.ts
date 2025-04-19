@@ -2,8 +2,9 @@ import {Injectable} from '@angular/core';
 import {ApiUsersService, LoginRequest, RegisterUserRequest} from 'api';
 import {AuthService} from '../../../core/services/auth.service';
 import {Router} from '@angular/router';
-import {tap} from 'rxjs';
+import {catchError, EMPTY, tap} from 'rxjs';
 import {User} from '../models/user.model';
+import {SnackbarService} from '../../shared/services/snackbar.service';
 
 @Injectable()
 export class UsersService {
@@ -12,6 +13,7 @@ export class UsersService {
     private apiUsersService: ApiUsersService,
     private authService: AuthService,
     private router: Router,
+    private snackbar: SnackbarService
   ) {
   }
 
@@ -22,6 +24,10 @@ export class UsersService {
           name: user.name
         }
         this.authService.loginUser(currentUser);
+      }),
+      catchError(err => {
+        this.snackbar.showError("Cannot login");
+        return EMPTY;
       }),
     ).subscribe(res => {
       this.router.navigate(['/dashboard'])

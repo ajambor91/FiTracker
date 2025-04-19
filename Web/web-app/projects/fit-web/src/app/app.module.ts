@@ -18,6 +18,7 @@ import {jwtResponseInterceptor} from './core/interceptors/jwt-response.intercept
 import {AuthService} from './core/services/auth.service';
 import {jwtRequestInterceptor} from './core/interceptors/jwt-request.interceptor';
 import {FontAwesomeModule} from '@fortawesome/angular-fontawesome';
+import {SnackbarService} from './modules/shared/services/snackbar.service';
 
 @NgModule({
   declarations: [
@@ -43,6 +44,7 @@ import {FontAwesomeModule} from '@fortawesome/angular-fontawesome';
     AuthService,
     ApiCoreService,
     CoreService,
+    SnackbarService,
     provideHttpClient
     (withFetch(),
       withInterceptors([

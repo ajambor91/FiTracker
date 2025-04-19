@@ -10,6 +10,7 @@ import {FormContainerComponent} from './components/form-container/form-container
 import {HeaderComponent} from './components/header/header.component';
 import {FontAwesomeModule} from '@fortawesome/angular-fontawesome';
 import {MonthPickerComponent} from './components/month-picker/month-picker.component';
+import {SnackbarService} from './services/snackbar.service';
 
 
 @NgModule({
@@ -39,7 +40,9 @@ import {MonthPickerComponent} from './components/month-picker/month-picker.compo
     MatButton,
     FormContainerComponent,
     HeaderComponent,
-    MonthPickerComponent
+    MonthPickerComponent,
+
+
 
 
   ],
@@ -50,6 +53,7 @@ import {MonthPickerComponent} from './components/month-picker/month-picker.compo
         preset: Aura
       }
     }),
+
   ]
 })
 export class SharedModule {
