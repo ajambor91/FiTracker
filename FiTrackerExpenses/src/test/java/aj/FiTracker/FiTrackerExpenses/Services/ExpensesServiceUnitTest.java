@@ -22,7 +22,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.test.context.ActiveProfiles;
 
-import java.math.BigDecimal;
 import java.sql.Date;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -43,6 +42,7 @@ public class ExpensesServiceUnitTest {
     private ExpensesRepository expensesRepositoryMock;
     private CategoriesRepository categoriesRepositoryMock;
     private MembersService membersServiceMock;
+
     @BeforeEach
     public void setup() {
         this.jwtMock = mock(Jwt.class);
@@ -60,7 +60,7 @@ public class ExpensesServiceUnitTest {
     @DisplayName("Should add expense and return")
     public void testAddExpense() {
         AddExpenseRequest addExpenseRequest = TestUtils.addExpenseRequest();
-        when(categoriesRepositoryMock.findByCategoryIdInAndZoneId(eq(List.of(CATEGORY_TEST_ID)),eq(ZONE_TEST_ID))).thenReturn(List.of(createTestCategory()));
+        when(categoriesRepositoryMock.findByCategoryIdInAndZoneId(eq(List.of(CATEGORY_TEST_ID)), eq(ZONE_TEST_ID))).thenReturn(List.of(createTestCategory()));
         when(membersServiceMock.getUserByZoneIdAndId(eq(USER_TEST_ID), eq(ZONE_TEST_ID))).thenReturn(createTestUser());
         when(expensesRepositoryMock.saveAndFlush(any(Expense.class))).thenReturn(addTestExpense());
         Expense testExpense = this.expensesService.addExpense(addExpenseRequest, ZONE_TEST_ID, authenticationMock);
@@ -93,7 +93,7 @@ public class ExpensesServiceUnitTest {
     @DisplayName("Should add expense and throw CannotFindCategoriesException")
     public void testAddExpenseUserCannotFindCategoriesException() {
         AddExpenseRequest addExpenseRequest = TestUtils.addExpenseRequest();
-        when(categoriesRepositoryMock.findByCategoryIdInAndZoneId(eq(List.of(CATEGORY_TEST_ID)),eq(ZONE_TEST_ID))).thenThrow(CannotFindCategoriesException.class);
+        when(categoriesRepositoryMock.findByCategoryIdInAndZoneId(eq(List.of(CATEGORY_TEST_ID)), eq(ZONE_TEST_ID))).thenThrow(CannotFindCategoriesException.class);
         when(membersServiceMock.getUserByZoneIdAndId(eq(USER_TEST_ID), eq(ZONE_TEST_ID))).thenReturn(createTestUser());
         CannotFindCategoriesException exception = assertThrows(CannotFindCategoriesException.class, () -> {
             Expense testExpense = this.expensesService.addExpense(addExpenseRequest, ZONE_TEST_ID, authenticationMock);
@@ -134,6 +134,7 @@ public class ExpensesServiceUnitTest {
         assertEquals(CATEGORY_TEST_NAME, totalSummaryByCategory.categoryName());
         assertEquals(TEST_EXPENSE_VALUE, totalSummaryByCategory.expensesValue());
     }
+
     @Test
     @DisplayName("Should throw UserUnauthorizedException when trying get total summary by category")
     public void testGetSummaryByCategoryUserUnauthorizedException() {
@@ -219,7 +220,7 @@ public class ExpensesServiceUnitTest {
 
     @Test
     @DisplayName("Should get expenses sums getSummarySum")
-    public void testGetSummarySum(){
+    public void testGetSummarySum() {
         when(membersServiceMock.getUserByZoneIdAndId(eq(USER_TEST_ID), eq(ZONE_TEST_ID))).thenReturn(createTestUser());
         when(expensesRepositoryMock.getExpensesSum(
                 eq(ZONE_TEST_ID),
@@ -253,7 +254,7 @@ public class ExpensesServiceUnitTest {
 
     @Test
     @DisplayName("Should throw userUnauthorizedException getSummarySum")
-    public void testGetSummarySumuserUnauthorizedException(){
+    public void testGetSummarySumuserUnauthorizedException() {
         when(membersServiceMock.getUserByZoneIdAndId(eq(USER_TEST_ID), eq(ZONE_TEST_ID))).thenThrow(UserUnauthorizedException.class);
         assertThrows(UserUnauthorizedException.class, () -> {
             List<ExpensesSum> expensesSum = this.expensesService.getSummarySum(

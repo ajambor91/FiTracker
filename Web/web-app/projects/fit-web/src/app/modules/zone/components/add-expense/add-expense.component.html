@@ -9,12 +9,18 @@
         <mat-form-field>
           <mat-label>Expense title:</mat-label>
           <input formControlName="name" matInput>
+          <ng-container *ngIf="isNameInvalid">
+            <mat-error i18n>Expense name is invalid</mat-error>
+          </ng-container>
         </mat-form-field>
       </div>
       <div class="form-group">
         <mat-form-field>
           <mat-label>Expense value:</mat-label>
           <input formControlName="value" matInput>
+          <ng-container *ngIf="isValueInvalid">
+            <mat-error i18n>Expense description is invalid</mat-error>
+          </ng-container>
         </mat-form-field>
       </div>
       <div class="form-group row">

@@ -104,7 +104,7 @@ public class ExpensesController {
             @RequestParam(name = "groupBy", required = false) String groupBy,
             @RequestParam(name = "periodStart", required = false) String periodStart,
             @RequestParam(name = "periodEnd", required = false) String periodEnd,
-            @RequestParam(name = "userId", required = false) Long userId, 
+            @RequestParam(name = "userId", required = false) Long userId,
             Authentication authentication) {
         logger.info("Received request to get total sum summary for zone {}. User: {}", zoneId, authentication.getName());
         logger.debug("Parameters: currency={}, categoriesIds={}, groupBy={}, periodStart={}, periodEnd={}, userId={}",

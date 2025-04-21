@@ -33,11 +33,12 @@ import java.util.NoSuchElementException;
 
 public class JWTDecode implements JwtDecoder {
     private static JWTDecode jwtDecode;
-    private final Logger logger = LoggerFactory.getLogger(JWTDecode.class);
+
     static {
         Security.addProvider(new BouncyCastleProvider());
     }
 
+    private final Logger logger = LoggerFactory.getLogger(JWTDecode.class);
     private final String SECURITY_ALGORITHM = "SHA256withRSAandMGF1";
     private final String PROVIDER = "BC";
     private final String MD_NAME = "SHA-256";

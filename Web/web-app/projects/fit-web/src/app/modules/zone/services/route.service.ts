@@ -1,5 +1,5 @@
 import {Injectable} from '@angular/core';
-import {BehaviorSubject, map, Observable, share, tap} from 'rxjs';
+import {BehaviorSubject, map, Observable, share} from 'rxjs';
 
 
 @Injectable()

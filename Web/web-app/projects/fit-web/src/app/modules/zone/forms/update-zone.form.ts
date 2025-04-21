@@ -1,4 +1,4 @@
-import {FormArray, FormControl, FormGroup} from '@angular/forms';
+import {FormArray, FormControl, FormGroup, Validators} from '@angular/forms';
 import {findUserForm, FindUserForm} from './find-user.form';
 
 
@@ -22,8 +22,19 @@ export interface ZoneDataForm {
 
 export const updateZoneForm: FormGroup<UpdateZoneForm> = new FormGroup<UpdateZoneForm>({
   zoneData: new FormGroup({
-    zoneName: new FormControl<string>('', {nonNullable: true}),
-    zoneDescription: new FormControl<string | null>('')
+    zoneName: new FormControl<string>('', {
+      nonNullable: true, validators: [
+        Validators.required,
+        Validators.pattern(/^[\w\d ]+$/)
+
+      ]
+    }),
+    zoneDescription: new FormControl<string | null>('', {
+      nonNullable: false,
+      validators: [
+        Validators.pattern(/^[\w\d ]+$/)
+      ]
+    })
   }),
   findUser: findUserForm,
   foundUsers: new FormArray<FormGroup<{

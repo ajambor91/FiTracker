@@ -3,7 +3,6 @@ package aj.FiTracker.FiTrackerExpenses.Controllers;
 import aj.FiTracker.FiTrackerExpenses.DTO.DB.CategoryDb;
 import aj.FiTracker.FiTrackerExpenses.DTO.REST.*;
 import aj.FiTracker.FiTrackerExpenses.Entities.Category;
-import aj.FiTracker.FiTrackerExpenses.Exceptions.UserUnauthorizedException;
 import aj.FiTracker.FiTrackerExpenses.Services.CategoriesService;
 import aj.FiTracker.FiTrackerExpenses.Utils.TestUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,7 +14,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.util.List;
@@ -60,7 +58,7 @@ public class CategoriesControllerUnitTest {
         assertEquals(HttpStatus.CREATED, addCategoryResponse.getStatusCode());
         AddCategoryResponse addCategoryResponseBody = addCategoryResponse.getBody();
         assertEquals(ZONE_TEST_ID, addCategoryResponseBody.getZoneId());
-        assertEquals(CATEGORY_TEST_NAME,addCategoryResponseBody.getName());
+        assertEquals(CATEGORY_TEST_NAME, addCategoryResponseBody.getName());
         assertEquals(CATEGORY_TEST_ID, addCategoryResponseBody.getCategoryId());
     }
 
@@ -82,7 +80,7 @@ public class CategoriesControllerUnitTest {
         assertEquals(1, response.getCategories().size());
         CategoryDb resCategory = response.getCategories().getFirst();
         assertEquals(CATEGORY_TEST_ID, resCategory.categoryId());
-        assertEquals( CATEGORY_TEST_NAME, resCategory.name());
+        assertEquals(CATEGORY_TEST_NAME, resCategory.name());
         assertEquals(CATEGORY_TEST_DESCRIPTION, resCategory.description());
     }
 
@@ -109,4 +107,6 @@ public class CategoriesControllerUnitTest {
         assertEquals(ZONE_TEST_ID, updateCategoryResponse.getZoneId());
 
     }
+
+
 }

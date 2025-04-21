@@ -10,6 +10,7 @@ import java.util.List;
 @Setter
 public class GeneralSum {
     private List<ExpensesSum> sum;
+
     public GeneralSum(List<ExpensesSum> expensesSums) {
         this.sum = expensesSums;
     }

@@ -1,0 +1,17 @@
+.app-main {
+  &__header {
+    .h1, .h2 {
+      color: #cf27c3 !important;
+    }
+
+    .h1 {
+      font-weight: 900;
+      font-size: 2em;
+    }
+
+    .h2 {
+      font-weight: 700;
+      font-size: 1.6em;
+    }
+  }
+}

@@ -52,6 +52,7 @@ button {
 .modal-form {
   background-color: transparent;
 }
+
 .mat-mdc-dialog-surface.mdc-dialog__surface {
   background-color: transparent;
 }
@@ -98,4 +99,9 @@ button {
 
 .snackbar-background {
   background-color: #fff;
+}
+
+.mat-mdc-form-field-error {
+  color: red !important;
+  font-size: 12px;
 }

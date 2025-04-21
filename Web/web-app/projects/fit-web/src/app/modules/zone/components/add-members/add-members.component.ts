@@ -19,6 +19,10 @@ import {faMinus, faPlus} from '@fortawesome/free-solid-svg-icons';
 export class AddMembersComponent implements OnInit {
   public faPlus = faPlus;
   public faMinus = faMinus;
+
+  constructor(private membersService: MembersService, private zoneService: ZoneService, private router: Router, private activatedRoute: ActivatedRoute) {
+  }
+
   private _form: FormGroup<AddMembersForm> = addMembersForm;
 
   public get form(): FormGroup<AddMembersForm> {
@@ -40,8 +44,6 @@ export class AddMembersComponent implements OnInit {
   public get foundUsers(): FormArray<FormGroup> {
     return this._form.get('foundUsers') as FormArray<FormGroup<FoundUserForm>>;
   }
-  constructor(private membersService: MembersService, private zoneService: ZoneService, private router: Router, private activatedRoute: ActivatedRoute) {
-  }
 
   public ngOnInit(): void {
     this.membersService.findUser(this._form);
@@ -51,7 +53,7 @@ export class AddMembersComponent implements OnInit {
     this.activatedRoute.params.pipe(
       map(param => param["id"]),
     ).subscribe(id => {
-      this.router.navigate(['dashboard', 'zones', 'overview', id]);
+      this.router.navigate(['dashboard', 'zones', id, 'categories', 'add']);
     });
   }
 

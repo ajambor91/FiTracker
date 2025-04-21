@@ -3,16 +3,20 @@ import {CommonModule} from '@angular/common';
 import {MainContainerComponent} from './components/main-container/main-container.component';
 import {MainRoutingModule} from './main-routing.module';
 import {NavbarComponent} from './components/navbar/navbar.component';
+import {MainComponent} from './components/main-component/main.component';
+import {SharedModule} from '../shared/shared.module';
 
 
 @NgModule({
   declarations: [
     MainContainerComponent,
-    NavbarComponent
+    NavbarComponent,
+    MainComponent
   ],
   imports: [
     MainRoutingModule,
-    CommonModule
+    CommonModule,
+    SharedModule
   ],
   exports: [
     MainContainerComponent

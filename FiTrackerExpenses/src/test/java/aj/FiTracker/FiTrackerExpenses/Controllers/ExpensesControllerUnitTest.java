@@ -33,6 +33,7 @@ public class ExpensesControllerUnitTest {
     private ExpensesController expensesController;
     private Authentication authenticationMock;
     private ExpensesService expensesServiceMock;
+
     @BeforeEach
     public void setup() {
         this.authenticationMock = mock(Authentication.class);
@@ -57,7 +58,7 @@ public class ExpensesControllerUnitTest {
                 ZONE_TEST_ID,
                 addExpenseRequest
         );
-        verify(this.expensesServiceMock,times(1)).addExpense(
+        verify(this.expensesServiceMock, times(1)).addExpense(
                 eq(addExpenseRequest),
                 eq(ZONE_TEST_ID),
                 any(Authentication.class)
@@ -83,7 +84,7 @@ public class ExpensesControllerUnitTest {
                 eq(TEST_END_DATE_PARAM),
                 any(Authentication.class)
         )).thenReturn(totalSummaryByCategories);
-        ResponseEntity<List<TotalSummaryByCategory>> summaryByCategories = (ResponseEntity<List<TotalSummaryByCategory>>) this.expensesController.getSummary(
+        ResponseEntity<SummaryByCategory> summaryByCategories = (ResponseEntity<SummaryByCategory>) this.expensesController.getSummary(
                 ZONE_TEST_ID,
                 "PLN",
                 List.of(Long.valueOf(1)),
@@ -108,6 +109,11 @@ public class ExpensesControllerUnitTest {
                 any(Authentication.class)
         );
         assertEquals(HttpStatus.OK, summaryByCategories.getStatusCode());
+        SummaryByCategory totalSummaryByCategoryBody = summaryByCategories.getBody();
+        assertEquals(1, totalSummaryByCategoryBody.getSummaries().size());
+        TotalSummaryByCategory totalSummaryByCategory = totalSummaryByCategoryBody.getSummaries().getFirst();
+        assertEquals(CATEGORY_TEST_NAME, totalSummaryByCategory.categoryName());
+        assertEquals(TEST_EXPENSE_VALUE, totalSummaryByCategory.expensesValue());
     }
 
     @Test
@@ -179,6 +185,9 @@ public class ExpensesControllerUnitTest {
                 any(Authentication.class)
         );
         assertEquals(HttpStatus.OK, summary.getStatusCode());
+        assertEquals(1, summary.getBody().getSummaries().size());
+        TotalSummaryByDate totalSummaryByDate = summary.getBody().getSummaries().getFirst();
+        assertEquals(TEST_EXPENSE_VALUE, totalSummaryByDate.expensesValue());
     }
 
 
@@ -211,6 +220,11 @@ public class ExpensesControllerUnitTest {
                 any(Authentication.class)
         );
         assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertEquals(1, response.getBody().getExpenses().size());
+        TopExpense topExpense = response.getBody().getExpenses().getFirst();
+        assertEquals(TEST_EXPENSE_NAME, topExpense.expenseName());
+        assertEquals(TEST_EXPENSE_VALUE, topExpense.expenseValue());
+        assertEquals(CATEGORY_TEST_NAME, topExpense.categoryName());
     }
 
     @Test
@@ -266,6 +280,11 @@ public class ExpensesControllerUnitTest {
                 any(Authentication.class)
         );
         assertEquals(HttpStatus.OK, generalSumResponse.getStatusCode());
+        assertEquals(1, generalSumResponse.getBody().getSum().size());
+        ExpensesSum expensesSum = generalSumResponse.getBody().getSum().getFirst();
+        assertEquals(CATEGORY_TEST_NAME, expensesSum.categoryName());
+        assertEquals(TEST_EXPENSE_VALUE, expensesSum.overallSum());
+        assertEquals(TEST_EXPENSE_VALUE, expensesSum.categoryValue());
     }
 
     @Test

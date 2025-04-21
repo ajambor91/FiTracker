@@ -12,6 +12,6 @@ export const updateZone = createAction('[Zone] updateZone', (zone: Zone) => ({zo
 export const removeZone = createAction('[Zone] removeZone', (zone: Zone) => ({zone}));
 
 export const refreshZone = createAction('[Zone] refreshZone', (zoneId: string) => ({zoneId}))
-export const refreshZones = createAction('[Zone] refreshZone', (zoneId: string) => ({zoneId}))
+export const refreshZones = createAction('[Zone] refreshZones', (zoneId: string) => ({zoneId}))
 
 export const getZone = createAction('[Zone] getZone', (zoneId: string) => ({zoneId}))

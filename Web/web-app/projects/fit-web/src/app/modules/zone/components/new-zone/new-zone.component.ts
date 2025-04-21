@@ -1,8 +1,9 @@
 import {Component} from '@angular/core';
 import {newZoneForm, NewZoneForm} from '../../forms/new-zone.form';
-import {FormGroup} from '@angular/forms';
+import {AbstractControl, FormGroup} from '@angular/forms';
 import {ZoneService} from '../../services/zone.service';
 import {NewZoneRequest} from 'api';
+import {SnackbarService} from '../../../shared/services/snackbar.service';
 
 @Component({
   selector: 'app-new-zone',
@@ -12,15 +13,32 @@ import {NewZoneRequest} from 'api';
 })
 export class NewZoneComponent {
 
+  constructor(private zoneService: ZoneService, private snackbar: SnackbarService) {
+  }
+
   private _form: FormGroup<NewZoneForm> = newZoneForm;
 
   public get form(): FormGroup<NewZoneForm> {
     return this._form;
   }
-  constructor(private zoneService: ZoneService) {
+
+  public get isNameInvalid(): boolean {
+    const nameControl: AbstractControl = this._form.get('zoneName') as AbstractControl;
+    return nameControl.invalid && nameControl.touched;
+  }
+
+  public get isDescriptionInvalid(): boolean {
+    const descriptionControl: AbstractControl = this._form.get('zoneDescription') as AbstractControl;
+    return descriptionControl.invalid && descriptionControl.touched;
   }
 
   public submitForm(): void {
-    this.zoneService.addNewZone(this._form.getRawValue() as NewZoneRequest);
+    if (this._form.valid) {
+      this.zoneService.addNewZone(this._form.getRawValue() as NewZoneRequest);
+    } else {
+      this._form.markAllAsTouched();
+      this.snackbar.showError("Form has errors");
+    }
+
   }
 }

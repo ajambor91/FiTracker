@@ -1,4 +1,4 @@
-import {FormControl, FormGroup} from '@angular/forms';
+import {FormControl, FormGroup, Validators} from '@angular/forms';
 
 
 export interface NewZoneForm {
@@ -7,6 +7,17 @@ export interface NewZoneForm {
 }
 
 export const newZoneForm: FormGroup<NewZoneForm> = new FormGroup<NewZoneForm>({
-  zoneName: new FormControl('', {nonNullable: true}),
-  zoneDescription: new FormControl('', {nonNullable: false})
+  zoneName: new FormControl('', {
+    nonNullable: true,
+    validators: [
+      Validators.required,
+      Validators.pattern(/^[\w\d ]+$/)
+
+    ]
+  }),
+  zoneDescription: new FormControl('', {
+    nonNullable: false, validators: [
+      Validators.pattern(/^[\w\d ]+$/)
+    ]
+  })
 })

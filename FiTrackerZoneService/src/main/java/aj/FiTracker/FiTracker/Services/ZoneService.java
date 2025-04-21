@@ -256,7 +256,7 @@ public class ZoneService {
 
         for (Zone.Member updateMember : updateZone.getMembersList()) {
             boolean found = false;
-            for (Zone.Member currentMember: existingZone.getMembersList()) {
+            for (Zone.Member currentMember : existingZone.getMembersList()) {
                 if (currentMember.getUserId() == updateMember.getUserId()) {
                     found = true;
                     break;

@@ -20,7 +20,8 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.nio.charset.StandardCharsets;
 
-import static aj.FiTracker.FiTrackerExpenses.Utils.TestUtils.*;
+import static aj.FiTracker.FiTrackerExpenses.Utils.TestUtils.MEMBER_TEST_ID;
+import static aj.FiTracker.FiTrackerExpenses.Utils.TestUtils.ZONE_TEST_ID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
@@ -35,6 +36,7 @@ public class KafkaConsumerServiceUnitTest {
     private ConsumerRecord<String, String> consumerRecordMock;
     private Headers headersMock;
     private Header headerMock;
+
     @BeforeEach
     public void start() {
         this.objectMapper = new ObjectMapper();

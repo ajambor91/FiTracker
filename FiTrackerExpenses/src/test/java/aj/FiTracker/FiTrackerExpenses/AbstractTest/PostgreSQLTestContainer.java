@@ -5,10 +5,11 @@ import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Testcontainers
 public class PostgreSQLTestContainer extends PostgreSQLContainer<PostgreSQLTestContainer> {
@@ -16,8 +17,8 @@ public class PostgreSQLTestContainer extends PostgreSQLContainer<PostgreSQLTestC
     private static final String IMAGE_VERSION = "postgres:17.4-alpine3.21";
     @Container
     private static final PostgreSQLTestContainer container = new PostgreSQLTestContainer()
-            .withUsername("exampleUser")
-            .withPassword("examplePassword")
+            .withUsername("testUser")
+            .withPassword("testPassword")
             .withDatabaseName("fit");
     private Connection connection;
 
@@ -55,6 +56,39 @@ public class PostgreSQLTestContainer extends PostgreSQLContainer<PostgreSQLTestC
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    public List<Map<String, Object>> getTestData(String sql, Object... params) {
+        if (connection == null) {
+            setConnection();
+        }
+
+        List<Map<String, Object>> results = new ArrayList<>();
+        try (PreparedStatement pstmt = connection.prepareStatement(sql)) {
+            if (params != null) {
+                for (int i = 0; i < params.length; i++) {
+                    pstmt.setObject(i + 1, params[i]);
+                }
+            }
+
+            try (ResultSet rs = pstmt.executeQuery()) {
+                ResultSetMetaData metaData = rs.getMetaData();
+                int columnCount = metaData.getColumnCount();
+                while (rs.next()) {
+                    Map<String, Object> row = new HashMap<>();
+                    for (int i = 1; i <= columnCount; i++) {
+                        String columnName = metaData.getColumnLabel(i);
+                        Object columnValue = rs.getObject(i);
+                        row.put(columnName, columnValue);
+                    }
+                    results.add(row);
+                }
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException("Error executing SQL query: " + sql, e);
+        }
+
+        return results;
     }
 
     private void setConnection() {

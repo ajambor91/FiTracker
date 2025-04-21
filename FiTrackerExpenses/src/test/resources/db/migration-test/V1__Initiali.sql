@@ -1,3 +1,4 @@
+CREATE USER exampleuser WITH PASSWORD 'examplePassword';
 
 CREATE SCHEMA app_data;
 ALTER SCHEMA app_data OWNER TO exampleuser;
@@ -15,7 +16,7 @@ CREATE TABLE fit.app_data.app_user (
 
 CREATE TABLE fit.app_data.categories (
     category_id BIGSERIAL PRIMARY KEY,
-    name VARCHAR(255) NOT NULL UNIQUE,
+    name VARCHAR(255) NOT NULL,
     description VARCHAR(255),
     zone_id VARCHAR(255) NOT NULL,
     created_at TIMESTAMP  NOT NULL,

@@ -68,7 +68,7 @@ public class ExpensesService {
             if (categories.isEmpty() && addExpenseRequest.getCategoriesIds() != null && !addExpenseRequest.getCategoriesIds().isEmpty()) {
                 logger.warn("Cannot find any categories with IDs: {} for zone ID: {}", addExpenseRequest.getCategoriesIds(), zoneId);
                 throw new CannotFindCategoriesException("Cannot find categories: " + addExpenseRequest.getCategoriesIds());
-            } 
+            }
 
             Expense expense = new Expense(addExpenseRequest, user.getUserId(), categories);
             logger.debug("Created new expense object: {}", expense);
@@ -80,22 +80,19 @@ public class ExpensesService {
             categories.forEach(category -> {
                 category.getExpenses().add(finalExpense);
             });
-            if(!categories.isEmpty()){
+            if (!categories.isEmpty()) {
                 this.categoriesRepository.saveAllAndFlush(categories);
                 logger.debug("Updated {} categories with the new expense.", categories.size());
             }
 
             return finalExpense;
-        }
-        catch(CannotFindCategoriesException e) {
+        } catch (CannotFindCategoriesException e) {
             logger.warn("Failed to add expense due to missing categories: {}", e.getMessage());
             throw e;
-        }
-        catch(UserUnauthorizedException e) {
+        } catch (UserUnauthorizedException e) {
             logger.warn("User unauthorized to add expense in zone {}: {}", zoneId, e.getMessage());
             throw e;
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             logger.error("An internal server error occurred while adding expense to zone {}.", zoneId, e);
             throw new InternalServerException(e);
         }
@@ -156,7 +153,7 @@ public class ExpensesService {
             logger.info("Successfully retrieved total summary sum for zone {}. Found {} entries.", zoneId, summary.size());
             logger.debug("Total summary sum: {}", summary);
             return summary;
-        }catch (UserUnauthorizedException userUnauthorizedException) {
+        } catch (UserUnauthorizedException userUnauthorizedException) {
             logger.warn("User unauthorized to get total summary sum in zone {}: {}", zoneId, userUnauthorizedException.getMessage());
             throw userUnauthorizedException;
         } catch (Exception e) {
@@ -188,7 +185,7 @@ public class ExpensesService {
             logger.info("Successfully retrieved top expenses summary for zone {}. Found {} entries.", zoneId, summary.size());
             logger.debug("Top expenses summary: {}", summary);
             return summary;
-        }catch (UserUnauthorizedException e) {
+        } catch (UserUnauthorizedException e) {
             logger.warn("User unauthorized to get top expenses summary in zone {}: {}", zoneId, e.getMessage());
             throw e;
         } catch (Exception e) {

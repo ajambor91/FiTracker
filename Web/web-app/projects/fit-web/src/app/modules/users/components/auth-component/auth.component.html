@@ -7,12 +7,20 @@
       <mat-form-field>
         <mat-label>Login</mat-label>
         <input formControlName="login" matInput>
+        <ng-container *ngIf="isLoginInvalid">
+          <mat-error i18n>Login is invalid</mat-error>
+        </ng-container>
       </mat-form-field>
+
+
     </div>
     <div class="form-group">
       <mat-form-field>
         <mat-label>Password</mat-label>
         <input formControlName="rawPassword" matInput type="password">
+        <ng-container *ngIf="isPasswordInvalid">
+          <mat-error i18n>Password is invalid</mat-error>
+        </ng-container>
       </mat-form-field>
     </div>
     <div class="form-group row justify-content-end">

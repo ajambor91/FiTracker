@@ -1,4 +1,5 @@
-import {FormControl, FormGroup} from '@angular/forms';
+import {FormControl, FormGroup, Validators} from '@angular/forms';
+import {passwordValidator} from '../validators/password.validator';
 
 
 export interface LoginForm {
@@ -7,6 +8,17 @@ export interface LoginForm {
 }
 
 export const authForm: FormGroup<LoginForm> = new FormGroup<LoginForm>({
-  login: new FormControl('', {nonNullable: true}),
-  rawPassword: new FormControl('', {nonNullable: true})
+  login: new FormControl('', {
+    nonNullable: true,
+    validators: [
+      Validators.required,
+      Validators.pattern(/^[a-zA-Z0-9]+$/)
+    ]
+  }),
+  rawPassword: new FormControl('', {
+    nonNullable: true, validators: [
+      passwordValidator(),
+      Validators.required
+    ]
+  })
 })

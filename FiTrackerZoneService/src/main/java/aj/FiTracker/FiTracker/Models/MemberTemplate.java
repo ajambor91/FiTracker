@@ -15,6 +15,7 @@ public class MemberTemplate implements KafkaModelTemplate {
 
     private List<Member> membersList;
     private String zoneId;
+
     public MemberTemplate(String zoneId) {
         this.zoneId = zoneId;
         this.membersList = new ArrayList<>();

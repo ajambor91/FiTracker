@@ -6,6 +6,7 @@ import aj.FiTracker.FiTrackerExpenses.Entities.Category;
 import aj.FiTracker.FiTrackerExpenses.Services.CategoriesService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,7 +16,6 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Set;
 
 @RestController
 @RequestMapping("/categories")
@@ -51,7 +51,7 @@ public class CategoriesController {
     public ResponseEntity<UpdateCategoryResponse> updateCategory(
             Authentication authentication,
             @RequestBody @Valid UpdateCategoryRequest updateCategoryRequest,
-            @NotBlank @PathVariable long categoryId,
+            @NotNull @PathVariable Long categoryId,
             @NotBlank @PathVariable String zoneId) {
         logger.info("Received request to update category with ID {} in zone {}. User: {}", categoryId, zoneId, authentication.getName());
         logger.debug("Update category request: {}", updateCategoryRequest);

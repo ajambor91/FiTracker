@@ -1,4 +1,4 @@
-import {FormControl, FormGroup} from '@angular/forms';
+import {FormControl, FormGroup, Validators} from '@angular/forms';
 
 
 export interface AddExpenseCategoryForm {
@@ -7,6 +7,15 @@ export interface AddExpenseCategoryForm {
 }
 
 export const addExpenseCategoryForm: FormGroup<AddExpenseCategoryForm> = new FormGroup<AddExpenseCategoryForm>({
-  name: new FormControl('', {nonNullable: true}),
-  description: new FormControl('', {nonNullable: false})
+  name: new FormControl('', {
+    nonNullable: true, validators: [
+      Validators.required,
+      Validators.pattern(/^[\w\d ]+$/)
+    ]
+  }),
+  description: new FormControl('', {
+    nonNullable: false, validators: [
+      Validators.pattern(/^[\w\d ]+$/)
+    ]
+  })
 })

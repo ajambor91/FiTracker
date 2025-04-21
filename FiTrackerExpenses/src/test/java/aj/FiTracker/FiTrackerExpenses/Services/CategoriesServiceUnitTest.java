@@ -4,6 +4,7 @@ import aj.FiTracker.FiTrackerExpenses.DTO.DB.CategoryDb;
 import aj.FiTracker.FiTrackerExpenses.DTO.REST.AddCategoryRequest;
 import aj.FiTracker.FiTrackerExpenses.DTO.REST.UpdateCategoryRequest;
 import aj.FiTracker.FiTrackerExpenses.Entities.Category;
+import aj.FiTracker.FiTrackerExpenses.Exceptions.CannotFindCategoriesException;
 import aj.FiTracker.FiTrackerExpenses.Exceptions.InternalServerException;
 import aj.FiTracker.FiTrackerExpenses.Repositories.CategoriesRepository;
 import aj.FiTracker.FiTrackerExpenses.Utils.TestUtils;
@@ -19,7 +20,7 @@ import org.springframework.test.context.ActiveProfiles;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Set;
+import java.util.Optional;
 
 import static aj.FiTracker.FiTrackerExpenses.Utils.TestUtils.*;
 import static org.junit.jupiter.api.Assertions.*;
@@ -81,9 +82,15 @@ public class CategoriesServiceUnitTest {
     @DisplayName("Should update category and return")
     public void testUpdateCategory() {
         UpdateCategoryRequest updateCategoryRequest = TestUtils.createUpdateCategoryRequest();
+        when(this.categoriesRepositoryMock.findByCategoryIdAndZoneId(eq(CATEGORY_TEST_ID), eq(ZONE_TEST_ID))).thenReturn(Optional.of(createTestCategory()));
         when(this.categoriesRepositoryMock.save(any(Category.class))).thenReturn(TestUtils.createTestCategory());
         Category category = this.categoriesService.updateCategory(CATEGORY_TEST_ID, ZONE_TEST_ID, updateCategoryRequest, this.authenticationMock);
+        verify(this.categoriesRepositoryMock, times(1)).findByCategoryIdAndZoneId(
+                eq(CATEGORY_TEST_ID),
+                eq(ZONE_TEST_ID)
+        );
         verify(this.categoriesRepositoryMock, times(1)).save(any(Category.class));
+
         assertInstanceOf(Category.class, category);
         assertEquals(CATEGORY_TEST_ID, category.getCategoryId());
         assertEquals(CATEGORY_TEST_NAME, category.getName());
@@ -94,11 +101,54 @@ public class CategoriesServiceUnitTest {
     @DisplayName("Should throw InternalServerException when updating Category")
     public void testUpdateCategoryInternalServerException() {
         UpdateCategoryRequest updateCategoryRequest = TestUtils.createUpdateCategoryRequest();
+        when(this.categoriesRepositoryMock.findByCategoryIdAndZoneId(eq(CATEGORY_TEST_ID), eq(ZONE_TEST_ID))).thenReturn(Optional.of(createTestCategory()));
+
         when(this.categoriesRepositoryMock.save(any(Category.class))).thenThrow(new RuntimeException("Boom!"));
         InternalServerException exception = assertThrows(InternalServerException.class, () -> {
             this.categoriesService.updateCategory(CATEGORY_TEST_ID, ZONE_TEST_ID, updateCategoryRequest, this.authenticationMock);
-            verify(this.categoriesRepositoryMock, times(1)).save(any(Category.class));
         });
+        verify(this.categoriesRepositoryMock, times(1)).findByCategoryIdAndZoneId(
+                eq(CATEGORY_TEST_ID),
+                eq(ZONE_TEST_ID)
+        );
+        verify(this.categoriesRepositoryMock, times(1)).save(any(Category.class));
+
+        assertInstanceOf(InternalServerException.class, exception);
+        assertEquals("Boom!", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("Should throw NotFound when cannot find any category updating Category")
+    public void testUpdateCategoryNotFound() {
+        UpdateCategoryRequest updateCategoryRequest = TestUtils.createUpdateCategoryRequest();
+        when(this.categoriesRepositoryMock.findByCategoryIdAndZoneId(eq(CATEGORY_TEST_ID), eq(ZONE_TEST_ID))).thenReturn(Optional.empty());
+
+        CannotFindCategoriesException exception = assertThrows(CannotFindCategoriesException.class, () -> {
+            this.categoriesService.updateCategory(CATEGORY_TEST_ID, ZONE_TEST_ID, updateCategoryRequest, this.authenticationMock);
+        });
+        verify(this.categoriesRepositoryMock, never()).save(any(Category.class));
+        verify(this.categoriesRepositoryMock, times(1)).findByCategoryIdAndZoneId(
+                eq(CATEGORY_TEST_ID),
+                eq(ZONE_TEST_ID)
+        );
+        assertInstanceOf(CannotFindCategoriesException.class, exception);
+        assertEquals("Cannot find category " + CATEGORY_TEST_ID + " for zone: " + ZONE_TEST_ID, exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("Should throw InternalServerException when error is in getting category")
+    public void testUpdateCategoryInternalServerExceptionWhenGettingCategory() {
+        UpdateCategoryRequest updateCategoryRequest = TestUtils.createUpdateCategoryRequest();
+        when(this.categoriesRepositoryMock.findByCategoryIdAndZoneId(eq(CATEGORY_TEST_ID), eq(ZONE_TEST_ID))).thenThrow(new RuntimeException("Boom!"));
+
+        InternalServerException exception = assertThrows(InternalServerException.class, () -> {
+            this.categoriesService.updateCategory(CATEGORY_TEST_ID, ZONE_TEST_ID, updateCategoryRequest, this.authenticationMock);
+        });
+        verify(this.categoriesRepositoryMock, never()).save(any(Category.class));
+        verify(this.categoriesRepositoryMock, times(1)).findByCategoryIdAndZoneId(
+                eq(CATEGORY_TEST_ID),
+                eq(ZONE_TEST_ID)
+        );
         assertInstanceOf(InternalServerException.class, exception);
         assertEquals("Boom!", exception.getMessage());
     }

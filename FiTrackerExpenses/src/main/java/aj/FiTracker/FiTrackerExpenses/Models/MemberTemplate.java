@@ -14,6 +14,7 @@ public class MemberTemplate implements KafkaModelTemplate {
 
     private List<Member> membersList;
     private String zoneId;
+
     public MemberTemplate() {
     }
 

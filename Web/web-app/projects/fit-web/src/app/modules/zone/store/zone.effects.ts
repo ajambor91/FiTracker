@@ -1,4 +1,3 @@
-
 import {Actions, createEffect, ofType} from '@ngrx/effects';
 import {inject} from '@angular/core';
 import {ZoneService} from '../services/zone.service';

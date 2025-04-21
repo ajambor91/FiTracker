@@ -1,22 +1,18 @@
 import {Injectable} from '@angular/core';
-import {ApiUsersService, FindUserResponse, ZoneApiService} from 'api';
+import {ApiUsersService, FindUserResponse} from 'api';
 import {FormGroup} from '@angular/forms';
 import {BehaviorSubject, debounceTime, filter, Observable, switchMap} from 'rxjs';
 import {FindUser} from '../../../../../../api/src/lib/models/find-user-response.model';
-import {Store} from '@ngrx/store';
-import {ZonesState} from '../store/zone.reducer';
 import {Member} from '../models/member.model';
-import {Router} from '@angular/router';
 
 
 @Injectable()
 export class MembersService {
-  private _foundMembers: BehaviorSubject<FindUser[]> = new BehaviorSubject<FindUser[]>([]);
-
   constructor(
-    private usersService: ApiUsersService){
+    private usersService: ApiUsersService) {
   }
 
+  private _foundMembers: BehaviorSubject<FindUser[]> = new BehaviorSubject<FindUser[]>([]);
 
   public get foundMembers(): Observable<FindUser[]> {
     return this._foundMembers.asObservable();

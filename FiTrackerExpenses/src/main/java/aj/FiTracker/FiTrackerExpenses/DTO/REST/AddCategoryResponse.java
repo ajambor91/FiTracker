@@ -11,6 +11,7 @@ public class AddCategoryResponse extends BaseCategory {
     @NotBlank
     private String zoneId;
     private long categoryId;
+
     public AddCategoryResponse(Category category) {
 
         super(category);

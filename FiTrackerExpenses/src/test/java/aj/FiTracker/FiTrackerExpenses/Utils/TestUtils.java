@@ -1,7 +1,6 @@
 package aj.FiTracker.FiTrackerExpenses.Utils;
 
 import aj.FiTracker.FiTrackerExpenses.DTO.DB.CategoryDb;
-import aj.FiTracker.FiTrackerExpenses.DTO.DB.TotalSummaryByCategory;
 import aj.FiTracker.FiTrackerExpenses.DTO.REST.AddCategoryRequest;
 import aj.FiTracker.FiTrackerExpenses.DTO.REST.AddExpenseRequest;
 import aj.FiTracker.FiTrackerExpenses.DTO.REST.UpdateCategoryRequest;
@@ -16,15 +15,15 @@ import java.util.List;
 import java.util.Set;
 
 public class TestUtils {
-    public static long MEMBER_TEST_ID = 0;
-    public static long MEMBER_TEST_ID_SECOND = 1;
+    public static long MEMBER_TEST_ID = 1;
+    public static long MEMBER_TEST_ID_SECOND = 2;
     public static String USER_TEST_NAME = "Test name";
-    public static long USER_TEST_ID = 0;
+    public static long USER_TEST_ID = 1;
     public static String ZONE_TEST_ID = "abc";
-    public static long CATEGORY_TEST_ID = 0;
+    public static long CATEGORY_TEST_ID = 1;
     public static String CATEGORY_TEST_NAME = "zone_test";
     public static String CATEGORY_TEST_DESCRIPTION = "Test description";
-    public static long CATEGORY_TEST_ID_SECOND = 1;
+    public static long CATEGORY_TEST_ID_SECOND = 2;
     public static String CATEGORY_TEST_NAME_SECOND = "zone_test";
     public static String DEFAULT_CURRENCY = "PLN";
     public static String TEST_EXPENSE_NAME = "Test expense";
@@ -34,6 +33,9 @@ public class TestUtils {
     public static BigDecimal OVERALL_VALUE = BigDecimal.valueOf(1000);
     public static String TEST_FROM_DATE_PARAM = "2025-04-01";
     public static String TEST_END_DATE_PARAM = "2025-04-30";
+
+    public static String TEST_FROM_DATE_PARAM_BAD = "2020-04-01";
+    public static String TEST_END_DATE_PARAM_BAD = "2021-04-30";
 
     public static MemberTemplate createMemberTemplateOneMember() {
         MemberTemplate memberTemplate = new MemberTemplate(ZONE_TEST_ID);
@@ -96,6 +98,13 @@ public class TestUtils {
         return request;
     }
 
+    public static UpdateCategoryRequest createUpdateCategoryRequestAnotherData() {
+        UpdateCategoryRequest request = new UpdateCategoryRequest();
+        request.setName(CATEGORY_TEST_NAME_SECOND);
+        request.setDescription(CATEGORY_TEST_DESCRIPTION);
+        return request;
+    }
+
     public static AddExpenseRequest addExpenseRequest() {
         AddExpenseRequest addExpenseRequest = new AddExpenseRequest();
         addExpenseRequest.setCurrency(DEFAULT_CURRENCY);
@@ -118,8 +127,6 @@ public class TestUtils {
         expense.setUser(USER_TEST_ID);
         return expense;
     }
-
-
 
 
 }

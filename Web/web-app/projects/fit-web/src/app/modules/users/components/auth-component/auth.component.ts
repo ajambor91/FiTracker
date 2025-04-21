@@ -1,8 +1,9 @@
 import {Component} from '@angular/core';
 import {authForm, LoginForm} from '../../forms/auth.form';
-import {FormGroup} from '@angular/forms';
+import {AbstractControl, FormGroup} from '@angular/forms';
 import {UsersService} from '../../services/users.service';
 import {LoginRequest} from 'api';
+import {SnackbarService} from '../../../shared/services/snackbar.service';
 
 @Component({
   selector: 'app-auth',
@@ -13,7 +14,17 @@ import {LoginRequest} from 'api';
 export class AuthComponent {
   private readonly _authForm: FormGroup<LoginForm> = authForm;
 
-  constructor(private usersService: UsersService) {
+  constructor(private usersService: UsersService, private snackbar: SnackbarService) {
+  }
+
+  public get isLoginInvalid(): boolean {
+    const loginControl: AbstractControl = this._authForm.get('login') as AbstractControl;
+    return loginControl.invalid && loginControl.touched;
+  }
+
+  public get isPasswordInvalid(): boolean {
+    const passwordControl: AbstractControl = this._authForm.get('rawPassword') as AbstractControl;
+    return passwordControl.invalid && passwordControl.touched;
   }
 
   public get authForm(): FormGroup<LoginForm> {
@@ -21,6 +32,12 @@ export class AuthComponent {
   }
 
   public submitForm(): void {
-    this.usersService.auth(this.authForm.getRawValue() as LoginRequest)
+    if (this.authForm.valid) {
+      this.usersService.auth(this.authForm.getRawValue() as LoginRequest)
+    } else {
+      this.authForm.markAllAsTouched()
+      this.snackbar.showError("Form has errors");
+    }
+
   }
 }

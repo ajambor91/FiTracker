@@ -11,7 +11,7 @@ import {
   TotalSummariesByCategory,
   TotalSummariesByDate
 } from "api"
-import {forkJoin, map, Observable, tap} from 'rxjs';
+import {EMPTY, forkJoin, map, Observable, tap} from 'rxjs';
 import {InitialExpenses} from '../models/initial-expenses.model';
 import {AddExpenseCategoryForm} from '../forms/add-expense-category.form';
 import {FormGroup} from '@angular/forms';
@@ -19,7 +19,6 @@ import {AddExpenseForm, AddExpenseMultiCategoriesForm} from '../forms/add-expens
 import {Currency} from '../types/currency.type';
 import {Dateutil} from '../../shared/utils/date.util';
 import {TransformedSum} from '../models/transformed-sum.model';
-import {ZoneService} from './zone.service';
 import {Store} from '@ngrx/store';
 import {ZonesState} from '../store/zone.reducer';
 import {refreshZone} from '../store/zone.actions';
@@ -89,6 +88,10 @@ export class ExpensesService {
 
   public addExpense(zoneId: string, categoryId: number, form: FormGroup<AddExpenseForm>): Observable<AddExpenseResponse> {
     const {name, value} = form.getRawValue();
+
+    if (!name || !value || !categoryId) {
+      return EMPTY;
+    }
     return this.expensesApiService.addExpense({
       name, zoneId,
       currency: 'PLN',
@@ -99,6 +102,11 @@ export class ExpensesService {
 
   public addExpenseMultiCategories(zoneId: string, form: FormGroup<AddExpenseMultiCategoriesForm>): Observable<AddExpenseResponse> {
     const {name, value, categoriesIds} = form.getRawValue();
+
+    if (!name || !value || !categoriesIds) {
+      return EMPTY;
+    }
+
     return this.expensesApiService.addExpense({
       name, zoneId,
       currency: 'PLN',

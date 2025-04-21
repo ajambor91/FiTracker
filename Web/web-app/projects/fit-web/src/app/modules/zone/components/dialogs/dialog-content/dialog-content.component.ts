@@ -1,7 +1,6 @@
 import {Component, OnInit} from '@angular/core';
 import {NavService} from '../../../services/nav.service';
-import {filter, map, Observable, take} from 'rxjs';
-import {ZoneService} from '../../../services/zone.service';
+import {Observable} from 'rxjs';
 
 @Component({
   selector: 'app-dialog-content',

@@ -1,4 +1,6 @@
 .zone-dashboard {
+  min-height: calc(100vh - 520px);
+
   &__category-chart-canvas {
     max-width: 500px;
     margin: auto;
@@ -44,6 +46,24 @@
     &__row:first-of-type {
       background-color: #FF4500 !important;
       font-weight: 700;
+    }
+  }
+}
+
+.no-data {
+  height: calc(100vh - 400px);
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+
+  &__description {
+    text-align: center;
+    font-size: 1.4em;
+    font-weight: 700;
+    color: #8a1181;
+
+    a {
+      color: inherit;
     }
   }
 }

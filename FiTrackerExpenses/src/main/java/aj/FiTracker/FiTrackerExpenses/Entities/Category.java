@@ -1,6 +1,7 @@
 package aj.FiTracker.FiTrackerExpenses.Entities;
 
 import aj.FiTracker.FiTrackerExpenses.DTO.REST.BaseCategory;
+import aj.FiTracker.FiTrackerExpenses.DTO.REST.UpdateCategoryRequest;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -59,6 +60,15 @@ public class Category {
 
 
     public Category() {
+    }
+
+    public void updateCategory(UpdateCategoryRequest categoryRequest) {
+        if (categoryRequest.getName() != null) {
+            this.name = categoryRequest.getName();
+        }
+        if (categoryRequest.getDescription() != null) {
+            this.description = categoryRequest.getDescription();
+        }
     }
 
     @PrePersist

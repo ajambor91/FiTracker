@@ -24,12 +24,18 @@ export const zoneReducer = createReducer(
   })),
   on(updateZone, (state, {zone}) => ({
     ...state,
-    zones: state.zones.map(zoneFromState => {
-      if (zoneFromState.zoneId !== zone.zoneId) {
-        return zoneFromState;
-      }
-      return zone;
-    })
+    zones: ((zones: Zone[], zoneToUpdate: Zone): Zone[] => {
+      const arr: Zone[] = [];
+      zones.forEach(zone => {
+        if (zone.zoneId === zoneToUpdate.zoneId) {
+          arr.push(zoneToUpdate);
+        } else {
+          arr.push(zone)
+        }
+      })
+      return arr;
+    })(state.zones, zone)
+
   })),
   on(addZone, (state, {zone}) => ({
     ...state,

@@ -10,7 +10,7 @@ import {FormContainerComponent} from './components/form-container/form-container
 import {HeaderComponent} from './components/header/header.component';
 import {FontAwesomeModule} from '@fortawesome/angular-fontawesome';
 import {MonthPickerComponent} from './components/month-picker/month-picker.component';
-import {SnackbarService} from './services/snackbar.service';
+import {MatFormFieldModule} from '@angular/material/form-field';
 
 
 @NgModule({
@@ -26,7 +26,8 @@ import {SnackbarService} from './services/snackbar.service';
     MatFormField,
     MatInput,
     MatLabel,
-    MatButton
+    MatButton,
+    MatFormFieldModule
 
 
   ],
@@ -41,8 +42,7 @@ import {SnackbarService} from './services/snackbar.service';
     FormContainerComponent,
     HeaderComponent,
     MonthPickerComponent,
-
-
+    MatFormFieldModule
 
 
   ],

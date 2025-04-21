@@ -45,7 +45,9 @@ export class ZoneService {
   }
 
   public fillUpdateZoneForm(id: string, form: FormGroup<UpdateZoneForm>): Observable<Zone> {
+
     return this.getCurrentZoneById(id).pipe(
+      take(1),
       filter(zoneData => !!zoneData),
       switchMap((zone: Zone) => {
         const zoneDataForm: FormGroup<ZoneDataForm> = form.get('zoneData') as FormGroup<ZoneDataForm>;
@@ -92,6 +94,7 @@ export class ZoneService {
   public getCurrentZoneById(zoneId: string): Observable<Zone | null> {
     return this.store.pipe(select(selectZoneById(zoneId))).pipe(
       switchMap(zone => {
+
         if (zone) {
           return of(zone);
         } else {

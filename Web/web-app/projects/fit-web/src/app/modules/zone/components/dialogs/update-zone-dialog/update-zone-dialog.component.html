@@ -12,12 +12,19 @@
           <mat-form-field>
             <mat-label i18n>Zone name</mat-label>
             <input formControlName="zoneName" matInput>
+            <ng-container *ngIf="isNameIsInvalid">
+              <mat-error i18n>Zone name is invalid</mat-error>
+
+            </ng-container>
           </mat-form-field>
         </div>
         <div class="form-group">
           <mat-form-field>
             <mat-label i18n>Zone description</mat-label>
             <input formControlName="zoneDescription" matInput>
+            <ng-container *ngIf="isDescriptionIsInvalid">
+              <mat-error i18n>Zone description is invalid</mat-error>
+            </ng-container>
           </mat-form-field>
         </div>
       </div>

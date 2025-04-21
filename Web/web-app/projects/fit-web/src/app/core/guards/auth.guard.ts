@@ -1,6 +1,6 @@
 import {CanActivateFn, Router} from '@angular/router';
 import {inject} from '@angular/core';
-import {map, take} from 'rxjs';
+import {map} from 'rxjs';
 import {User} from '../../modules/users/models/user.model';
 import {AuthService} from '../services/auth.service';
 
@@ -9,7 +9,7 @@ export const authGuard: CanActivateFn = (route, state) => {
   const router: Router = inject(Router);
 
   return authService.getUser().pipe(
-    take(1),
+    // take(1),
     map((auth: User | null) => {
       if (auth !== null) {
 

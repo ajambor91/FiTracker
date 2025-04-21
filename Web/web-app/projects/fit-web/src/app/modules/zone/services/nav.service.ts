@@ -11,13 +11,13 @@ import {RouteService} from './route.service';
 export class NavService {
   private _isLoaded: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
   private _currentDialog!: Subscription;
-  public get isLoaded$(): Observable<boolean> {
-    return this._isLoaded.asObservable();
-  }
+
   constructor(public dialog: MatDialog, private router: Router, private routeService: RouteService) {
   }
 
-
+  public get isLoaded$(): Observable<boolean> {
+    return this._isLoaded.asObservable();
+  }
 
   public openCategoryDialog(routes: string[]): void {
     this._currentDialog = this.dialog.open(

@@ -21,7 +21,6 @@ public class WithMockJwtSecurityContextFactory implements WithSecurityContextFac
         Map<String, Object> claims = Map.of(
                 "name", annotation.name(),
                 "sub", annotation.sub()
-                // Dodaj inne claimy
         );
         Instant now = Instant.now();
         Jwt jwt = new Jwt("tokenValue", now, now.plusSeconds(3600), Map.of("alg", "none"), claims);

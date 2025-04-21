@@ -1,5 +1,5 @@
 import {ChangeDetectionStrategy, Component, OnInit} from '@angular/core';
-import {FormArray, FormControl, FormGroup} from '@angular/forms';
+import {AbstractControl, FormArray, FormControl, FormGroup} from '@angular/forms';
 import {ZoneService} from '../../../services/zone.service';
 import {FoundUserForm} from '../../../forms/add-members.form';
 import {FindUserForm} from '../../../forms/find-user.form';
@@ -11,6 +11,7 @@ import {ActivatedRoute} from '@angular/router';
 import {Zone} from '../../../models/zone.model';
 import {NavService} from '../../../services/nav.service';
 import {faMinus, faPlus} from '@fortawesome/free-solid-svg-icons';
+import {SnackbarService} from '../../../../shared/services/snackbar.service';
 
 @Component({
   selector: 'app-update-zone-dialog',
@@ -25,11 +26,30 @@ export class UpdateZoneDialogComponent implements OnInit {
   public faPlus = faPlus
 
   private zone!: Zone;
-  private _form: FormGroup<UpdateZoneForm> = updateZoneForm;
 
+  constructor(
+    private membersService: MembersService,
+    private zoneService: ZoneService,
+    private activatedRoute: ActivatedRoute,
+    private navSevice: NavService,
+    private snackbar: SnackbarService
+  ) {
+  }
+
+  private _form: FormGroup<UpdateZoneForm> = updateZoneForm;
 
   public get form(): FormGroup<UpdateZoneForm> {
     return this._form;
+  }
+
+  public get isNameIsInvalid(): boolean {
+    const zoneNameControl: AbstractControl = (this.form.get('zoneData') as FormGroup).get('zoneName') as AbstractControl;
+    return zoneNameControl.invalid && zoneNameControl.touched;
+  }
+
+  public get isDescriptionIsInvalid(): boolean {
+    const zoneDescriptionControl: AbstractControl = (this.form.get('zoneData') as FormGroup).get('zoneDescription') as AbstractControl;
+    return zoneDescriptionControl.invalid && zoneDescriptionControl.touched;
   }
 
   public get findUserForm(): FormGroup<FindUserForm> {
@@ -51,13 +71,7 @@ export class UpdateZoneDialogComponent implements OnInit {
   public get zoneData(): FormGroup<ZoneDataForm> {
     return this._form.get('zoneData') as FormGroup<ZoneDataForm>;
   }
-  constructor(
-    private membersService: MembersService,
-    private zoneService: ZoneService,
-    private activatedRoute: ActivatedRoute,
-    private navSevice: NavService
-  ) {
-  }
+
   public ngOnInit(): void {
     this.fillForm();
     this.membersService.findUser(this._form);
@@ -74,9 +88,15 @@ export class UpdateZoneDialogComponent implements OnInit {
   }
 
   public submitForm(): void {
-    this.zoneService.updateFullZoneData(this.zone.zoneId, this._form).subscribe(zone => {
-      this.navSevice.closeDialog(zone.zoneId);
-    });
+    if (this._form.valid) {
+      this.zoneService.updateFullZoneData(this.zone.zoneId, this._form).subscribe(zone => {
+        this.navSevice.closeDialog(zone.zoneId);
+      });
+    } else {
+      this._form.markAllAsTouched();
+      this.snackbar.showError("Form has errors.")
+    }
+
   }
 
   public removeMember(user: FormGroup<FoundUserForm>, index: number): void {
