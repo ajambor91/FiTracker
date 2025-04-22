@@ -13,6 +13,8 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 
 @Profile("!integration")
 @Configuration
@@ -56,16 +58,15 @@ public class SecurityConfig {
                 })
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()))
 
-//                .csrf(csrf -> {
-//                    logger.info("Configuring CSRF protection");
-//                    CookieCsrfTokenRepository csrfTokenRepository = new CookieCsrfTokenRepository();
-//                    csrf.csrfTokenRepository(csrfTokenRepository);
-//                    logger.debug("Using CookieCsrfTokenRepository for CSRF token storage");
-//                    CsrfTokenRequestAttributeHandler csrfTokenRequestHandler = new CsrfTokenRequestAttributeHandler();
-//                    csrf.csrfTokenRequestHandler(csrfTokenRequestHandler);
-//                    logger.debug("Using CsrfTokenRequestAttributeHandler for CSRF token handling");
-//                })
-                .csrf(csrf -> csrf.disable());
+                .csrf(csrf -> {
+                    logger.info("Configuring CSRF protection");
+                    CookieCsrfTokenRepository csrfTokenRepository = new CookieCsrfTokenRepository();
+                    csrf.csrfTokenRepository(csrfTokenRepository);
+                    logger.debug("Using CookieCsrfTokenRepository for CSRF token storage");
+                    CsrfTokenRequestAttributeHandler csrfTokenRequestHandler = new CsrfTokenRequestAttributeHandler();
+                    csrf.csrfTokenRequestHandler(csrfTokenRequestHandler);
+                    logger.debug("Using CsrfTokenRequestAttributeHandler for CSRF token handling");
+                });
 
         return http.build();
     }

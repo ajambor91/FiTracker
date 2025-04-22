@@ -136,6 +136,15 @@ services:
     volumes:
       - fit-kafka-data:/kafka/data
       - fit-kafka-log:/var/lib/kafka/data:z
+  fit-frontend:
+    hostname: fit-frontend
+    container_name: fit-frontend
+    build:
+      context: 'Web'
+      dockerfile: "web-app/projects/fit-web/Dockerfile"
+    ports:
+      - '81:80'
+      - '444:443'
 networks:
   fit:
     driver: bridge

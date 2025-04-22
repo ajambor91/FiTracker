@@ -7,6 +7,7 @@
       "i18n": {
         "sourceLocale": "en-US",
         "locales": {
+          "en-EN": "/locales/en.translations.xlf",
           "pl-PL": "/locales/pl.translations.xlf"
         }
       },
@@ -30,7 +31,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:application",
           "options": {
-            "localize": ["pl-PL"],
+            "localize": ["en-US","pl-PL"],
             "outputPath": "dist/fit-web",
             "index": "projects/fit-web/src/index.html",
             "browser": "projects/fit-web/src/main.ts",
@@ -57,7 +58,7 @@
                 {
                   "type": "initial",
                   "maximumWarning": "500kB",
-                  "maximumError": "1MB"
+                  "maximumError": "2MB"
                 },
                 {
                   "type": "anyComponentStyle",
