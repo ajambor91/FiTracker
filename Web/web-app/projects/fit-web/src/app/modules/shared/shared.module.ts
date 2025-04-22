@@ -4,8 +4,6 @@ import {ReactiveFormsModule} from '@angular/forms';
 import {MatFormField, MatInput, MatLabel} from '@angular/material/input';
 import {MatButton} from '@angular/material/button';
 import {provideAnimationsAsync} from '@angular/platform-browser/animations/async';
-import {providePrimeNG} from 'primeng/config';
-import Aura from '@primeng/themes/aura';
 import {FormContainerComponent} from './components/form-container/form-container.component';
 import {HeaderComponent} from './components/header/header.component';
 import {FontAwesomeModule} from '@fortawesome/angular-fontawesome';
@@ -48,11 +46,6 @@ import {MatFormFieldModule} from '@angular/material/form-field';
   ],
   providers: [
     provideAnimationsAsync(),
-    providePrimeNG({
-      theme: {
-        preset: Aura
-      }
-    }),
 
   ]
 })
