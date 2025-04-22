@@ -19,6 +19,7 @@ import {AuthService} from './core/services/auth.service';
 import {jwtRequestInterceptor} from './core/interceptors/jwt-request.interceptor';
 import {FontAwesomeModule} from '@fortawesome/angular-fontawesome';
 import {SnackbarService} from './modules/shared/services/snackbar.service';
+import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 
 @NgModule({
   declarations: [
@@ -30,6 +31,7 @@ import {SnackbarService} from './modules/shared/services/snackbar.service';
     EffectsModule.forRoot([]),
     StoreModule.forRoot({core: coreReducer}),
     NgbModule,
+    BrowserAnimationsModule
     FontAwesomeModule,
 
 
