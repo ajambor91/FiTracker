@@ -68,7 +68,7 @@ services:
       context: 'FiTrackerApiGateway'
     ports:
       - '8090:80'
-      - '443:443'
+      - '445:443'
     depends_on:
       - fit-main-app
       - fit-zone-app
