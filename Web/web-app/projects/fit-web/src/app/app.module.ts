@@ -31,7 +31,7 @@ import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
     EffectsModule.forRoot([]),
     StoreModule.forRoot({core: coreReducer}),
     NgbModule,
-    BrowserAnimationsModule
+    BrowserAnimationsModule,
     FontAwesomeModule,
 
 
