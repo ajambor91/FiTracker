@@ -10,6 +10,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @Configuration
 @EnableWebSecurity
@@ -24,6 +25,7 @@ public class SecurityConf {
         HttpSecurity securityFilterChain = httpSecurity
                 .authorizeHttpRequests(authorize -> authorize
                         .anyRequest().authenticated()
+                        .requestMatchers(new AntPathRequestMatcher("/actuator/**")).permitAll()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()));
         logger.info("SecurityFilterChain configured successfully.");
