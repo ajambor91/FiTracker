@@ -29,6 +29,7 @@
     "@ngrx/effects": "^19.0.1",
     "@ngrx/store": "^19.0.1",
     "@popperjs/core": "^2.11.8",
+    "angular-environment": "^1.0.8",
     "bootstrap": "^5.3.3",
     "chart.js": "^4.4.8",
     "chartjs-plugin-datalabels": "^2.2.0",

@@ -4,7 +4,7 @@ FROM node:22 AS BUILDER
 WORKDIR /app
 COPY ./web-app .
 RUN npm install -g @angular/cli
-RUN npm install && ng b api && ng b fit-web
+RUN npm install && ng b api && ng b fit-web environment=production
 
 FROM nginx:latest AS RUNNER
 

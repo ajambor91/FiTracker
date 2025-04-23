@@ -20,6 +20,7 @@ import {jwtRequestInterceptor} from './core/interceptors/jwt-request.interceptor
 import {FontAwesomeModule} from '@fortawesome/angular-fontawesome';
 import {SnackbarService} from './modules/shared/services/snackbar.service';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
+import {environment} from '../environments/environment';
 
 @NgModule({
   declarations: [
@@ -41,7 +42,7 @@ import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 
     {
       provide: API_BASE_URL,
-      useValue: "https://fit-prod.aj/api"
+      useValue: environment.apiUrl
     },
     AuthService,
     ApiCoreService,
