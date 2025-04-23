@@ -3,7 +3,7 @@ import {Observable, tap} from 'rxjs';
 import {urlPath} from '../utils/url-path.util';
 import {environment} from '../../../environments/environment';
 
-const AUTH_PATH: string =  environment + '/main/users/login';
+const AUTH_PATH: string =  environment.apiUrl + '/main/users/login';
 
 export function jwtResponseInterceptor(req: HttpRequest<unknown>, next: HttpHandlerFn): Observable<HttpEvent<unknown>> {
   return next(req).pipe(
