@@ -24,8 +24,8 @@ public class SecurityConf {
         logger.info("Configuring SecurityFilterChain.");
         HttpSecurity securityFilterChain = httpSecurity
                 .authorizeHttpRequests(authorize -> authorize
-                        .anyRequest().authenticated()
                         .requestMatchers(new AntPathRequestMatcher("/actuator/**")).permitAll()
+                        .anyRequest().authenticated()
                 )
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()));
         logger.info("SecurityFilterChain configured successfully.");
