@@ -20,7 +20,7 @@ import {jwtRequestInterceptor} from './core/interceptors/jwt-request.interceptor
 import {FontAwesomeModule} from '@fortawesome/angular-fontawesome';
 import {SnackbarService} from './modules/shared/services/snackbar.service';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
-import {environment} from './environments/environment';
+import {environment} from '../environments/environment';
 
 @NgModule({
   declarations: [

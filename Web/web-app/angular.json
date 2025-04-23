@@ -56,8 +56,8 @@
             "production": {
               "fileReplacements": [
                 {
-                  "replace": "environments/environment.ts",
-                  "with": "environments/environment.production.ts"
+                  "replace": "projects/fit-web/src/environments/environment.ts",
+                  "with": "projects/fit-web/src/environments/environment.production.ts"
                 }
               ],
               "budgets": [
