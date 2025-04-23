@@ -6,7 +6,7 @@ vault operator init
 
 
 
-vault operator unseal GmT4Xp6Sy/IZHcunLBVDudjh5ZDQn8S9YWWyygJ9WDs5
+vault operator unseal myGomopo0pPOOFhgOryqxxyrrFxTmZ85gYmDvmE1J0K6
 vault operator unseal oSU8JIH5D393nybQFRxP3QicZC4wXhZEbO6W3KaKnSoa
 vault operator unseal QcsNttEXh7HA1m+iqCWBoTsy5hCIdDBCRhlC45KXamSC
 vault operator unseal 6Bcdr74a8eazBJXy0l5TsQWw5IvxZEmue/xAiKgXGqy5
@@ -32,7 +32,7 @@ vault policy write fit-main-app-policy /vault/policies/fit-main-policy.hcl
 
 
 #create policy
-vault write auth/approle/role/fit-main-app-policy  token_policies="fit-main-app-policy" token_ttl=24h token_max_ttl=48h secret_id_ttl=24h
+vault write auth/approle/role/fit-main-app-policy  token_policies="fit-main-app-policy" token_ttl=24h token_max_ttl=48h secret_id_ttl=768h
 
 #get role
 vault read auth/approle/role/fit-main-app-policy/role-id
@@ -68,4 +68,4 @@ vault token lookup 776477ef-d37a-e61c-2d66-18308862ca8d
 
 
 vault write transit/keys/jwt-rsa-key exportable=true allow_plaintext_backup=true  deletion_allowed=true 
-vault read secret/keys/jwt-rsa-key
+vault read transit/keys/jwt-rsa-key

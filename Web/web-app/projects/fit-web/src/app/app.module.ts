@@ -41,7 +41,7 @@ import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 
     {
       provide: API_BASE_URL,
-      useValue: "https://fit.local/api"
+      useValue: "https://fit-prod.aj/api"
     },
     AuthService,
     ApiCoreService,
