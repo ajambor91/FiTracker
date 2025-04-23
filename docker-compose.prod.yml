@@ -153,11 +153,11 @@ services:
       - '444:443'
   fit-portainer:
     image: portainer/portainer-ce:latest
-    container_name: portainer
-    hostname: portainer.whisper.net
+    container_name: fit-portainer
+    hostname: fit-portainer
     restart: always
     networks:
-      - whispernet-admin
+      - fit-admin
     ports:
       - "8000:9000"
     volumes:
@@ -176,6 +176,8 @@ networks:
     driver: bridge
   fit-expenses:
     driver: bridge
+  fit-admin:
+    driver: bridge
 volumes:
   fit-db:
     driver: local
@@ -193,3 +195,4 @@ volumes:
     driver: local
   fit-portainer:
     driver: local
+
