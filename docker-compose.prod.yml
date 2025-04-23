@@ -11,6 +11,8 @@ services:
       - fit
       - fit-security
       - fit-main
+    ports:
+      - 9000:9000
   fit-main-db:
     container_name: fit-main-db
     hostname: fit-main-db
@@ -31,6 +33,8 @@ services:
     networks:
       - fit
       - fit-zone
+    ports:
+      - 9001:9000
   fit-zone-db:
     container_name: fit-zone-db
     hostname: fit-zone-db
@@ -61,6 +65,8 @@ services:
     networks:
       - fit
       - fit-expenses
+    ports:
+      - 9002:9000
   fit-api:
     container_name: fit-api
     hostname: fit-api
