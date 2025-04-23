@@ -1,3 +1,5 @@
 FROM mongo:8.0.6
 ENV MONGO_INITDB_ROOT_USERNAME=exampleUser
 ENV MONGO_INITDB_ROOT_PASSWORD=3x@mplePassword
+
+COPY ./init.js /docker-entrypoint-initdb.d/init.js

@@ -15,6 +15,7 @@ import org.springframework.security.oauth2.server.authorization.config.annotatio
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @Profile("!integration")
 @Configuration
@@ -43,6 +44,8 @@ public class SecurityConfig {
                     auth
                             .requestMatchers(HttpMethod.POST, "/users/register", "/users/login").permitAll();
                     logger.debug("Permitting POST requests to /users/register and /users/login");
+                    auth.requestMatchers("/actuator/**").permitAll();
+                    logger.debug("Permitting POST requests to Actuator endpoints");
                     auth
                             .requestMatchers(HttpMethod.GET, "/core/csrf-token").permitAll();
                     logger.debug("Permitting GET requests to /core/csrf-token");

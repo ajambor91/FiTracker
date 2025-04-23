@@ -93,3 +93,4 @@ init.prod.sql
 nginx-host/certs/
 out/
 operator_keys.txt
+init.prod.js
