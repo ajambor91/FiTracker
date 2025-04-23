@@ -151,6 +151,20 @@ services:
     ports:
       - '81:80'
       - '444:443'
+  fit-portainer:
+    image: portainer/portainer-ce:latest
+    container_name: portainer
+    hostname: portainer.whisper.net
+    restart: always
+    networks:
+      - whispernet-admin
+    ports:
+      - "9000:9000"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - fit-portainer:/data
+    security_opt:
+      - no-new-privileges:true
 networks:
   fit:
     driver: bridge
@@ -176,4 +190,6 @@ volumes:
   fit-kafka-log:
     driver: local
   fit-kafka-data:
+    driver: local
+  fit-portainer:
     driver: local
