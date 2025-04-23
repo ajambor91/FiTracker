@@ -14,6 +14,7 @@ import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.server.authorization.config.annotation.web.configuration.OAuth2AuthorizationServerConfiguration;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 
 @Profile("!integration")
 @Configuration
@@ -59,9 +60,12 @@ public class SecurityConfig {
 
                 .csrf(csrf -> {
                     logger.info("Configuring CSRF protection");
-                    CookieCsrfTokenRepository csrfTokenRepository = new CookieCsrfTokenRepository();
+                    CsrfCookieTokenRepository csrfTokenRepository = new CsrfCookieTokenRepository();
                     csrf.csrfTokenRepository(csrfTokenRepository);
                     logger.debug("Using CookieCsrfTokenRepository for CSRF token storage");
+                    CsrfTokenRequestAttributeHandler csrfTokenRequestHandler = new CsrfTokenRequestAttributeHandler();
+                    csrf.csrfTokenRequestHandler(csrfTokenRequestHandler);
+                    logger.debug("Using CsrfTokenRequestAttributeHandler for CSRF token handling");
                 });
 
         return http.build();
