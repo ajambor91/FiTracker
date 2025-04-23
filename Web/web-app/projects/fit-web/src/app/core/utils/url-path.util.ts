@@ -1,11 +1,9 @@
 import {environment} from '../../../environments/environment';
 
-const regexp: RegExp = /(?<=^[htps]*:\/\/[a-zA-Z0-9\-]*\.[a-zA-Z]*\/).*/g;
-const prodRegexp: RegExp = /(?<=^[htps]*:\/\/[a-zA-Z0-9\-]*\.[a-zA-Z0-9\-]*\.[a-zA-Z]*\/).*/g;
-const currentRegexp: RegExp = environment.production ? prodRegexp : regexp;
+
+const path: string = environment.production + '/main/users/login';
 const extract = (url: string) => {
-  const path: RegExpMatchArray | null = currentRegexp.exec(url);
-  if (path == null || path.length === 0) {
+  if (url == null || url.length === 0) {
     return null;
   }
   return path[0];
