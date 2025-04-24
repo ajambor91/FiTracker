@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="pl"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ExpensesController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">FiTrackerExpenses</a> &gt; <a href="index.source.html" class="el_package">aj.FiTracker.FiTrackerExpenses.Controllers</a> &gt; <span class="el_source">ExpensesController.java</span></div><h1>ExpensesController.java</h1><pre class="source lang-java linenums">package aj.FiTracker.FiTrackerExpenses.Controllers;
+
+import aj.FiTracker.FiTrackerExpenses.DTO.DB.ExpensesSum;
+import aj.FiTracker.FiTrackerExpenses.DTO.DB.TopExpense;
+import aj.FiTracker.FiTrackerExpenses.DTO.DB.TotalSummaryByCategory;
+import aj.FiTracker.FiTrackerExpenses.DTO.DB.TotalSummaryByDate;
+import aj.FiTracker.FiTrackerExpenses.DTO.REST.*;
+import aj.FiTracker.FiTrackerExpenses.Entities.Expense;
+import aj.FiTracker.FiTrackerExpenses.Services.ExpensesService;
+import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping(&quot;/expenses&quot;)
+public class ExpensesController {
+
+<span class="fc" id="L25">    private final Logger logger = LoggerFactory.getLogger(ExpensesController.class);</span>
+
+    private final ExpensesService expensesService;
+
+    @Autowired
+<span class="fc" id="L30">    public ExpensesController(ExpensesService expensesService) {</span>
+<span class="fc" id="L31">        logger.info(&quot;Initializing ExpensesController.&quot;);</span>
+<span class="fc" id="L32">        this.expensesService = expensesService;</span>
+<span class="fc" id="L33">    }</span>
+
+    @PostMapping(&quot;/zone/{zoneId}/expense&quot;)
+    public ResponseEntity&lt;AddExpenseResponse&gt; addExpense(Authentication authentication, @PathVariable String zoneId, @Valid @RequestBody AddExpenseRequest addExpenseRequest) {
+<span class="fc" id="L37">        logger.info(&quot;Received request to add an expense to zone {}. User: {}&quot;, zoneId, authentication.getName());</span>
+<span class="fc" id="L38">        logger.debug(&quot;Add expense request details: {}&quot;, addExpenseRequest);</span>
+<span class="fc" id="L39">        Expense expense = this.expensesService.addExpense(addExpenseRequest, zoneId, authentication);</span>
+<span class="fc" id="L40">        logger.info(&quot;Successfully added expense with ID: {} in zone {}.&quot;, expense.getExpenseId(), zoneId);</span>
+<span class="fc" id="L41">        return ResponseEntity.status(HttpStatus.CREATED).body(new AddExpenseResponse(expense));</span>
+    }
+
+    @GetMapping(&quot;/zone/{zoneId}/summary&quot;)
+    public ResponseEntity&lt;?&gt; getSummary(
+            @PathVariable(&quot;zoneId&quot;) String zoneId,
+            @RequestParam(name = &quot;currency&quot;, required = false) String currency,
+            @RequestParam(name = &quot;categoriesIds&quot;, required = false) List&lt;Long&gt; categoriesIds,
+            @RequestParam(name = &quot;groupBy&quot;, required = false) String groupBy,
+            @RequestParam(name = &quot;periodStart&quot;, required = false) String periodStart,
+            @RequestParam(name = &quot;periodEnd&quot;, required = false) String periodEnd,
+            @RequestParam(name = &quot;userId&quot;, required = false) Long userId,
+            Authentication authentication) {
+<span class="fc" id="L54">        logger.info(&quot;Received request to get summary for zone {}. User: {}&quot;, zoneId, authentication.getName());</span>
+<span class="fc" id="L55">        logger.debug(&quot;Parameters: currency={}, categoriesIds={}, groupBy={}, periodStart={}, periodEnd={}, userId={}&quot;,</span>
+                currency, categoriesIds, groupBy, periodStart, periodEnd, userId);
+
+<span class="pc bpc" id="L58" title="2 of 6 branches missed.">        if (groupBy == null || groupBy.isEmpty() || groupBy.equals(&quot;category&quot;)) {</span>
+<span class="fc" id="L59">            logger.debug(&quot;Grouping by category. Calling ExpensesService.getSummaryByCategory.&quot;);</span>
+<span class="fc" id="L60">            List&lt;TotalSummaryByCategory&gt; data = this.expensesService.getSummaryByCategory(zoneId, currency, periodStart, periodEnd, authentication);</span>
+<span class="fc" id="L61">            logger.info(&quot;Successfully retrieved summary by category for zone {}. Found {} entries.&quot;, zoneId, data.size());</span>
+<span class="fc" id="L62">            return ResponseEntity.status(HttpStatus.OK).body(new SummaryByCategory(data));</span>
+<span class="fc bfc" id="L63" title="All 2 branches covered.">        } else if (groupBy.equals(&quot;day&quot;)) {</span>
+<span class="fc" id="L64">            logger.debug(&quot;Grouping by day. Calling ExpensesService.getSummaryByDate.&quot;);</span>
+<span class="fc" id="L65">            List&lt;TotalSummaryByDate&gt; data = this.expensesService.getSummaryByDate(zoneId, currency, periodStart, periodEnd, authentication);</span>
+<span class="fc" id="L66">            logger.info(&quot;Successfully retrieved summary by day for zone {}. Found {} entries.&quot;, zoneId, data.size());</span>
+<span class="fc" id="L67">            return ResponseEntity.status(HttpStatus.OK).body(new SummaryByDate(data));</span>
+        }
+
+<span class="fc" id="L70">        logger.warn(&quot;Invalid 'groupBy' parameter received: {}. Returning 404.&quot;, groupBy);</span>
+<span class="fc" id="L71">        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();</span>
+    }
+
+    @GetMapping(&quot;/zone/{zoneId}/summary/top&quot;)
+    public ResponseEntity&lt;?&gt; getTopSummary(
+            @PathVariable(&quot;zoneId&quot;) String zoneId,
+            @RequestParam(name = &quot;currency&quot;, required = false) String currency,
+            @RequestParam(name = &quot;categoriesIds&quot;, required = false) List&lt;Long&gt; categoriesIds,
+            @RequestParam(name = &quot;type&quot;, required = false) String type,
+            @RequestParam(name = &quot;periodStart&quot;, required = false) String periodStart,
+            @RequestParam(name = &quot;periodEnd&quot;, required = false) String periodEnd,
+            @RequestParam(name = &quot;userId&quot;, required = false) Long userId,
+            Authentication authentication) {
+<span class="fc" id="L84">        logger.info(&quot;Received request to get top summary for zone {}. User: {}&quot;, zoneId, authentication.getName());</span>
+<span class="fc" id="L85">        logger.debug(&quot;Parameters: currency={}, categoriesIds={}, type={}, periodStart={}, periodEnd={}, userId={}&quot;,</span>
+                currency, categoriesIds, type, periodStart, periodEnd, userId);
+
+<span class="pc bpc" id="L88" title="2 of 6 branches missed.">        if (type == null || type.isEmpty() || type.equals(&quot;expenses&quot;)) {</span>
+<span class="fc" id="L89">            logger.debug(&quot;Summary type is expenses. Calling ExpensesService.getSummaryTopExpenses.&quot;);</span>
+<span class="fc" id="L90">            List&lt;TopExpense&gt; data = this.expensesService.getSummaryTopExpenses(zoneId, currency, periodStart, periodEnd, authentication);</span>
+<span class="fc" id="L91">            logger.info(&quot;Successfully retrieved top expenses summary for zone {}. Found {} entries.&quot;, zoneId, data.size());</span>
+<span class="fc" id="L92">            return ResponseEntity.status(HttpStatus.OK).body(new SummaryTopExpenses(data));</span>
+        }
+
+<span class="fc" id="L95">        logger.warn(&quot;Invalid 'type' parameter received for top summary: {}. Returning 404.&quot;, type);</span>
+<span class="fc" id="L96">        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();</span>
+    }
+
+    @GetMapping(&quot;/zone/{zoneId}/sum&quot;)
+    public ResponseEntity&lt;?&gt; getSummarySum(
+            @PathVariable(&quot;zoneId&quot;) String zoneId,
+            @RequestParam(name = &quot;currency&quot;, required = false) String currency,
+            @RequestParam(name = &quot;categoriesIds&quot;, required = false) List&lt;Long&gt; categoriesIds,
+            @RequestParam(name = &quot;groupBy&quot;, required = false) String groupBy,
+            @RequestParam(name = &quot;periodStart&quot;, required = false) String periodStart,
+            @RequestParam(name = &quot;periodEnd&quot;, required = false) String periodEnd,
+            @RequestParam(name = &quot;userId&quot;, required = false) Long userId,
+            Authentication authentication) {
+<span class="fc" id="L109">        logger.info(&quot;Received request to get total sum summary for zone {}. User: {}&quot;, zoneId, authentication.getName());</span>
+<span class="fc" id="L110">        logger.debug(&quot;Parameters: currency={}, categoriesIds={}, groupBy={}, periodStart={}, periodEnd={}, userId={}&quot;,</span>
+                currency, categoriesIds, groupBy, periodStart, periodEnd, userId);
+
+<span class="pc bpc" id="L113" title="2 of 6 branches missed.">        if (groupBy == null || groupBy.isEmpty() || groupBy.equals(&quot;category&quot;)) {</span>
+<span class="fc" id="L114">            logger.debug(&quot;Calling ExpensesService.getSummarySum.&quot;);</span>
+<span class="fc" id="L115">            List&lt;ExpensesSum&gt; data = this.expensesService.getSummarySum(zoneId, currency, periodStart, periodEnd, authentication);</span>
+<span class="fc" id="L116">            logger.info(&quot;Successfully retrieved total sum summary for zone {}. Found {} entries.&quot;, zoneId, data.size());</span>
+<span class="fc" id="L117">            return ResponseEntity.status(HttpStatus.OK).body(new GeneralSum(data));</span>
+        }
+
+<span class="fc" id="L120">        logger.warn(&quot;Invalid 'groupBy' parameter received for sum summary: {}. Returning 404. Note: Current sum summary logic may not fully utilize groupBy.&quot;, groupBy);</span>
+<span class="fc" id="L121">        return ResponseEntity.status(HttpStatus.NOT_FOUND).build();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

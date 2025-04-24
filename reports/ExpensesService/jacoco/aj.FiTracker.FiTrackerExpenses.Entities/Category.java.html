@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="pl"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Category.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">FiTrackerExpenses</a> &gt; <a href="index.source.html" class="el_package">aj.FiTracker.FiTrackerExpenses.Entities</a> &gt; <span class="el_source">Category.java</span></div><h1>Category.java</h1><pre class="source lang-java linenums">package aj.FiTracker.FiTrackerExpenses.Entities;
+
+import aj.FiTracker.FiTrackerExpenses.DTO.REST.BaseCategory;
+import aj.FiTracker.FiTrackerExpenses.DTO.REST.UpdateCategoryRequest;
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
+
+@Entity
+@Getter
+@Setter
+@Table(schema = &quot;app_data&quot;, name = &quot;categories&quot;)
+public class Category {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = &quot;category_id&quot;)
+    private long categoryId;
+
+    @Column(nullable = false, unique = false, name = &quot;name&quot;)
+    private String name;
+
+    @Column(nullable = true, unique = false, name = &quot;description&quot;)
+    private String description;
+
+    @Column(nullable = false, unique = false, name = &quot;zone_id&quot;)
+    private String zoneId;
+
+    @Column(nullable = false, name = &quot;created_at&quot;)
+    private LocalDateTime createdAt;
+
+    @Column(nullable = false, name = &quot;updated_at&quot;)
+    private LocalDateTime updatedAt;
+
+<span class="pc" id="L39">    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})</span>
+    @JoinTable(
+            name = &quot;exp_categories&quot;,
+            schema = &quot;app_data&quot;,
+            joinColumns = @JoinColumn(name = &quot;category_id&quot;),
+            inverseJoinColumns = @JoinColumn(name = &quot;expense_id&quot;)
+    )
+    private Set&lt;Expense&gt; expenses = new HashSet&lt;&gt;();
+
+<span class="fc" id="L48">    public Category(BaseCategory addCategoryRequest, String zoneId) {</span>
+<span class="fc" id="L49">        this.description = addCategoryRequest.getDescription();</span>
+<span class="fc" id="L50">        this.name = addCategoryRequest.getName();</span>
+<span class="fc" id="L51">        this.zoneId = zoneId;</span>
+<span class="fc" id="L52">    }</span>
+
+<span class="nc" id="L54">    public Category(BaseCategory addCategoryRequest, long categoryId, String zoneId) {</span>
+<span class="nc" id="L55">        this.description = addCategoryRequest.getDescription();</span>
+<span class="nc" id="L56">        this.name = addCategoryRequest.getName();</span>
+<span class="nc" id="L57">        this.zoneId = zoneId;</span>
+<span class="nc" id="L58">        this.categoryId = categoryId;</span>
+<span class="nc" id="L59">    }</span>
+
+
+<span class="fc" id="L62">    public Category() {</span>
+<span class="fc" id="L63">    }</span>
+
+    public void updateCategory(UpdateCategoryRequest categoryRequest) {
+<span class="pc bpc" id="L66" title="1 of 2 branches missed.">        if (categoryRequest.getName() != null) {</span>
+<span class="fc" id="L67">            this.name = categoryRequest.getName();</span>
+        }
+<span class="fc bfc" id="L69" title="All 2 branches covered.">        if (categoryRequest.getDescription() != null) {</span>
+<span class="fc" id="L70">            this.description = categoryRequest.getDescription();</span>
+        }
+<span class="fc" id="L72">    }</span>
+
+    @PrePersist
+    private void prePersist() {
+<span class="fc" id="L76">        this.createdAt = LocalDateTime.now();</span>
+<span class="fc" id="L77">        this.updatedAt = LocalDateTime.now();</span>
+<span class="fc" id="L78">    }</span>
+
+    @PreUpdate
+    private void preUpdate() {
+<span class="fc" id="L82">        this.updatedAt = LocalDateTime.now();</span>
+<span class="fc" id="L83">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

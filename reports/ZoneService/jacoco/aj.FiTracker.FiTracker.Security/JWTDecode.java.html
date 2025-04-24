@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="pl"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>JWTDecode.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">FiTrackerZone</a> &gt; <a href="index.source.html" class="el_package">aj.FiTracker.FiTracker.Security</a> &gt; <span class="el_source">JWTDecode.java</span></div><h1>JWTDecode.java</h1><pre class="source lang-java linenums">package aj.FiTracker.FiTracker.Security;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.nimbusds.jwt.SignedJWT;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.JwtException;
+
+import java.io.IOException;
+import java.math.BigInteger;
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
+import java.security.*;
+import java.security.interfaces.RSAPublicKey;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.MGF1ParameterSpec;
+import java.security.spec.PSSParameterSpec;
+import java.security.spec.RSAPublicKeySpec;
+import java.text.ParseException;
+import java.time.Duration;
+import java.time.Instant;
+import java.util.Base64;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+
+public class JWTDecode implements JwtDecoder {
+    private static JWTDecode jwtDecode;
+
+    static {
+<span class="nc" id="L38">        Security.addProvider(new BouncyCastleProvider());</span>
+<span class="nc" id="L39">    }</span>
+
+<span class="nc" id="L41">    private final Logger logger = LoggerFactory.getLogger(JWTDecode.class);</span>
+<span class="nc" id="L42">    private final String SECURITY_ALGORITHM = &quot;SHA256withRSAandMGF1&quot;;</span>
+<span class="nc" id="L43">    private final String PROVIDER = &quot;BC&quot;;</span>
+<span class="nc" id="L44">    private final String MD_NAME = &quot;SHA-256&quot;;</span>
+<span class="nc" id="L45">    private final String MGF_NAME = &quot;MGF1&quot;;</span>
+<span class="nc" id="L46">    private final int SALT_LEN = 478;</span>
+<span class="nc" id="L47">    private final int TRAILER = 1;</span>
+    private final ObjectMapper objectMapper;
+<span class="nc" id="L49">    private final Duration cacheDuration = Duration.ofHours(1);</span>
+    @Value(&quot;${jwks.api.uri}&quot;)
+    private String jwksUri;
+
+<span class="nc" id="L53">    private JWTDecode() {</span>
+<span class="nc" id="L54">        logger.info(&quot;Initializing JWTDecode.&quot;);</span>
+<span class="nc" id="L55">        this.objectMapper = new ObjectMapper();</span>
+<span class="nc" id="L56">        logger.debug(&quot;ObjectMapper initialized.&quot;);</span>
+<span class="nc" id="L57">    }</span>
+
+    public static JWTDecode getDecoder() {
+<span class="nc bnc" id="L60" title="All 2 branches missed.">        if (jwtDecode == null) {</span>
+<span class="nc" id="L61">            JWTDecode.jwtDecode = new JWTDecode();</span>
+
+        }
+<span class="nc" id="L64">        return JWTDecode.jwtDecode;</span>
+    }
+
+    @Override
+    public Jwt decode(String token) throws JwtException {
+<span class="nc" id="L69">        logger.info(&quot;Decoding JWT token.&quot;);</span>
+<span class="nc" id="L70">        logger.debug(&quot;JWT Token: {}&quot;, token);</span>
+        try {
+<span class="nc" id="L72">            SignedJWT signedJWT = SignedJWT.parse(token);</span>
+<span class="nc" id="L73">            logger.debug(&quot;JWT parsed successfully. Header: {}, Payload: {}&quot;, signedJWT.getHeader().toJSONObject(), signedJWT.getPayload().toJSONObject());</span>
+<span class="nc" id="L74">            RSAPublicKey rsaPublicKey = createRSAKey(signedJWT);</span>
+<span class="nc" id="L75">            logger.debug(&quot;RSA Public Key created.&quot;);</span>
+<span class="nc" id="L76">            Signature verifier = Signature.getInstance(SECURITY_ALGORITHM, PROVIDER);</span>
+<span class="nc" id="L77">            logger.debug(&quot;Signature instance created with algorithm: {} and provider: {}.&quot;, SECURITY_ALGORITHM, PROVIDER);</span>
+<span class="nc" id="L78">            verifier.initVerify(rsaPublicKey);</span>
+<span class="nc" id="L79">            logger.debug(&quot;Verifier initialized with RSA Public Key.&quot;);</span>
+<span class="nc" id="L80">            verifier.setParameter(new PSSParameterSpec(</span>
+                    MD_NAME,
+                    MGF_NAME,
+                    MGF1ParameterSpec.SHA256,
+                    SALT_LEN,
+                    TRAILER
+            ));
+<span class="nc" id="L87">            logger.debug(&quot;Verifier parameters set.&quot;);</span>
+<span class="nc" id="L88">            byte[] signingInput = (signedJWT.getHeader().toBase64URL() + &quot;.&quot; + signedJWT.getPayload().toBase64URL())</span>
+<span class="nc" id="L89">                    .getBytes(StandardCharsets.US_ASCII);</span>
+<span class="nc" id="L90">            verifier.update(signingInput);</span>
+<span class="nc" id="L91">            logger.debug(&quot;Verifier updated with signing input.&quot;);</span>
+<span class="nc" id="L92">            byte[] signatureBytes = Base64.getUrlDecoder().decode(signedJWT.getSignature().toString());</span>
+<span class="nc" id="L93">            logger.debug(&quot;Signature bytes decoded.&quot;);</span>
+<span class="nc bnc" id="L94" title="All 2 branches missed.">            if (!verifier.verify(signatureBytes)) {</span>
+<span class="nc" id="L95">                logger.warn(&quot;JWT signature verification failed.&quot;);</span>
+<span class="nc" id="L96">                throw new JwtException(&quot;Invalid signature&quot;);</span>
+            } else {
+<span class="nc" id="L98">                logger.info(&quot;JWT signature verification successful.&quot;);</span>
+<span class="nc" id="L99">                return createJWT(signedJWT);</span>
+            }
+
+
+<span class="nc" id="L103">        } catch (NoSuchAlgorithmException | ParseException | InvalidAlgorithmParameterException | InvalidKeyException |</span>
+                 SignatureException | InvalidKeySpecException | NoSuchProviderException | IOException |
+                 InterruptedException e) {
+<span class="nc" id="L106">            logger.error(&quot;An error occurred during JWT decoding.&quot;, e);</span>
+<span class="nc" id="L107">            throw new RuntimeException(e);</span>
+        }
+    }
+
+    @SuppressWarnings(&quot;unchecked&quot;)
+    private RSAPublicKey createRSAKey(SignedJWT signedJWT) throws NoSuchAlgorithmException, InvalidKeySpecException, IOException, InterruptedException {
+<span class="nc" id="L113">        logger.info(&quot;Creating RSA Public Key from JWT.&quot;);</span>
+<span class="nc" id="L114">        String keyId = signedJWT.getHeader().getKeyID();</span>
+<span class="nc" id="L115">        logger.debug(&quot;JWT Key ID (kid): {}&quot;, keyId);</span>
+<span class="nc" id="L116">        Map&lt;String, List&gt; jwks = getJwks();</span>
+<span class="nc" id="L117">        logger.debug(&quot;Retrieved JWKS: {}&quot;, jwks);</span>
+<span class="nc bnc" id="L118" title="All 2 branches missed.">        if (jwks.isEmpty()) {</span>
+<span class="nc" id="L119">            logger.error(&quot;JWKS is empty.&quot;);</span>
+<span class="nc" id="L120">            throw new JwtException(&quot;JWKS cannot be null&quot;);</span>
+        }
+<span class="nc" id="L122">        Map&lt;String, String&gt; sign = findSign(jwks.get(&quot;keys&quot;), keyId);</span>
+<span class="nc" id="L123">        logger.debug(&quot;Signing key found in JWKS: {}&quot;, sign);</span>
+<span class="nc bnc" id="L124" title="All 2 branches missed.">        if (sign.isEmpty()) {</span>
+<span class="nc" id="L125">            logger.error(&quot;Signing key with ID: {} not found in JWKS.&quot;, keyId);</span>
+<span class="nc" id="L126">            throw new JwtException(&quot;Keys cannot be null&quot;);</span>
+        }
+<span class="nc" id="L128">        String modulus = sign.get(&quot;n&quot;);</span>
+<span class="nc" id="L129">        String exponent = sign.get(&quot;e&quot;);</span>
+<span class="nc bnc" id="L130" title="All 8 branches missed.">        if (modulus == null || modulus.isEmpty() || exponent == null || exponent.isEmpty()) {</span>
+<span class="nc" id="L131">            logger.error(&quot;Modulus (n) or exponent (e) is null or empty in the signing key.&quot;);</span>
+<span class="nc" id="L132">            throw new JwtException(&quot;Modulus and exponent cannot be null&quot;);</span>
+        }
+<span class="nc" id="L134">        RSAPublicKeySpec spec = new RSAPublicKeySpec(</span>
+<span class="nc" id="L135">                new BigInteger(1, Base64.getUrlDecoder().decode(modulus)),</span>
+<span class="nc" id="L136">                new BigInteger(1, Base64.getUrlDecoder().decode(exponent))</span>
+        );
+<span class="nc" id="L138">        KeyFactory keyFactory = KeyFactory.getInstance(&quot;RSA&quot;);</span>
+<span class="nc" id="L139">        logger.debug(&quot;KeyFactory instance created for RSA.&quot;);</span>
+<span class="nc" id="L140">        RSAPublicKey publicKey = (RSAPublicKey) keyFactory.generatePublic(spec);</span>
+<span class="nc" id="L141">        logger.info(&quot;RSA Public Key created successfully.&quot;);</span>
+<span class="nc" id="L142">        return publicKey;</span>
+    }
+
+    private Jwt createJWT(SignedJWT signedJWT) throws ParseException {
+<span class="nc" id="L146">        logger.info(&quot;Creating Spring Security JWT object.&quot;);</span>
+<span class="nc" id="L147">        Map&lt;String, Object&gt; signedJWTPayload = signedJWT.getPayload().toJSONObject();</span>
+<span class="nc" id="L148">        Instant iat = null;</span>
+<span class="nc bnc" id="L149" title="All 2 branches missed.">        if (signedJWTPayload.containsKey(&quot;iat&quot;)) {</span>
+<span class="nc" id="L150">            iat = Instant.ofEpochMilli(((Number) signedJWTPayload.get(&quot;iat&quot;)).longValue() * 1000);</span>
+<span class="nc" id="L151">            logger.debug(&quot;Issued At (iat): {}&quot;, iat);</span>
+        }
+<span class="nc" id="L153">        Instant exp = null;</span>
+<span class="nc bnc" id="L154" title="All 2 branches missed.">        if (signedJWTPayload.containsKey(&quot;exp&quot;)) {</span>
+<span class="nc" id="L155">            exp = Instant.ofEpochMilli(((Number) signedJWTPayload.get(&quot;exp&quot;)).longValue() * 1000);</span>
+<span class="nc" id="L156">            logger.debug(&quot;Expiration Time (exp): {}&quot;, exp);</span>
+        }
+<span class="nc" id="L158">        Jwt jwt = new Jwt(</span>
+<span class="nc" id="L159">                signedJWT.getParsedString(),</span>
+                iat,
+                exp,
+<span class="nc" id="L162">                signedJWT.getHeader().toJSONObject(),</span>
+<span class="nc" id="L163">                signedJWT.getJWTClaimsSet().toJSONObject()</span>
+
+        );
+<span class="nc" id="L166">        logger.info(&quot;Spring Security JWT object created.&quot;);</span>
+<span class="nc" id="L167">        return jwt;</span>
+
+    }
+
+    @SuppressWarnings(&quot;unchecked&quot;)
+    private Map&lt;String, List&gt; getJwks() throws IOException, InterruptedException {
+<span class="nc" id="L173">        logger.info(&quot;Fetching JWKS from URI: {}&quot;, jwksUri);</span>
+        try {
+<span class="nc" id="L175">            HttpClient client = HttpClient.newHttpClient();</span>
+<span class="nc" id="L176">            logger.debug(&quot;HttpClient created.&quot;);</span>
+
+<span class="nc" id="L178">            HttpRequest request = HttpRequest.newBuilder()</span>
+<span class="nc" id="L179">                    .uri(URI.create(jwksUri))</span>
+<span class="nc" id="L180">                    .GET()</span>
+<span class="nc" id="L181">                    .build();</span>
+<span class="nc" id="L182">            logger.debug(&quot;HttpRequest built for URI: {}&quot;, jwksUri);</span>
+
+<span class="nc" id="L184">            HttpResponse&lt;String&gt; response = client.send(</span>
+                    request,
+<span class="nc" id="L186">                    HttpResponse.BodyHandlers.ofString()</span>
+            );
+<span class="nc" id="L188">            logger.debug(&quot;HttpResponse received with status code: {}&quot;, response.statusCode());</span>
+
+<span class="nc bnc" id="L190" title="All 2 branches missed.">            if (response.statusCode() != 200) {</span>
+<span class="nc" id="L191">                logger.error(&quot;Failed to fetch JWKS. HTTP Status Code: {}&quot;, response.statusCode());</span>
+<span class="nc" id="L192">                throw new RuntimeException(&quot;Failed to fetch JWKS: HTTP &quot; + response.statusCode());</span>
+            }
+<span class="nc" id="L194">            Map&lt;String, List&gt; jwksMap = objectMapper.readValue(response.body(), Map.class);</span>
+<span class="nc" id="L195">            logger.debug(&quot;JWKS parsed successfully: {}&quot;, jwksMap);</span>
+<span class="nc" id="L196">            return jwksMap;</span>
+
+<span class="nc" id="L198">        } catch (IOException e) {</span>
+<span class="nc" id="L199">            logger.error(&quot;IOException occurred while fetching JWKS.&quot;, e);</span>
+<span class="nc" id="L200">            throw e;</span>
+<span class="nc" id="L201">        } catch (InterruptedException e) {</span>
+<span class="nc" id="L202">            logger.error(&quot;InterruptedException occurred while fetching JWKS.&quot;, e);</span>
+<span class="nc" id="L203">            Thread.currentThread().interrupt();</span>
+<span class="nc" id="L204">            throw e;</span>
+<span class="nc" id="L205">        } catch (Exception e) {</span>
+<span class="nc" id="L206">            logger.error(&quot;An unexpected error occurred while fetching JWKS.&quot;, e);</span>
+<span class="nc" id="L207">            throw new RuntimeException(e);</span>
+        }
+    }
+
+    private Map&lt;String, String&gt; findSign(List&lt;Map&lt;String, String&gt;&gt; keys, String kid) {
+<span class="nc" id="L212">        logger.info(&quot;Finding signing key with ID: {} in JWKS keys.&quot;, kid);</span>
+<span class="nc bnc" id="L213" title="All 2 branches missed.">        if (keys == null) {</span>
+<span class="nc" id="L214">            logger.warn(&quot;JWKS keys list is null.&quot;);</span>
+<span class="nc" id="L215">            throw new NoSuchElementException(&quot;No key found&quot;);</span>
+        }
+<span class="nc bnc" id="L217" title="All 2 branches missed.">        for (Map&lt;String, String&gt; key : keys) {</span>
+<span class="nc bnc" id="L218" title="All 4 branches missed.">            if (key.containsKey(&quot;kid&quot;) &amp;&amp; key.get(&quot;kid&quot;).equals(kid)) {</span>
+<span class="nc" id="L219">                logger.info(&quot;Found signing key with ID: {}.&quot;, kid);</span>
+<span class="nc" id="L220">                logger.debug(&quot;Signing key details: {}&quot;, key);</span>
+<span class="nc" id="L221">                return key;</span>
+            }
+<span class="nc" id="L223">        }</span>
+<span class="nc" id="L224">        logger.warn(&quot;No signing key found with ID: {}.&quot;, kid);</span>
+<span class="nc" id="L225">        throw new NoSuchElementException(&quot;No key found&quot;);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

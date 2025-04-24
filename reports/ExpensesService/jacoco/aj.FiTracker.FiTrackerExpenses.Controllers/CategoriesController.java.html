@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="pl"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CategoriesController.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">FiTrackerExpenses</a> &gt; <a href="index.source.html" class="el_package">aj.FiTracker.FiTrackerExpenses.Controllers</a> &gt; <span class="el_source">CategoriesController.java</span></div><h1>CategoriesController.java</h1><pre class="source lang-java linenums">package aj.FiTracker.FiTrackerExpenses.Controllers;
+
+import aj.FiTracker.FiTrackerExpenses.DTO.DB.CategoryDb;
+import aj.FiTracker.FiTrackerExpenses.DTO.REST.*;
+import aj.FiTracker.FiTrackerExpenses.Entities.Category;
+import aj.FiTracker.FiTrackerExpenses.Services.CategoriesService;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+
+@RestController
+@RequestMapping(&quot;/categories&quot;)
+public class CategoriesController {
+<span class="fc" id="L23">    private final Logger logger = LoggerFactory.getLogger(CategoriesController.class);</span>
+
+    private final CategoriesService categoriesService;
+
+    @Autowired
+<span class="fc" id="L28">    public CategoriesController(CategoriesService categoriesService) {</span>
+<span class="fc" id="L29">        logger.info(&quot;Initializing CategoriesController.&quot;);</span>
+<span class="fc" id="L30">        this.categoriesService = categoriesService;</span>
+<span class="fc" id="L31">    }</span>
+
+    @PostMapping(&quot;/category/zone/{zoneId}&quot;)
+    public ResponseEntity&lt;AddCategoryResponse&gt; createCategory(Authentication authentication, @NotBlank @PathVariable String zoneId, @Valid @RequestBody AddCategoryRequest addCategoryRequest) {
+<span class="fc" id="L35">        logger.info(&quot;Received request to create a new category for zone {}. User: {}&quot;, zoneId, authentication.getName());</span>
+<span class="fc" id="L36">        logger.debug(&quot;Create category request: {}&quot;, addCategoryRequest);</span>
+<span class="fc" id="L37">        Category category = this.categoriesService.addCategory(addCategoryRequest, zoneId, authentication);</span>
+<span class="fc" id="L38">        logger.info(&quot;Successfully created category with ID: {} for zone {}.&quot;, category.getCategoryId(), zoneId);</span>
+<span class="fc" id="L39">        return ResponseEntity.status(HttpStatus.CREATED).body(new AddCategoryResponse(category));</span>
+    }
+
+    @GetMapping(&quot;/categories/zone/{zoneId}&quot;)
+    public ResponseEntity&lt;GetCategoriesResponse&gt; getAllCategories(Authentication authentication, @NotBlank @PathVariable String zoneId) {
+<span class="fc" id="L44">        logger.info(&quot;Received request to get all categories for zone {}. User: {}&quot;, zoneId, authentication.getName());</span>
+<span class="fc" id="L45">        List&lt;CategoryDb&gt; categories = this.categoriesService.getAllCategories(zoneId, authentication);</span>
+<span class="fc" id="L46">        logger.info(&quot;Successfully retrieved {} categories for zone {}.&quot;, categories.size(), zoneId);</span>
+<span class="fc" id="L47">        return ResponseEntity.status(HttpStatus.OK).body(new GetCategoriesResponse(categories));</span>
+    }
+
+    @PatchMapping(&quot;/category/{categoryId}/zone/{zoneId}&quot;)
+    public ResponseEntity&lt;UpdateCategoryResponse&gt; updateCategory(
+            Authentication authentication,
+            @RequestBody @Valid UpdateCategoryRequest updateCategoryRequest,
+            @NotNull @PathVariable Long categoryId,
+            @NotBlank @PathVariable String zoneId) {
+<span class="fc" id="L56">        logger.info(&quot;Received request to update category with ID {} in zone {}. User: {}&quot;, categoryId, zoneId, authentication.getName());</span>
+<span class="fc" id="L57">        logger.debug(&quot;Update category request: {}&quot;, updateCategoryRequest);</span>
+<span class="fc" id="L58">        Category category = this.categoriesService.updateCategory(categoryId, zoneId, updateCategoryRequest, authentication);</span>
+<span class="fc" id="L59">        logger.info(&quot;Successfully updated category with ID: {} in zone {}.&quot;, category.getCategoryId(), zoneId);</span>
+<span class="fc" id="L60">        return ResponseEntity.status(HttpStatus.OK).body(new UpdateCategoryResponse(category));</span>
+
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

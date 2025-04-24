@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="pl"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>JWTService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">FiTracker</a> &gt; <a href="index.source.html" class="el_package">aj.FiTracker.FiTracker.Security</a> &gt; <span class="el_source">JWTService.java</span></div><h1>JWTService.java</h1><pre class="source lang-java linenums">package aj.FiTracker.FiTracker.Security;
+
+import aj.FiTracker.FiTracker.Entities.User;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+import org.springframework.vault.core.VaultTransitOperations;
+import org.springframework.vault.support.Plaintext;
+import org.springframework.vault.support.VaultTransitKey;
+
+import java.security.NoSuchAlgorithmException;
+import java.security.interfaces.RSAPublicKey;
+import java.security.spec.InvalidKeySpecException;
+import java.util.Base64;
+import java.util.Map;
+
+<span class="fc" id="L21">@Component</span>
+public class JWTService {
+    private final Logger logger;
+    private final ObjectMapper objectMapper;
+    private final VaultTransitOperations vaultTransitOperations;
+    private final long tokenExpiration;
+
+    @Autowired
+    public JWTService(
+            VaultTransitOperations vaultTransitOperations,
+            ObjectMapper objectMapper,
+            @Value(&quot;${login.expiration}&quot;
+<span class="fc" id="L33">            ) Long tokenExpiration) {</span>
+<span class="fc" id="L34">        this.logger = LoggerFactory.getLogger(JWTService.class);</span>
+<span class="fc" id="L35">        this.vaultTransitOperations = vaultTransitOperations;</span>
+<span class="fc" id="L36">        this.tokenExpiration = tokenExpiration;</span>
+<span class="fc" id="L37">        this.objectMapper = objectMapper;</span>
+<span class="fc" id="L38">    }</span>
+
+    public User generateToken(User user) throws JsonProcessingException, NoSuchAlgorithmException, InvalidKeySpecException {
+<span class="fc" id="L41">        return this.generateToken(user, tokenExpiration);</span>
+    }
+
+    public User generateToken(User user, long expiration) throws JsonProcessingException, NoSuchAlgorithmException, InvalidKeySpecException {
+<span class="fc" id="L45">        logger.info(&quot;Generating token for {} user&quot;, user.getId());</span>
+<span class="fc" id="L46">        VaultTransitKey transitKey = vaultTransitOperations.getKey(&quot;jwt-rsa-key&quot;);</span>
+<span class="fc" id="L47">        logger.info(&quot;Fetch transit key for KID generation, for user: {}&quot;, user.getId());</span>
+<span class="pc bpc" id="L48" title="1 of 2 branches missed.">        assert transitKey != null;</span>
+<span class="fc" id="L49">        String extractedKey = VaultUtils.extractKey(transitKey);</span>
+<span class="fc" id="L50">        RSAPublicKey rsaPublicKey = RSAUtil.getRSAPubKey(extractedKey);</span>
+<span class="fc" id="L51">        logger.info(&quot;Extracted RSA public key for user {}&quot;, user.getId());</span>
+<span class="fc" id="L52">        String kid = RSAUtil.generateKidFromPublicKey(rsaPublicKey);</span>
+<span class="fc" id="L53">        Map&lt;String, Object&gt; header = Map.of(</span>
+                &quot;alg&quot;, &quot;PS256&quot;,
+                &quot;typ&quot;, &quot;JWT&quot;,
+                &quot;kid&quot;, kid
+        );
+
+<span class="fc" id="L59">        Map&lt;String, Object&gt; claims = Map.of(</span>
+<span class="fc" id="L60">                &quot;sub&quot;, user.getId(),</span>
+<span class="fc" id="L61">                &quot;name&quot;, user.getName(),</span>
+<span class="fc" id="L62">                &quot;iat&quot;, System.currentTimeMillis(),</span>
+<span class="fc" id="L63">                &quot;exp&quot;, System.currentTimeMillis() + expiration</span>
+        );
+<span class="fc" id="L65">        logger.info(&quot;Created JWT payload and claims for user {}&quot;, user.getId());</span>
+
+<span class="fc" id="L67">        String encodedHeader = Base64.getUrlEncoder().withoutPadding().encodeToString(</span>
+<span class="fc" id="L68">                objectMapper.writeValueAsBytes(header)</span>
+        );
+
+<span class="fc" id="L71">        String encodedPayload = Base64.getUrlEncoder().withoutPadding().encodeToString(</span>
+<span class="fc" id="L72">                objectMapper.writeValueAsBytes(claims)</span>
+        );
+<span class="fc" id="L74">        logger.info(&quot;Encoded token dara for user {}&quot;, user.getId());</span>
+<span class="fc" id="L75">        String unsignedToken = encodedHeader + &quot;.&quot; + encodedPayload;</span>
+
+<span class="fc" id="L77">        String vaultSignature = vaultTransitOperations.sign(&quot;jwt-rsa-key&quot;, Plaintext.of(unsignedToken))</span>
+<span class="fc" id="L78">                .getSignature();</span>
+<span class="fc" id="L79">        logger.info(&quot;Signed token data for user {}&quot;, user.getId());</span>
+<span class="fc" id="L80">        String jwtSignature = VaultUtils.convertVaultSignatureToJWT(vaultSignature);</span>
+<span class="fc" id="L81">        String signedToken = unsignedToken + &quot;.&quot; + jwtSignature;</span>
+<span class="fc" id="L82">        user.setJwt(signedToken.trim());</span>
+<span class="fc" id="L83">        logger.info(&quot;Set signed token for user {}&quot;, user.getId());</span>
+<span class="fc" id="L84">        return user;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

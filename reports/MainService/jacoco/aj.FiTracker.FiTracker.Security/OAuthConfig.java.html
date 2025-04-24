@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="pl"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>OAuthConfig.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">FiTracker</a> &gt; <a href="index.source.html" class="el_package">aj.FiTracker.FiTracker.Security</a> &gt; <span class="el_source">OAuthConfig.java</span></div><h1>OAuthConfig.java</h1><pre class="source lang-java linenums">package aj.FiTracker.FiTracker.Security;
+
+import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.jose.jwk.JWKSet;
+import com.nimbusds.jose.jwk.KeyUse;
+import com.nimbusds.jose.jwk.RSAKey;
+import com.nimbusds.jose.jwk.source.JWKSource;
+import com.nimbusds.jose.proc.SecurityContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.oauth2.core.AuthorizationGrantType;
+import org.springframework.security.oauth2.core.ClientAuthenticationMethod;
+import org.springframework.security.oauth2.core.oidc.OidcScopes;
+import org.springframework.security.oauth2.server.authorization.client.InMemoryRegisteredClientRepository;
+import org.springframework.security.oauth2.server.authorization.client.RegisteredClient;
+import org.springframework.security.oauth2.server.authorization.client.RegisteredClientRepository;
+import org.springframework.security.oauth2.server.authorization.settings.ClientSettings;
+import org.springframework.vault.core.VaultTransitOperations;
+import org.springframework.vault.support.VaultTransitKey;
+
+import java.security.NoSuchAlgorithmException;
+import java.security.interfaces.RSAPublicKey;
+import java.security.spec.InvalidKeySpecException;
+import java.util.UUID;
+
+@Configuration
+public class OAuthConfig {
+<span class="fc" id="L32">    private static final Logger lopgger = LoggerFactory.getLogger(OAuthConfig.class);</span>
+    private final VaultTransitOperations vaultTransitOperations;
+    @Value(&quot;${oauth.client.id}&quot;)
+    private String clientId;
+    @Value(&quot;${oauth.client.secret}&quot;)
+    private String clientSecret;
+
+    @Autowired
+<span class="fc" id="L40">    public OAuthConfig(VaultTransitOperations vaultTransitOperations) {</span>
+<span class="fc" id="L41">        this.vaultTransitOperations = vaultTransitOperations;</span>
+<span class="fc" id="L42">        lopgger.info(&quot;OAuthConfig initialized with VaultTransitOperations&quot;);</span>
+
+<span class="fc" id="L44">    }</span>
+
+    @Bean
+    public RegisteredClientRepository registeredClientRepository() {
+<span class="fc" id="L48">        lopgger.info(&quot;Creating RegisteredClientRepository bean&quot;);</span>
+
+<span class="fc" id="L50">        RegisteredClient client = RegisteredClient.withId(UUID.randomUUID().toString())</span>
+<span class="fc" id="L51">                .clientId(clientId)</span>
+<span class="fc" id="L52">                .clientSecret(&quot;{noop}&quot; + clientSecret)</span>
+<span class="fc" id="L53">                .clientAuthenticationMethod(ClientAuthenticationMethod.CLIENT_SECRET_BASIC)</span>
+<span class="fc" id="L54">                .authorizationGrantType(AuthorizationGrantType.AUTHORIZATION_CODE)</span>
+<span class="fc" id="L55">                .authorizationGrantType(AuthorizationGrantType.REFRESH_TOKEN)</span>
+<span class="fc" id="L56">                .redirectUri(&quot;http://localhost:8080/login/oauth2/code/client-id&quot;)</span>
+<span class="fc" id="L57">                .scope(OidcScopes.OPENID)</span>
+<span class="fc" id="L58">                .scope(OidcScopes.PROFILE)</span>
+<span class="fc" id="L59">                .clientSettings(ClientSettings.builder().requireAuthorizationConsent(true).build())</span>
+<span class="fc" id="L60">                .build();</span>
+
+<span class="fc" id="L62">        return new InMemoryRegisteredClientRepository(client);</span>
+    }
+
+    @Bean
+    public JWKSource&lt;SecurityContext&gt; jwkSource() throws NoSuchAlgorithmException, InvalidKeySpecException {
+<span class="fc" id="L67">        lopgger.info(&quot;Creating JWKSource bean&quot;);</span>
+
+<span class="fc" id="L69">        RSAKey rsaKey = generateRsaKey();</span>
+<span class="fc" id="L70">        JWKSet jwkSet = new JWKSet(rsaKey);</span>
+<span class="fc" id="L71">        lopgger.info(&quot;JWKSet created with key ID: {}&quot;, rsaKey.getKeyID());</span>
+<span class="fc" id="L72">        lopgger.debug(&quot;JWKSet details: {}&quot;, jwkSet.toString(false));</span>
+<span class="pc" id="L73">        return (jwkSelector, securityContext) -&gt; jwkSelector.select(jwkSet);</span>
+    }
+
+    private RSAKey generateRsaKey() throws NoSuchAlgorithmException, InvalidKeySpecException {
+<span class="fc" id="L77">        lopgger.info(&quot;Generating RSA key from Vault.&quot;);</span>
+
+<span class="fc" id="L79">        VaultTransitKey transitKey = vaultTransitOperations.getKey(&quot;jwt-rsa-key&quot;);</span>
+<span class="pc bpc" id="L80" title="1 of 2 branches missed.">        if (transitKey != null) {</span>
+<span class="fc" id="L81">            lopgger.debug(&quot;Retrieved Vault transit key: {}&quot;, transitKey.getName());</span>
+        } else {
+<span class="nc" id="L83">            lopgger.warn(&quot;Failed to retrieve Vault transit key 'jwt-rsa-key'&quot;);</span>
+        }
+<span class="pc bpc" id="L85" title="1 of 2 branches missed.">        assert transitKey != null;</span>
+<span class="fc" id="L86">        String extractedKey = VaultUtils.extractKey(transitKey);</span>
+<span class="fc" id="L87">        lopgger.debug(&quot;Extracted key from Vault transit key (first few chars): {}&quot;, extractedKey.substring(0, Math.min(extractedKey.length(), 50)) + &quot;...&quot;);</span>
+<span class="fc" id="L88">        RSAPublicKey rsaPublicKey = RSAUtil.getRSAPubKey(extractedKey);</span>
+<span class="fc" id="L89">        String kid = RSAUtil.generateKidFromPublicKey(rsaPublicKey);</span>
+<span class="fc" id="L90">        lopgger.info(&quot;Generated RSA key with key ID (KID): {}&quot;, kid);</span>
+<span class="fc" id="L91">        lopgger.debug(&quot;RSA Public Key details: {}&quot;, rsaPublicKey);</span>
+<span class="fc" id="L92">        return new RSAKey.Builder(rsaPublicKey)</span>
+<span class="fc" id="L93">                .keyUse(KeyUse.SIGNATURE)</span>
+<span class="fc" id="L94">                .keyID(kid)</span>
+<span class="fc" id="L95">                .algorithm(JWSAlgorithm.PS256)</span>
+<span class="fc" id="L96">                .build();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>
