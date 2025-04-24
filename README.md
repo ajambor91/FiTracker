@@ -70,7 +70,6 @@ John
 Witkacy
 Peter
 Nancy
-ExampleTeam
 ```
 **For all the users pasword is:** exampleDem0U$ser
 
