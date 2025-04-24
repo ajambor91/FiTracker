@@ -276,6 +276,13 @@ From Grafana, you can view application logs (collected by Promtail and stored in
 
 Reports are available in `reports/SERVICE_NAME/jacoco`
 All microservices are comprehensively covered by both unit and integration tests. Tests are clearly categorized for flexible execution using Spring Profiles and JUnit Tags, with the "unit" profile/tag designated for unit tests and "integration" for integration tests. A consistent naming convention is followed for test files, such as SomeServiceUnitTest.java and SomeServiceIntegrationTest.java, aiding in easy identification of test types. Integration tests are robustly implemented using Testcontainers, providing isolated, lightweight instances of external dependencies including PostgreSQL, MongoDB, Apache Kafka, and HashiCorp Vault. For services utilizing PostgreSQL, database schema structures required for integration tests are automatically managed by Flyway, which applies migration scripts located in the src/test/resources/db/migration directory within the respective service modules.
+To run test you should go into ServiceDirectory, like FiTrackeMain etc. and run
+```bash
+    ./gradlew unitTest # For unit tests
+    ./gradlew integrationTest #For integration test
+    ./gradlew test # For both 
+    ./gradlew jacocoTestReport # For generate Jacoco Reports. Reports will be store in Service/build/reports/jacoco/index.html
+```
 
 ## Future Enhancements
 Here are the planned improvements and features for FiT:
