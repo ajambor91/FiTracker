@@ -6,6 +6,7 @@ services:
       context: "FiTrackerMain"
     ports:
       - "8080:8080"
+      - '9000:9000'
     depends_on:
       - fit-main-db
     networks:
@@ -30,6 +31,7 @@ services:
       context: "FiTrackerZoneService"
     ports:
       - '9090:8080'
+      - '9001:9000'
     depends_on:
       - fit-main-app
     networks:
@@ -64,6 +66,7 @@ services:
       context: "FiTrackerExpenses"
     ports:
       - '7090:8080'
+      - '9002:9000'
     depends_on:
       - fit-expenses-db
     networks:
