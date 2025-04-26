@@ -1,8 +1,7 @@
 package aj.FiTracker.FiTracker.Services;
 
 import aj.FiTracker.FiTracker.Abstract.AbstractIntegrationTest;
-import aj.FiTracker.FiTracker.DTO.REST.LoginRequest;
-import aj.FiTracker.FiTracker.DTO.REST.RegisterUserRequest;
+import aj.FiTracker.FiTracker.DTO.REST.*;
 import aj.FiTracker.FiTracker.Entities.User;
 import aj.FiTracker.FiTracker.Exceptions.UserAlreadyExistsException;
 import aj.FiTracker.FiTracker.Exceptions.UserDoesntExistException;
@@ -14,14 +13,18 @@ import aj.FiTracker.FiTracker.TestUtils.UserDataTestFactory;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import static aj.FiTracker.FiTracker.TestUtils.TestData.TEST_USER_LOGIN;
-import static aj.FiTracker.FiTracker.TestUtils.TestData.TEST_USER_NAME;
+import static aj.FiTracker.FiTracker.TestUtils.TestData.*;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @SpringBootTest
 @ActiveProfiles("integration")
@@ -32,8 +35,8 @@ public class UserServiceIntegrationTest extends AbstractIntegrationTest {
     private PasswordEncoder passwordEncoder;
     private UserService userService;
     private User user;
-    private RegisterUserRequest duplicatedUser;
-    private RegisterUserRequest registerUserRequest;
+    private RegisterUserRequestRequest duplicatedUser;
+    private RegisterUserRequestRequest registerUserRequest;
     private LoginRequest registerUserRequestIncorrectPassword;
     private LoginRequest loginRequest;
 
@@ -58,15 +61,15 @@ public class UserServiceIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("Should return User entity based on RegisterUserRequest")
+    @DisplayName("Should return User entity based on RegisterUserRequestRequest")
     public void testRegisterUser() {
-        User user = userService.registerUser(this.registerUserRequest);
+        RegisterUserRequestResponse user = userService.registerUser(this.registerUserRequest);
         assertEquals(TEST_USER_NAME, user.getName());
         assertEquals(TEST_USER_LOGIN, user.getLogin());
     }
 
     @Test
-    @DisplayName("Should throw NullPointerException when RegisterUserRequest is null")
+    @DisplayName("Should throw NullPointerException when RegisterUserRequestRequest is null")
     public void testRegisterUserThrowsNullPointerExceptcion() {
         assertThrows(NullPointerException.class, () -> {
             userService.registerUser(null);
@@ -76,7 +79,7 @@ public class UserServiceIntegrationTest extends AbstractIntegrationTest {
     @Test
     @DisplayName("Should throw DataIntegrityViolationException on duplicate user")
     public void testRegisterUserThrowsDataIntegrityViolationException() {
-        User user = userService.registerUser(this.duplicatedUser);
+        RegisterUserRequestResponse user = userService.registerUser(this.duplicatedUser);
         assertThrows(UserAlreadyExistsException.class, () -> {
             userService.registerUser(this.duplicatedUser);
         });
@@ -86,8 +89,8 @@ public class UserServiceIntegrationTest extends AbstractIntegrationTest {
     @DisplayName("Should authenticate user")
     public void testLoginUser() {
 
-        User user = userService.registerUser(this.registerUserRequest);
-        User authenticatedUser = userService.loginUser(loginRequest);
+        RegisterUserRequestResponse user = userService.registerUser(this.registerUserRequest);
+        LoginResponse authenticatedUser = userService.loginUser(loginRequest);
         assertEquals(TEST_USER_LOGIN, authenticatedUser.getLogin());
         assertEquals(TEST_USER_NAME, authenticatedUser.getName());
         assertNotNull(authenticatedUser.getJwt());
@@ -97,8 +100,8 @@ public class UserServiceIntegrationTest extends AbstractIntegrationTest {
     @DisplayName("Should throw UserUnauthorizedException when password incorrect")
     public void testLoginUserWithIncorrectPassword() {
         UserUnauthorizedException exception = assertThrows(UserUnauthorizedException.class, () -> {
-            User user = userService.registerUser(this.registerUserRequest);
-            User authenticatedUser = userService.loginUser(registerUserRequestIncorrectPassword);
+            RegisterUserRequestResponse user = userService.registerUser(this.registerUserRequest);
+            LoginResponse authenticatedUser = userService.loginUser(registerUserRequestIncorrectPassword);
 
         });
         assertEquals("Incorrect password for user " + TEST_USER_LOGIN, exception.getMessage());
@@ -108,7 +111,7 @@ public class UserServiceIntegrationTest extends AbstractIntegrationTest {
     @DisplayName("Should throw UserDoesntExistException when user doesn't exist")
     public void testLoginUserWhenDoesntExist() {
         UserDoesntExistException exception = assertThrows(UserDoesntExistException.class, () -> {
-            User authenticatedUser = userService.loginUser(registerUserRequestIncorrectPassword);
+            LoginResponse authenticatedUser = userService.loginUser(registerUserRequestIncorrectPassword);
 
         });
         assertEquals("User with login " + TEST_USER_LOGIN + " does not exist.", exception.getMessage());
@@ -126,37 +129,96 @@ public class UserServiceIntegrationTest extends AbstractIntegrationTest {
     @Test
     @DisplayName("Should find users by email")
     public void testFindUsersByEmail() {
-        this.insertTestData(
-                "INSERT INTO app_core.app_user (login, name, password,email, salt, unique_id, created_at, updated_at) " +
-                        "VALUES ('testLogin', 'Test name', '$2a$10$JWWX4sPfFPl84AeiYeQm5eA.EEmNbALPjKYyGiP2qG/Q3t8.8fQ4a', 'test@test.pl', " +
-                        "'xAcJlQ5mjvc6QsK0AF+hkA==', '194e36b4-2f25-4171-83e3-8543bfcd54f4', NOW(), NOW())"
-        );
-        List<User> userList = this.userService.findUsersByEmail("test");
-        assertEquals(1, userList.size());
-        assertEquals("Test name", userList.getFirst().getName());
-        assertEquals("test@test.pl", userList.getFirst().getEmail());
+        this.insertTestUserIntoDataBase();
+
+        FindUserResponse userList = this.userService.findUsersByEmail("test");
+        assertEquals(1, userList.getUserData().size());
+        assertEquals(TEST_USER_NAME, userList.getUserData().getFirst().name());
+        assertEquals(TEST_USER_EMAIL, userList.getUserData().getFirst().email());
     }
 
     @Test
     @DisplayName("Should find users by ids")
     public void testFindUsersByIds() {
-        this.insertTestData(
-                "INSERT INTO app_core.app_user (id, login, name, password,email, salt, unique_id, created_at, updated_at) " +
-                        "VALUES (0,'testLogin', 'Test name', '$2a$10$JWWX4sPfFPl84AeiYeQm5eA.EEmNbALPjKYyGiP2qG/Q3t8.8fQ4a', 'test@test.pl', " +
-                        "'xAcJlQ5mjvc6QsK0AF+hkA==', '194e36b4-2f25-4171-83e3-8543bfcd54f4', NOW(), NOW())"
-        );
-        this.insertTestData(
-                "INSERT INTO app_core.app_user (id, login, name, password, email, salt, unique_id, created_at, updated_at) " +
-                        "VALUES (1,'testLogin1', 'Test name', 'IncorrectPassword', " +
-                        "'test2@test.pl','xAcJlQ5mjvc6QsK0AF+hkA==', 'e7058eb5-3b8e-41f7-a972-c039097d7529', NOW(), NOW())"
-        );
-        long id1 = 0;
-        long id2 = 1;
-        List<User> userList = this.userService.findUsersByIds(new ArrayList<>(List.of(id1, id2)));
-        assertEquals(2, userList.size());
-        assertEquals("Test name", userList.getFirst().getName());
-        assertEquals("test@test.pl", userList.getFirst().getEmail());
-        assertEquals("Test name", userList.getLast().getName());
-        assertEquals("test2@test.pl", userList.getLast().getEmail());
+        this.insertTestUserIntoDataBase();
+        this.insertTestUserWithIncorrectPassword();
+        FindUserResponse userList = this.userService.findUsersByIds(new ArrayList<>(List.of(TEST_USER_ID, TEST_USER_SECOND_ID)));
+        assertEquals(2, userList.getUserData().size());
+        assertEquals(TEST_USER_NAME, userList.getUserData().getFirst().name());
+        assertEquals(TEST_USER_EMAIL, userList.getUserData().getFirst().email());
+        assertEquals(TEST_USER_SECOND_NAME, userList.getUserData().getLast().name());
+        assertEquals(TEST_USER_SECOND_EMAIL, userList.getUserData().getLast().email());
     }
+
+    @Test
+    @DisplayName("Should return user from id")
+    public void testGetUser() {
+        this.insertTestUserIntoDataBase();
+        GetUserResponse userRequestResponse = this.userService.getUser(TEST_USER_ID);
+        assertEquals(TEST_USER_ID, userRequestResponse.getUserId());
+        assertEquals(TEST_USER_NAME, userRequestResponse.getName());
+        assertEquals(TEST_USER_EMAIL, userRequestResponse.getEmail());
+        assertEquals(TEST_USER_LOGIN, userRequestResponse.getLogin());
+
+    }
+
+    @Test
+    @DisplayName("Should throw UserDoesntExistException")
+    public void testGetUserUserDoesntExistException() {
+        UserDoesntExistException exception = assertThrows(UserDoesntExistException.class, () -> {
+            this.userService.getUser(TEST_USER_ID);
+        }) ;
+        assertInstanceOf(UserDoesntExistException.class, exception);
+        assertEquals("Cannot find user " + TEST_USER_ID, exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("Should update user")
+    public void testUpdateUser() {
+        this.insertTestUserIntoDataBase();
+        Authentication authenticationMock = this.createAuthMock();
+        UpdateUserResponse updateUserResponse = this.userService.updateUser(RequestsDataFactory.createUpdateUserRequest(), authenticationMock);
+        assertEquals(TEST_USER_EMAIL, updateUserResponse.getEmail());
+        assertEquals(TEST_USER_NAME_UPDATE, updateUserResponse.getName());
+        assertEquals(TEST_USER_LOGIN, updateUserResponse.getLogin());
+        assertEquals(TEST_USER_ID, updateUserResponse.getUserId());
+    }
+
+
+    @Test
+    @DisplayName("Should throw UserDoesntExistException when update user")
+    public void testUpdateUserUserDoesntExistException() {
+
+        Authentication authenticationMock = this.createAuthMock();
+        UserDoesntExistException exception = assertThrows(UserDoesntExistException.class, () -> {
+            this.userService.updateUser(RequestsDataFactory.createUpdateUserRequest(), authenticationMock);
+        });
+        assertInstanceOf(UserDoesntExistException.class, exception);
+        assertEquals("Cannot find user " + TEST_USER_ID, exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("Should throw UserUnauthorizedException when update user")
+    public void testUpdateUserUserUnauthorizedException() {
+        this.insertTestUserIntoDataBase();
+        Authentication authenticationMock = this.createAuthMock();
+        UpdateUserRequest updateUserRequest = RequestsDataFactory.createUpdateUserRequest();
+        updateUserRequest.setRawPassword("INCORRECT".toCharArray());
+        UserUnauthorizedException exception = assertThrows(UserUnauthorizedException.class, () -> {
+            this.userService.updateUser(updateUserRequest, authenticationMock);
+        });
+        assertInstanceOf(UserUnauthorizedException.class, exception);
+        assertEquals("Incorrect password for user " + TEST_USER_ID, exception.getMessage());
+    }
+
+    private Authentication createAuthMock() {
+        Jwt jwtMock = mock(Jwt.class);
+        when(jwtMock.getClaimAsString(eq("sub"))).thenReturn(String.valueOf(TEST_USER_ID));
+        when(jwtMock.getClaimAsString(eq("name"))).thenReturn(TEST_USER_EMAIL);
+        Authentication authenticationMock = mock(Authentication.class);
+        when(authenticationMock.getPrincipal()).thenReturn(jwtMock);
+        return authenticationMock;
+    }
+
+
 }

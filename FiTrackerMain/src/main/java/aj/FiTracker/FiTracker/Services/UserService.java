@@ -1,19 +1,22 @@
 package aj.FiTracker.FiTracker.Services;
 
-import aj.FiTracker.FiTracker.DTO.REST.LoginRequest;
-import aj.FiTracker.FiTracker.DTO.REST.RegisterUserRequest;
+import aj.FiTracker.FiTracker.DTO.REST.*;
 import aj.FiTracker.FiTracker.Entities.User;
 import aj.FiTracker.FiTracker.Exceptions.InternalServerException;
 import aj.FiTracker.FiTracker.Exceptions.UserAlreadyExistsException;
 import aj.FiTracker.FiTracker.Exceptions.UserDoesntExistException;
 import aj.FiTracker.FiTracker.Exceptions.UserUnauthorizedException;
+import aj.FiTracker.FiTracker.Models.UserImpl;
 import aj.FiTracker.FiTracker.Repositories.UserRepository;
+import aj.FiTracker.FiTracker.Security.JWTClaimsUtil;
 import aj.FiTracker.FiTracker.Security.JWTService;
 import aj.FiTracker.FiTracker.Security.PasswordEncoder;
+import aj.FiTracker.FiTracker.UserInterface;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,16 +44,16 @@ public class UserService {
     }
 
     @Transactional
-    public User registerUser(RegisterUserRequest registerUserRequest) {
-        Objects.requireNonNull(registerUserRequest, "RegisterUserRequest cannot be null (programmer error)");
+    public RegisterUserRequestResponse registerUser(RegisterUserRequestRequest registerUserRequest) {
+        Objects.requireNonNull(registerUserRequest, "RegisterUserRequestRequest cannot be null (programmer error)");
         User user = new User(registerUserRequest);
         logger.info("Created new User: name={}, login={}", user.getName(), user.getLogin());
-        user = this.passwordEncoder.encryptPassword(user);
+        user = this.passwordEncoder.prepareForRegister(user);
         logger.info("Password hashed for User: name={}, login={}", user.getName(), user.getLogin());
         try {
             User savedUser = this.userRepository.saveAndFlush(user);
             logger.info("User saved successfully: name={}, login={}, userId={}", user.getName(), user.getLogin(), savedUser.getId());
-            return savedUser;
+            return new RegisterUserRequestResponse(user);
         } catch (DataIntegrityViolationException e) {
             logger.error("User already exists: name={}, login={}. Error: {}", user.getName(), user.getLogin(), e.getMessage());
             throw new UserAlreadyExistsException(e);
@@ -61,9 +64,9 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public User loginUser(LoginRequest loginRequest) {
+    public LoginResponse loginUser(LoginRequest loginRequest) {
         Objects.requireNonNull(loginRequest, "LoginRequest cannot be null (programmer error)");
-        User userToAuth = new User(loginRequest);
+        UserInterface userToAuth = new UserImpl(loginRequest);
         logger.info("Attempting to log in user with login: {}", userToAuth.getLogin());
         try {
             logger.info("Searching for user in the database: login={}", userToAuth.getLogin());
@@ -82,7 +85,7 @@ public class UserService {
             logger.info("Password verified successfully for user: login={}. Generating JWT token...", user.getLogin());
             user = this.jwtService.generateToken(user);
             logger.info("JWT token generated successfully for user: login={}", user.getLogin());
-            return user;
+            return new LoginResponse(user);
 
         } catch (UserDoesntExistException | UserUnauthorizedException e) {
             logger.error("Login failed: {}", e.getMessage());
@@ -94,11 +97,13 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public List<User> findUsersByEmail(String email) {
+    public FindUserResponse findUsersByEmail(String email) {
         logger.info("Finding users by email: email={}", email);
         try {
             String regexp = "^" + email;
-            return this.userRepository.findUsersByEmail(regexp);
+             List<UserInterface> userList = this.userRepository.findUsersByEmail(regexp).stream().map(user -> (UserInterface) user).toList();
+
+            return new FindUserResponse(userList);
         } catch (Exception e) {
             logger.error("Error while finding users by email: email={}. Error: {}", email, e.getMessage(), e);
             throw new InternalServerException(e);
@@ -106,13 +111,59 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public List<User> findUsersByIds(List<Long> ids) {
+    public FindUserResponse findUsersByIds(List<Long> ids) {
         logger.info("Finding users by IDs: ids={}", ids);
         try {
-            return this.userRepository.findUsersByIds(ids);
+            List<UserInterface> users = this.userRepository.findUsersByIds(ids).stream().map(user -> (UserInterface) user).toList();
+            return new FindUserResponse(users);
         } catch (Exception e) {
             logger.error("Error while finding users by IDs: ids={}. Error: {}", ids, e.getMessage(), e);
             throw new InternalServerException(e);
         }
+    }
+
+    @Transactional(readOnly = true)
+    public GetUserResponse getUser(long id) {
+        logger.info("Getting user {}", id);
+        try {
+            Optional<User> optionalUser = this.userRepository.findOneById(id);
+            if (optionalUser.isEmpty()) {
+                throw new UserDoesntExistException("Cannot find user " + id);
+            }
+            return new GetUserResponse(optionalUser.get());
+
+        } catch (UserDoesntExistException userDoesntExistException) {
+            logger.error("Cannot find user with id {}", id);
+            throw  userDoesntExistException;
+        } catch (Exception e) {
+            logger.error("Unexpected error {}" , e.getMessage());
+            throw new InternalServerException(e);
+        }
+    }
+
+    @Transactional()
+    public UpdateUserResponse updateUser(UpdateUserRequest userRequest, Authentication authentication) {
+        try {
+            JWTClaimsUtil.JWTClaims jwtClaims = JWTClaimsUtil.getUsernameFromClaims(authentication);
+            Optional<User> optionalUser = this.userRepository.findOneById(jwtClaims.userId());
+            if (optionalUser.isEmpty()) {
+                throw new UserDoesntExistException("Cannot find user " + jwtClaims.userId());
+            }
+            User user = optionalUser.get();
+            UserInterface userToUpdate = new UserImpl(userRequest);
+            if (!this.passwordEncoder.checkPass(userToUpdate, user)) {
+                throw new UserUnauthorizedException("Incorrect password for user " + jwtClaims.userId());
+            }
+            user.updateUser(userToUpdate);
+            this.userRepository.save(user);
+            return new UpdateUserResponse(user);
+        } catch (UserDoesntExistException | UserUnauthorizedException exception) {
+            logger.error("User credentials error {}",exception.getMessage());
+            throw exception;
+        } catch (Exception e) {
+            logger.error("Unexpected error {}", e.getMessage());
+            throw new InternalServerException(e);
+        }
+
     }
 }

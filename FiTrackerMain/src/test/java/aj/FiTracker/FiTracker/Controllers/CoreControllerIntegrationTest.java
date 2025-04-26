@@ -15,8 +15,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @AutoConfigureMockMvc
 @SpringBootTest
-@Tag("integration")
-@ActiveProfiles("integration")
+@Tag("integrationWithCSRF")
+@ActiveProfiles("integrationWithCSRF")
 public class CoreControllerIntegrationTest extends AbstractIntegrationTest {
     private final CoreController coreContoller;
     private MockMvc mockMvc;

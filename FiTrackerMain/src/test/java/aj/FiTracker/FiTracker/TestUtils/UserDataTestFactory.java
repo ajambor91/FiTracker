@@ -1,8 +1,10 @@
 package aj.FiTracker.FiTracker.TestUtils;
 
+import aj.FiTracker.FiTracker.DTO.REST.*;
 import aj.FiTracker.FiTracker.Entities.User;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.UUID;
 
 import static aj.FiTracker.FiTracker.TestUtils.TestData.*;
@@ -25,5 +27,31 @@ public class UserDataTestFactory {
         user.setLogin(TEST_USER_SECOND_LOGIN);
         user.setName(TEST_USER_SECOND_NAME);
         return user;
+    }
+
+    public static User createUserToUpdate() {
+        User user = createTestUser();
+        user.setName(TEST_USER_NAME_UPDATE);
+        return user;
+    }
+
+    public static LoginResponse createLoginDTO() {
+        return new LoginResponse(createTestUser());
+    }
+
+    public static RegisterUserRequestResponse createRegisterDTO() {
+        return new RegisterUserRequestResponse(createTestUser());
+    }
+
+    public static FindUserResponse createFindUSersResponse() {
+        return new FindUserResponse(List.of(createTestUser(), createSecondTestUser()));
+    }
+
+    public static GetUserResponse getUserResponse() {
+        return new GetUserResponse(createTestUser());
+    }
+
+    public static UpdateUserResponse getUpdateRename() {
+        return new UpdateUserResponse(createTestUser());
     }
 }

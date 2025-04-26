@@ -9,14 +9,19 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 
-@Profile("integration")
+@Profile("integrationWithCSRF")
 @Configuration
 @EnableWebSecurity
-public class SecurityConfig {
+public class SecurityConfigWithCSRF {
     @Bean
     public SecurityFilterChain defaultSecurityFilterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests(req -> req.anyRequest().permitAll())
-                .csrf(csrf -> csrf.disable());
+                .csrf(csrf -> {
+                    CookieCsrfTokenRepository csrfTokenRepository = new CookieCsrfTokenRepository();
+                    csrf.csrfTokenRepository(csrfTokenRepository);
+                    CsrfTokenRequestAttributeHandler csrfTokenRequestHandler = new CsrfTokenRequestAttributeHandler();
+                    csrf.csrfTokenRequestHandler(csrfTokenRequestHandler);
+                });
         return http.build();
     }
 }

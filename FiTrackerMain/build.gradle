@@ -62,18 +62,20 @@ dependencies {
 
 tasks.register('unitTest', Test) {
 	useJUnitPlatform {
-		excludeTags 'integration'
+		excludeTags 'integration', 'integrationWithCSRF'
 	}
 	systemProperty 'spring.profiles.active', 'unit'
 }
 
 tasks.register('integrationTest', Test) {
 	useJUnitPlatform {
-		includeTags 'integration'
+		includeTags 'integration', 'integrationWithCSRF'
 	}
 	systemProperty 'spring.profiles.active', 'integration'
 	shouldRunAfter 'unitTest'
 }
+
+
 
 tasks.register('buildWithoutTests') {
 	group = 'build'

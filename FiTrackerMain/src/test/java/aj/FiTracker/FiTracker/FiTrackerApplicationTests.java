@@ -11,7 +11,7 @@ import org.springframework.test.context.ActiveProfiles;
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
 @SpringBootTest
 @Tag("integration")
-@ActiveProfiles("integration")
+@ActiveProfiles({"integration", "integrationWithCSRSF"})
 class FiTrackerApplicationTests extends AbstractIntegrationTest {
     @Test
     void contextLoads() {

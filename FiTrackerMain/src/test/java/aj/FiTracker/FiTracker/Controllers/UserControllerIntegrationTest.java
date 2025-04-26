@@ -1,6 +1,8 @@
 package aj.FiTracker.FiTracker.Controllers;
 
 import aj.FiTracker.FiTracker.Abstract.AbstractIntegrationTest;
+import aj.FiTracker.FiTracker.DTO.REST.UpdateUserRequest;
+import aj.FiTracker.FiTracker.Security.WithMockJwt;
 import aj.FiTracker.FiTracker.TestUtils.RequestsDataFactory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.AfterEach;
@@ -14,14 +16,15 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static aj.FiTracker.FiTracker.TestUtils.TestData.*;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-@AutoConfigureMockMvc(addFilters = false)
+@AutoConfigureMockMvc
 @SpringBootTest
 @Tag("integration")
 @ActiveProfiles("integration")
+@WithMockJwt
 public class UserControllerIntegrationTest extends AbstractIntegrationTest {
     private final ObjectMapper objectMapper;
     private final MockMvc mockMvc;
@@ -57,11 +60,7 @@ public class UserControllerIntegrationTest extends AbstractIntegrationTest {
     @Test
     @DisplayName("Should return Conflict when user is duplicated")
     public void testRegisterUserReturnConflict() throws Exception {
-        this.insertTestData(
-                "INSERT INTO app_core.app_user (login, name, password, email, salt, unique_id, created_at, updated_at) " +
-                        "VALUES ('testLogin', 'Test name', '$2a$10$JWWX4sPfFPl84AeiYeQm5eA.EEmNbALPjKYyGiP2qG/Q3t8.8fQ4a', 'test@test.pl'," +
-                        "'xAcJlQ5mjvc6QsK0AF+hkA==', '194e36b4-2f25-4171-83e3-8543bfcd54f4', NOW(), NOW())"
-        );
+        this.insertTestUserIntoDataBase();
         this.mockMvc.perform(post("/users/register")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(this.objectMapper.writeValueAsString(RequestsDataFactory.createTestRegisterUserRequest())))
@@ -71,22 +70,13 @@ public class UserControllerIntegrationTest extends AbstractIntegrationTest {
     @Test
     @DisplayName("Should login user and return 200")
     public void testLoginUser() throws Exception {
-        this.insertTestData(
-                "INSERT INTO app_core.app_user (login, name, password,email, salt, unique_id, created_at, updated_at) " +
-                        "VALUES ('testLogin', 'Test name', '$2a$10$JWWX4sPfFPl84AeiYeQm5eA.EEmNbALPjKYyGiP2qG/Q3t8.8fQ4a', 'test@test.pl', " +
-                        "'xAcJlQ5mjvc6QsK0AF+hkA==', '194e36b4-2f25-4171-83e3-8543bfcd54f4', NOW(), NOW())"
-        );
+        this.insertTestUserIntoDataBase();
         this.mockMvc.perform(post("/users/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(this.objectMapper.writeValueAsString(RequestsDataFactory.createTestLoginRequestData())))
                 .andExpect(status().isOk())
-                .andExpect(content().json("""
-                        {
-                            "login": "testLogin",
-                            "name": "Test name",
-                            "message": "Login successfully"
-                        }
-                        """));
+                .andExpect(jsonPath("$.email").value(TEST_USER_EMAIL))
+                .andExpect(jsonPath("$.name").value(TEST_USER_NAME));
         ;
     }
 
@@ -103,32 +93,24 @@ public class UserControllerIntegrationTest extends AbstractIntegrationTest {
     @Test
     @DisplayName("Should 401 when password is not correct")
     public void testLoginUserIncorrectPassword() throws Exception {
-        this.insertTestData(
-                "INSERT INTO app_core.app_user (login, name, password, email, salt, unique_id, created_at, updated_at) " +
-                        "VALUES ('testLogin', 'Test name', 'IncorrectPassword', " +
-                        "'xAcJlQ5mjvc6QsK0AF+hkA==', 'test@test.pl', '194e36b4-2f25-4171-83e3-8543bfcd54f4', NOW(), NOW())"
-        );
+        this.insertTestFirstUserWithIncorrectPassword();
         this.mockMvc.perform(post("/users/login")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(this.objectMapper.writeValueAsString(RequestsDataFactory.createTestLoginRequestData())))
+                        .content(this.objectMapper.writeValueAsString(RequestsDataFactory.createTestLoginRequestDataWithIncorrectPassword())))
                 .andExpect(status().isUnauthorized());
     }
 
     @Test
     @DisplayName("Should return Users by email")
     public void testFindUserByEmail() throws Exception {
-        this.insertTestData(
-                "INSERT INTO app_core.app_user (id, login, name, password, email, salt, unique_id, created_at, updated_at) " +
-                        "VALUES (0,'testLogin', 'Test name', 'IncorrectPassword', " +
-                        "'test@test.pl','xAcJlQ5mjvc6QsK0AF+hkA==', '194e36b4-2f25-4171-83e3-8543bfcd54f4', NOW(), NOW())"
-        );
+        this.insertTestUserIntoDataBase();
         this.mockMvc.perform(get("/users/user/find?email=test")
                         .contentType(MediaType.APPLICATION_JSON)
                 )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.userData[0].id").exists())
-                .andExpect(jsonPath("$.userData[0].email").value("test@test.pl"))
-                .andExpect(jsonPath("$.userData[0].name").value("Test name"));
+                .andExpect(jsonPath("$.userData[0].email").value(TEST_USER_EMAIL))
+                .andExpect(jsonPath("$.userData[0].name").value(TEST_USER_NAME));
     }
 
     @Test
@@ -153,23 +135,15 @@ public class UserControllerIntegrationTest extends AbstractIntegrationTest {
     @Test
     @DisplayName("Should return Users by ids")
     public void testFindUserByIds() throws Exception {
-        this.insertTestData(
-                "INSERT INTO app_core.app_user (id, login, name, password, email, salt, unique_id, created_at, updated_at) " +
-                        "VALUES (0,'testLogin', 'Test name', 'IncorrectPassword', " +
-                        "'test@test.pl','xAcJlQ5mjvc6QsK0AF+hkA==', '194e36b4-2f25-4171-83e3-8543bfcd54f4', NOW(), NOW())"
-        );
-        this.insertTestData(
-                "INSERT INTO app_core.app_user (id, login, name, password, email, salt, unique_id, created_at, updated_at) " +
-                        "VALUES (1,'testLogin1', 'Test name', 'IncorrectPassword', " +
-                        "'test2@test.pl','xAcJlQ5mjvc6QsK0AF+hkA==', 'e7058eb5-3b8e-41f7-a972-c039097d7529', NOW(), NOW())"
-        );
+        this.insertTestUserIntoDataBase();
+        this.insertTestUserWithIncorrectPassword();
         this.mockMvc.perform(get("/users/user/find/multi?ids=0&ids=1")
                         .contentType(MediaType.APPLICATION_JSON)
                 )
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.userData[0].id").exists())
-                .andExpect(jsonPath("$.userData[0].email").value("test@test.pl"))
-                .andExpect(jsonPath("$.userData[0].name").value("Test name"));
+                .andExpect(jsonPath("$.userData[0].email").value(TEST_USER_EMAIL))
+                .andExpect(jsonPath("$.userData[0].name").value(TEST_USER_NAME));
     }
 
     @Test
@@ -200,5 +174,86 @@ public class UserControllerIntegrationTest extends AbstractIntegrationTest {
                 .andExpect(status().isBadRequest());
     }
 
+    @Test
+    @DisplayName("Should return user when getting user by id")
+    public void testGetUser() throws Exception {
+        this.insertTestUserIntoDataBase();
+        this.mockMvc.perform(get("/users/user/" + TEST_USER_ID)
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.email").value(TEST_USER_EMAIL))
+                .andExpect(jsonPath("$.name").value(TEST_USER_NAME))
+                .andExpect(jsonPath("$.login").value(TEST_USER_LOGIN))
+                .andExpect(jsonPath("$.userId").value(TEST_USER_ID));
+    }
 
+    @Test
+    @DisplayName("Should return NotFound when getting user by id and user does not exist")
+    public void testGetUserNotFound() throws Exception {
+        this.mockMvc.perform(get("/users/user/" + TEST_USER_ID)
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @DisplayName("Should return NotFound when getting user by id and user does not exist")
+    public void testGetUserNot() throws Exception {
+        this.mockMvc.perform(get("/users/user/")
+                        .contentType(MediaType.APPLICATION_JSON)
+                )
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @DisplayName("Should update user")
+    public void testUpdateUser() throws Exception {
+        this.insertTestUserIntoDataBase();
+        this.mockMvc.perform(patch("/users/user")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(this.objectMapper.writeValueAsString(RequestsDataFactory.createUpdateUserRequest())))
+                .andExpect(status().isOk())
+                .andExpect(content().json("""
+                        {
+                            "email": "test@mail.com", 
+                            "login": "testLogin",
+                            "name": "Test User UPDATE",
+                            "userId": 1
+                        }
+                        """));
+    }
+
+    @Test
+    @DisplayName("Should throw Unauthorized user when trying to update")
+    public void testUpdateUserUnauthorized() throws Exception {
+        this.insertTestUserIntoDataBase();
+        UpdateUserRequest userRequest = RequestsDataFactory.createUpdateUserRequest();
+        userRequest.setRawPassword("INCORECCaT7#".toCharArray());
+        this.mockMvc.perform(patch("/users/user")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(this.objectMapper.writeValueAsString(userRequest)))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("Should throw NotFound user when trying to update")
+    public void testUpdateUserNotFound() throws Exception {
+        this.mockMvc.perform(patch("/users/user")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(this.objectMapper.writeValueAsString(RequestsDataFactory.createUpdateUserRequest())))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @DisplayName("Should throw BadRequest user when trying to update and set wrong password")
+    public void testUpdateUserBadRequest() throws Exception {
+        this.insertTestUserIntoDataBase();
+        UpdateUserRequest userRequest = RequestsDataFactory.createUpdateUserRequest();
+        userRequest.setRawPassword("INCORECCT".toCharArray());
+        this.mockMvc.perform(patch("/users/user")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(this.objectMapper.writeValueAsString(userRequest)))
+                .andExpect(status().isBadRequest());
+    }
 }

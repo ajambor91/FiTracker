@@ -3,6 +3,7 @@ package aj.FiTracker.FiTracker.Security;
 
 import aj.FiTracker.FiTracker.Entities.User;
 import aj.FiTracker.FiTracker.TestUtils.UserDataTestFactory;
+import aj.FiTracker.FiTracker.UserInterface;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
@@ -27,9 +28,9 @@ public class PasswordEncoderUnitTest {
     }
 
     @Test
-    @DisplayName("Should generate new hashed password")
-    public void testShouldEncodePassword() {
-        User userWithEncryptedPassword = passwordEncoder.encryptPassword(user);
+    @DisplayName("Should prepare User for register with new hashed password and salt")
+    public void testPrepareForRegister() {
+        UserInterface userWithEncryptedPassword = passwordEncoder.prepareForRegister(user);
         assertNotNull(userWithEncryptedPassword.getPassword());
         assertNull(userWithEncryptedPassword.getRawPassword());
 
@@ -38,10 +39,9 @@ public class PasswordEncoderUnitTest {
     @Test
     @DisplayName("Should compare passwords and returns true when password is correct")
     public void testShouldComparePasswords() {
-        User userWithEncryptedPassword = passwordEncoder.encryptPassword(user);
+        UserInterface userWithEncryptedPassword = passwordEncoder.prepareForRegister(user);
         User userToLogin = UserDataTestFactory.createTestUser();
         boolean isCorrectPassword = passwordEncoder.checkPass(userToLogin, userWithEncryptedPassword);
-        assertNull(userWithEncryptedPassword.getPassword());
         assertNull(userWithEncryptedPassword.getRawPassword());
         assertTrue(isCorrectPassword);
 
@@ -50,11 +50,10 @@ public class PasswordEncoderUnitTest {
     @Test
     @DisplayName("Should compare passwords and returns false when password is not correct")
     public void testShouldComparePasswordsAndReturnFalseWhenPasswordIsIncorrect() {
-        User userWithEncryptedPassword = passwordEncoder.encryptPassword(user);
+        UserInterface userWithEncryptedPassword = passwordEncoder.prepareForRegister(user);
         User userToLogin = UserDataTestFactory.createTestUser();
         userToLogin.setRawPassword(new String("IncorrectPasswrd").toCharArray());
         boolean isCorrectPassword = passwordEncoder.checkPass(userToLogin, userWithEncryptedPassword);
-        assertNull(userWithEncryptedPassword.getPassword());
         assertNull(userWithEncryptedPassword.getRawPassword());
         assertFalse(isCorrectPassword);
 

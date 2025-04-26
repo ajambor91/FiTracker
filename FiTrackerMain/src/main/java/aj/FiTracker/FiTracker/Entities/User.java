@@ -1,8 +1,7 @@
 package aj.FiTracker.FiTracker.Entities;
 
-import aj.FiTracker.FiTracker.DTO.REST.LoginRequest;
-import aj.FiTracker.FiTracker.DTO.REST.RegisterUserRequest;
-import aj.FiTracker.FiTracker.DTO.Users.UserData;
+import aj.FiTracker.FiTracker.DTO.REST.RegisterUserRequestRequest;
+import aj.FiTracker.FiTracker.UserInterface;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -18,7 +17,7 @@ import java.util.UUID;
         name = "app_user"
 )
 @SequenceGenerator(name = "app_user_seq_gen", sequenceName = "app_user_id_seq", allocationSize = 1)
-public class User implements UserData {
+public class User implements UserInterface {
 
 
     @Id
@@ -60,16 +59,11 @@ public class User implements UserData {
     public User() {
     }
 
-    public User(RegisterUserRequest userRequest) {
+    public User(RegisterUserRequestRequest userRequest) {
         this.login = userRequest.getLogin();
         this.name = userRequest.getName();
         this.rawPassword = userRequest.getRawPassword();
         this.email = userRequest.getEmail();
-    }
-
-    public User(LoginRequest loginRequest) {
-        this.login = loginRequest.getLogin();
-        this.rawPassword = loginRequest.getRawPassword();
     }
 
     @PrePersist
@@ -82,5 +76,19 @@ public class User implements UserData {
     @PreUpdate
     private void preUpdate() {
         this.updatedAt = LocalDateTime.now();
+    }
+
+
+    public void updateUser(UserInterface userToUpdate) {
+        if (userToUpdate.getLogin() != null && !userToUpdate.getLogin().equals(this.login)) {
+            this.login = userToUpdate.getLogin();
+        }
+        if (userToUpdate.getEmail() != null && !userToUpdate.getEmail().equals(this.email)) {
+            this.email = userToUpdate.getEmail();
+        }
+
+        if (userToUpdate.getName() != null && !userToUpdate.getName().equals(this.name)) {
+            this.name = userToUpdate.getName();
+        }
     }
 }

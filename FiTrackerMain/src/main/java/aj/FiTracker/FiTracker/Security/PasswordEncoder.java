@@ -1,6 +1,7 @@
 package aj.FiTracker.FiTracker.Security;
 
 import aj.FiTracker.FiTracker.Entities.User;
+import aj.FiTracker.FiTracker.UserInterface;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,7 +20,7 @@ public class PasswordEncoder {
     @Value("${password.pepper}")
     private String passwordPepper;
 
-    public User encryptPassword(User user) {
+    public User prepareForRegister(User user) {
         logger.info("Starting password encryption for user: {}", user.getId());
 
         char[] saltedPass = setSalt(user);
@@ -41,20 +42,19 @@ public class PasswordEncoder {
         return user;
     }
 
-    public boolean checkPass(User userToAuth, User userToCheck) {
+    public boolean checkPass(UserInterface userToAuth, UserInterface storedUser) {
         logger.info("Starting password check for user: {}", userToAuth.getId());
 
-        char[] saltedPass = getSalt(userToAuth, userToCheck);
+        char[] saltedPass = getSalt(userToAuth, storedUser);
         logger.debug("Salted password retrieved for user: {}", userToAuth.getId());
 
         char[] pepperedPass = setPepper(saltedPass);
         logger.debug("Peppered password created for user: {}", userToAuth.getId());
 
-        boolean isPasswordCorrect = encoder.matches(new String(pepperedPass), userToCheck.getPassword());
+        boolean isPasswordCorrect = encoder.matches(new String(pepperedPass), storedUser.getPassword());
         logger.info("Password check result for user {}: {}", userToAuth.getId(), isPasswordCorrect);
 
         userToAuth.setRawPassword(null);
-        userToCheck.setPassword(null);
         return isPasswordCorrect;
     }
 
@@ -72,7 +72,7 @@ public class PasswordEncoder {
         return pepperedPass;
     }
 
-    private char[] setSalt(User user) {
+    private char[] setSalt(UserInterface user) {
         logger.debug("Generating salt for user {}", user.getId());
 
         String salt = generateSalt();
@@ -88,10 +88,10 @@ public class PasswordEncoder {
         return saltedPass;
     }
 
-    private char[] getSalt(User userToAuth, User userToCheck) {
+    private char[] getSalt(UserInterface userToAuth, UserInterface storedUser) {
         logger.debug("Retrieving salt for user: {}", userToAuth.getId());
         String rawPassString = new String(userToAuth.getRawPassword());
-        String saltedPassString = userToAuth.getLogin() + rawPassString + userToCheck.getSalt();
+        String saltedPassString = userToAuth.getLogin() + rawPassString + storedUser.getSalt();
         char[] saltedPass = saltedPassString.toCharArray();
         Arrays.fill(userToAuth.getRawPassword(), '0');
         rawPassString = null;
