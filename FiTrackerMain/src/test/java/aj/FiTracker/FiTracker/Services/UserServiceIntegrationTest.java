@@ -211,6 +211,40 @@ public class UserServiceIntegrationTest extends AbstractIntegrationTest {
         assertEquals("Incorrect password for user " + TEST_USER_ID, exception.getMessage());
     }
 
+    @Test
+    @DisplayName("Should delete user")
+    public void testDeleteUser() {
+        this.insertTestUserIntoDataBase();
+        Authentication authenticationMock = this.createAuthMock();
+        this.userService.deleteUser(RequestsDataFactory.createDeleteUser(), authenticationMock);
+    }
+
+    @Test
+    @DisplayName("Should throw UserDoesntExistException when deleting user")
+    public void testDeleteUserUserDoesntExistException() {
+
+        Authentication authenticationMock = this.createAuthMock();
+        UserDoesntExistException exception = assertThrows(UserDoesntExistException.class, () -> {
+            this.userService.deleteUser(RequestsDataFactory.createDeleteUser(), authenticationMock);
+        });
+        assertInstanceOf(UserDoesntExistException.class, exception);
+        assertEquals("Cannot find user " + TEST_USER_ID, exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("Should throw UserUnauthorizedException when deleting user")
+    public void testDeleteUserUserUnauthorizedException() {
+        this.insertTestUserIntoDataBase();
+        Authentication authenticationMock = this.createAuthMock();
+        DeleteUserRequest deleteUserRequest = RequestsDataFactory.createDeleteUser();
+        deleteUserRequest.setRawPassword("INCORRECT".toCharArray());
+        UserUnauthorizedException exception = assertThrows(UserUnauthorizedException.class, () -> {
+            this.userService.deleteUser(deleteUserRequest, authenticationMock);
+        });
+        assertInstanceOf(UserUnauthorizedException.class, exception);
+        assertEquals("Incorrect password for user " + TEST_USER_ID, exception.getMessage());
+    }
+
     private Authentication createAuthMock() {
         Jwt jwtMock = mock(Jwt.class);
         when(jwtMock.getClaimAsString(eq("sub"))).thenReturn(String.valueOf(TEST_USER_ID));

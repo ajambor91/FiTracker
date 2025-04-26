@@ -64,6 +64,12 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body(updateUserResponse);
 
     }
+    @DeleteMapping("/user")
+    public ResponseEntity<?> deleteUser(@RequestBody @Valid DeleteUserRequest deleteUserRequest, Authentication authentication) {
+        logger.info("Received request for user remove");
+        this.userService.deleteUser(deleteUserRequest, authentication);
+        return ResponseEntity.noContent().build();
+    }
 
     @GetMapping("/user/find")
     public ResponseEntity<FindUserResponse> findUserByEmail(@RequestParam("email") @NotBlank String email) {
@@ -81,6 +87,7 @@ public class UserController {
         logger.info("Found {} users matches ids {}", users.getUserData().size(), ids);
         return ResponseEntity.status(HttpStatus.OK).body(users);
     }
+
 
 
 }

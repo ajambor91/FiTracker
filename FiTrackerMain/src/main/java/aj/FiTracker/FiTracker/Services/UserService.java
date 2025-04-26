@@ -164,6 +164,27 @@ public class UserService {
             logger.error("Unexpected error {}", e.getMessage());
             throw new InternalServerException(e);
         }
+    }
 
+    @Transactional()
+    public void deleteUser(DeleteUserRequest deleteUserRequest, Authentication authentication) {
+        try {
+            JWTClaimsUtil.JWTClaims jwtClaims = JWTClaimsUtil.getUsernameFromClaims(authentication);
+            Optional<User> optionalUser = this.userRepository.findOneById(jwtClaims.userId());
+            if (optionalUser.isEmpty()) {
+                throw new UserDoesntExistException("Cannot find user " + jwtClaims.userId());
+            }
+            User user = optionalUser.get();
+            UserInterface userToDelete = new UserImpl(deleteUserRequest, jwtClaims.userId());
+            if (!this.passwordEncoder.checkPass(userToDelete, user)) {
+                throw new UserUnauthorizedException("Incorrect password for user " + jwtClaims.userId());
+            }
+            this.userRepository.deleteById(jwtClaims.userId());
+        } catch (UserDoesntExistException | UserUnauthorizedException exception) {
+            logger.error("User credentials error {}",exception.getMessage());
+            throw exception;
+        } catch (Exception e) {
+            throw new InternalServerException(e);
+        }
     }
 }

@@ -1,6 +1,7 @@
 package aj.FiTracker.FiTracker.Controllers;
 
 import aj.FiTracker.FiTracker.Abstract.AbstractIntegrationTest;
+import aj.FiTracker.FiTracker.DTO.REST.DeleteUserRequest;
 import aj.FiTracker.FiTracker.DTO.REST.UpdateUserRequest;
 import aj.FiTracker.FiTracker.Security.WithMockJwt;
 import aj.FiTracker.FiTracker.TestUtils.RequestsDataFactory;
@@ -246,7 +247,7 @@ public class UserControllerIntegrationTest extends AbstractIntegrationTest {
     }
 
     @Test
-    @DisplayName("Should throw BadRequest user when trying to update and set wrong password")
+    @DisplayName("Should throw Unauthorized user when trying to update and set wrong password")
     public void testUpdateUserBadRequest() throws Exception {
         this.insertTestUserIntoDataBase();
         UpdateUserRequest userRequest = RequestsDataFactory.createUpdateUserRequest();
@@ -254,6 +255,49 @@ public class UserControllerIntegrationTest extends AbstractIntegrationTest {
         this.mockMvc.perform(patch("/users/user")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(this.objectMapper.writeValueAsString(userRequest)))
-                .andExpect(status().isBadRequest());
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("Should delete user")
+    public void testDeleteUser() throws Exception {
+        this.insertTestUserIntoDataBase();
+        this.mockMvc.perform(delete("/users/user")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(this.objectMapper.writeValueAsString(RequestsDataFactory.createUpdateUserRequest())))
+                .andExpect(status().isNoContent());
+    }
+
+    @Test
+    @DisplayName("Should throw Unauthorized user when trying to delete")
+    public void testDeleteUserUnauthorized() throws Exception {
+        this.insertTestUserIntoDataBase();
+        DeleteUserRequest deleteUserRequest = RequestsDataFactory.createDeleteUser();
+        deleteUserRequest.setRawPassword("INCORECCaT7#".toCharArray());
+        this.mockMvc.perform(delete("/users/user")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(this.objectMapper.writeValueAsString(deleteUserRequest)))
+                .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    @DisplayName("Should throw NotFound user when trying to update")
+    public void testDeleteUserNotFound() throws Exception {
+        this.mockMvc.perform(delete("/users/user")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(this.objectMapper.writeValueAsString(RequestsDataFactory.createUpdateUserRequest())))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @DisplayName("Should throw Unauthorized user when trying to delete and set wrong password")
+    public void testDeleteUserBadRequest() throws Exception {
+        this.insertTestUserIntoDataBase();
+        DeleteUserRequest userRequest = RequestsDataFactory.createDeleteUser();
+        userRequest.setRawPassword("INCORECCT".toCharArray());
+        this.mockMvc.perform(delete("/users/user")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(this.objectMapper.writeValueAsString(userRequest)))
+                .andExpect(status().isUnauthorized());
     }
 }

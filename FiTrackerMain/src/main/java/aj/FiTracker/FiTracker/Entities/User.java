@@ -80,9 +80,6 @@ public class User implements UserInterface {
 
 
     public void updateUser(UserInterface userToUpdate) {
-        if (userToUpdate.getLogin() != null && !userToUpdate.getLogin().equals(this.login)) {
-            this.login = userToUpdate.getLogin();
-        }
         if (userToUpdate.getEmail() != null && !userToUpdate.getEmail().equals(this.email)) {
             this.email = userToUpdate.getEmail();
         }

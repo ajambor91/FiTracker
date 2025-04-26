@@ -1,5 +1,6 @@
 package aj.FiTracker.FiTracker.Models;
 
+import aj.FiTracker.FiTracker.DTO.REST.DeleteUserRequest;
 import aj.FiTracker.FiTracker.DTO.REST.LoginRequest;
 import aj.FiTracker.FiTracker.DTO.REST.UpdateUserRequest;
 import aj.FiTracker.FiTracker.UserInterface;
@@ -45,5 +46,11 @@ public class UserImpl implements UserInterface {
     public UserImpl(LoginRequest loginRequest) {
         this.login = loginRequest.getLogin();
         this.rawPassword = loginRequest.getRawPassword();
+    }
+
+    public UserImpl(DeleteUserRequest deleteUserRequest, long id) {
+        this.rawPassword = deleteUserRequest.getRawPassword();
+        this.login = deleteUserRequest.getLogin();
+        this.id = id;
     }
 }

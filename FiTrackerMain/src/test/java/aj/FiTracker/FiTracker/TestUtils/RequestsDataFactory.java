@@ -1,9 +1,6 @@
 package aj.FiTracker.FiTracker.TestUtils;
 
-import aj.FiTracker.FiTracker.DTO.REST.LoginRequest;
-import aj.FiTracker.FiTracker.DTO.REST.RegisterUserRequestRequest;
-import aj.FiTracker.FiTracker.DTO.REST.RegisterUserRequestResponse;
-import aj.FiTracker.FiTracker.DTO.REST.UpdateUserRequest;
+import aj.FiTracker.FiTracker.DTO.REST.*;
 
 import static aj.FiTracker.FiTracker.TestUtils.TestData.*;
 
@@ -58,5 +55,12 @@ public class RequestsDataFactory {
         userRequest.setEmail(TEST_USER_EMAIL);
         userRequest.setRawPassword(TEST_CORRECT_PASSWORD.toCharArray());
         return userRequest;
+    }
+
+    public static DeleteUserRequest createDeleteUser() {
+        DeleteUserRequest deleteUserRequest = new DeleteUserRequest();
+        deleteUserRequest.setLogin(TEST_USER_LOGIN);
+        deleteUserRequest.setRawPassword(TEST_CORRECT_PASSWORD.toCharArray());
+        return deleteUserRequest;
     }
 }

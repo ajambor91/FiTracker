@@ -134,5 +134,13 @@ public class UserControllerUnitTest {
         assertEquals(TEST_USER_EMAIL, getUser.getEmail());
     }
 
+    @Test
+    @DisplayName("Should delete user")
+    public void testDeleteUser() {
+        DeleteUserRequest deleteUserRequest = RequestsDataFactory.createDeleteUser();
+        this.userController.deleteUser(deleteUserRequest, mock(Authentication.class));
+        verify(this.userServiceMock, times(1)).deleteUser(eq(deleteUserRequest), any(Authentication.class));
+    }
+
 
 }

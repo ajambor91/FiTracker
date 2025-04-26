@@ -18,6 +18,7 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.ArgumentCaptor;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -342,7 +343,7 @@ public class UserServiceUnitTest {
 
     @Test
     @DisplayName("Should throw when UserUnauthorizedException 'Incorrect password' when updating user")
-    public void testUpdateUserUserDoesntExistExceptionIncorrectPassword() {
+    public void testUpdateUserUserUnauthorizedExceptionIncorrectPassword() {
         Authentication authentication = this.createAuthMock();
         UpdateUserRequest userRequest = RequestsDataFactory.createUpdateUserRequest();
         when(this.userRepository.findOneById(eq(TEST_USER_ID))).thenReturn(Optional.of(user));
@@ -386,6 +387,74 @@ public class UserServiceUnitTest {
         });
         verify(passwordEncoderMock, times(1)).checkPass(any(UserInterface.class), any(UserInterface.class));
         verify(this.userRepository,times(1)).save(any(User.class));
+        verify(this.userRepository, times(1)).findOneById(eq(TEST_USER_ID));
+        assertInstanceOf(InternalServerException.class, exception);
+        assertEquals("Boom!", exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("Should delete user")
+    public void testDeleteUser() {
+        User user = UserDataTestFactory.createTestUser();
+
+        DeleteUserRequest deleteUserRequest = RequestsDataFactory.createDeleteUser();
+        Authentication authentication = this.createAuthMock();
+        PasswordEncoder passwordEncoderMock = mock(PasswordEncoder.class);
+        ReflectionTestUtils.setField(this.userService, "passwordEncoder", passwordEncoderMock);
+        when(passwordEncoderMock.checkPass(any(UserInterface.class), any(UserInterface.class))).thenReturn(true);
+        when(this.userRepository.findOneById(eq(TEST_USER_ID))).thenReturn(Optional.of(user));
+
+        this.userService.deleteUser(deleteUserRequest, authentication);
+        verify(passwordEncoderMock, times(1)).checkPass(any(UserInterface.class), any(UserInterface.class));
+        verify(this.userRepository,times(1)).deleteById(eq(TEST_USER_ID));
+        verify(this.userRepository, times(1)).findOneById(eq(TEST_USER_ID));
+    }
+
+    @Test
+    @DisplayName("Should when UserUnauthorizedException when deleting user")
+    public void testDeleteUserUserUnauthorizedException() {
+        User user = UserDataTestFactory.createTestUser();
+        DeleteUserRequest deleteUserRequest = RequestsDataFactory.createDeleteUser();
+        Authentication authentication = this.createAuthMock();
+        PasswordEncoder passwordEncoderMock = mock(PasswordEncoder.class);
+        ReflectionTestUtils.setField(this.userService, "passwordEncoder", passwordEncoderMock);
+        when(passwordEncoderMock.checkPass(any(UserInterface.class), any(UserInterface.class))).thenReturn(false);
+        when(this.userRepository.findOneById(eq(TEST_USER_ID))).thenReturn(Optional.of(user));
+        UserUnauthorizedException userUnauthorizedException = assertThrows(UserUnauthorizedException.class, () -> {
+            this.userService.deleteUser(deleteUserRequest, authentication);
+        });
+        verify(passwordEncoderMock, times(1)).checkPass(any(UserInterface.class), any(UserInterface.class));
+        verify(this.userRepository,never()).deleteById(anyLong());
+        verify(this.userRepository, times(1)).findOneById(eq(TEST_USER_ID));
+        assertInstanceOf(UserUnauthorizedException.class, userUnauthorizedException);
+        assertEquals("Incorrect password for user " + TEST_USER_ID, userUnauthorizedException.getMessage());
+    }
+
+    @Test
+    @DisplayName("Should throw UserDoesntExistException when deleting user")
+    public void testDeleteUserUserDoesntExistException() {
+        DeleteUserRequest deleteUserRequest = RequestsDataFactory.createDeleteUser();
+        Authentication authentication = this.createAuthMock();
+        when(this.userRepository.findOneById(eq(TEST_USER_ID))).thenReturn(Optional.empty());
+        UserDoesntExistException exception = assertThrows(UserDoesntExistException.class, () -> {
+            this.userService.deleteUser(deleteUserRequest, authentication);
+        });
+        verify(this.userRepository,never()).deleteById(anyLong());
+        verify(this.userRepository, times(1)).findOneById(eq(TEST_USER_ID));
+        assertInstanceOf(UserDoesntExistException.class, exception);
+        assertEquals("Cannot find user " + TEST_USER_ID, exception.getMessage());
+    }
+
+    @Test
+    @DisplayName("Should throw InternalServerException when deleting user")
+    public void testDeleteUserInternalServerException() {
+        DeleteUserRequest deleteUserRequest = RequestsDataFactory.createDeleteUser();
+        Authentication authentication = this.createAuthMock();
+        when(this.userRepository.findOneById(eq(TEST_USER_ID))).thenThrow(new RuntimeException("Boom!"));
+        InternalServerException exception = assertThrows(InternalServerException.class, () -> {
+            this.userService.deleteUser(deleteUserRequest, authentication);
+        });
+        verify(this.userRepository,never()).deleteById(anyLong());
         verify(this.userRepository, times(1)).findOneById(eq(TEST_USER_ID));
         assertInstanceOf(InternalServerException.class, exception);
         assertEquals("Boom!", exception.getMessage());
