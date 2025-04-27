@@ -1,8 +1,6 @@
 package aj.FiTracker.FiTracker.Services;
 
-import aj.FiTracker.FiTracker.DTO.REST.NewZoneRequest;
-import aj.FiTracker.FiTracker.DTO.REST.RemoveZoneMemberRequest;
-import aj.FiTracker.FiTracker.DTO.REST.UpdateZoneRequest;
+import aj.FiTracker.FiTracker.DTO.REST.*;
 import aj.FiTracker.FiTracker.Documents.Zone;
 import aj.FiTracker.FiTracker.Enums.MemberRole;
 import aj.FiTracker.FiTracker.Exceptions.InternalServerException;
@@ -10,6 +8,7 @@ import aj.FiTracker.FiTracker.Exceptions.ZoneAlreadyExistsException;
 import aj.FiTracker.FiTracker.Exceptions.ZoneDoesntExistException;
 import aj.FiTracker.FiTracker.Factories.MembersFactory;
 import aj.FiTracker.FiTracker.Models.MemberTemplate;
+import aj.FiTracker.FiTracker.Models.MembersTemplate;
 import aj.FiTracker.FiTracker.Repositories.ZoneRepository;
 import aj.FiTracker.FiTracker.Security.JWTClaimsUtil;
 import com.mongodb.DuplicateKeyException;
@@ -42,7 +41,7 @@ public class ZoneService {
     }
 
     @Transactional
-    public Zone addNewZone(NewZoneRequest newZoneRequest, Authentication authentication) {
+    public NewZoneResponse addNewZone(NewZoneRequest newZoneRequest, Authentication authentication) {
         logger.info("Adding a new zone. User: {}", authentication.getName());
         logger.debug("New zone request details: {}", newZoneRequest);
         try {
@@ -51,10 +50,10 @@ public class ZoneService {
             zone.addMember(new Zone.Member(claims.userId(), MemberRole.ADMIN, claims.name()));
             zone = this.zoneRepository.save(zone);
             logger.info("Successfully saved new zone with ID: {}", zone.getId());
-            MemberTemplate memberTemplate = MembersFactory.createMemberTemplate(zone);
-            this.kafkaProducerService.sendNewMembers(memberTemplate);
+            MembersTemplate membersTemplate = MembersFactory.createMemberTemplate(zone);
+            this.kafkaProducerService.sendNewMembers(membersTemplate);
             logger.info("Sent new members event to Kafka for zone ID: {}", zone.getId());
-            return zone;
+            return new NewZoneResponse(zone);
         } catch (DuplicateKeyException exception) {
             logger.warn("Attempted to create a zone that already exists.", exception);
             throw new ZoneAlreadyExistsException(exception);
@@ -65,7 +64,7 @@ public class ZoneService {
     }
 
     @Transactional(readOnly = true)
-    public Zone getExistingZoneById(String id, Authentication authentication) {
+    public GetZoneResponse getExistingZoneById(String id, Authentication authentication) {
         logger.info("Getting zone with ID: {}. User: {}", id, authentication.getName());
         try {
             JWTClaimsUtil.JWTClaims claims = JWTClaimsUtil.getUsernameFromClaims(authentication);
@@ -76,7 +75,7 @@ public class ZoneService {
                 throw new ZoneDoesntExistException("Zone does not exist");
             }
             logger.info("Successfully retrieved zone with ID: {}.", zone.get().getId());
-            return zone.get();
+            return new GetZoneResponse(zone.get());
         } catch (ZoneDoesntExistException e) {
             logger.warn("Requested zone does not exist: {}", e.getMessage());
             throw e;
@@ -87,7 +86,7 @@ public class ZoneService {
     }
 
     @Transactional()
-    public Zone removeZoneById(String id, Authentication authentication) {
+    public DeletedZoneResponse removeZoneById(String id, Authentication authentication) {
         logger.info("Removing zone with ID: {}. User: {}", id, authentication.getName());
         try {
             JWTClaimsUtil.JWTClaims claims = JWTClaimsUtil.getUsernameFromClaims(authentication);
@@ -101,7 +100,7 @@ public class ZoneService {
             zoneDocument.setDeletedAt(LocalDateTime.now());
             this.zoneRepository.save(zoneDocument);
             logger.info("Successfully marked zone with ID: {} as deleted.", zoneDocument.getId());
-            return zoneDocument;
+            return new DeletedZoneResponse(zoneDocument);
 
         } catch (ZoneDoesntExistException e) {
             logger.warn("Attempted to delete a non-existent zone: {}", e.getMessage());
@@ -113,7 +112,7 @@ public class ZoneService {
     }
 
     @Transactional()
-    public Zone removeZoneMember(String id, RemoveZoneMemberRequest removeZoneMemberRequest, Authentication authentication) {
+    public UpdateZoneResponse removeZoneMember(String id, RemoveZoneMemberRequest removeZoneMemberRequest, Authentication authentication) {
         logger.info("Removing member(s) from zone with ID: {}. User: {}", id, authentication.getName());
         logger.debug("Remove member request details: {}", removeZoneMemberRequest);
         try {
@@ -128,10 +127,10 @@ public class ZoneService {
             Zone updatedZone = this.removeMembers(zoneDocument, removeZoneMemberRequest);
             this.zoneRepository.save(updatedZone);
             logger.info("Successfully removed member(s) from zone with ID: {}.", zoneDocument.getId());
-            MemberTemplate memberTemplate = MembersFactory.createMemberTemplate(removeZoneMemberRequest);
-            this.kafkaProducerService.sendDeletedMembers(memberTemplate);
+            MembersTemplate membersTemplate = MembersFactory.createMemberTemplate(removeZoneMemberRequest);
+            this.kafkaProducerService.sendDeletedMembers(membersTemplate);
             logger.info("Sent deleted members event to Kafka for zone ID: {}.", zoneDocument.getId());
-            return zoneDocument;
+            return new UpdateZoneResponse(zoneDocument);
 
         } catch (ZoneDoesntExistException e) {
             logger.warn("Attempted to remove member(s) from a non-existent zone: {}", e.getMessage());
@@ -143,13 +142,23 @@ public class ZoneService {
     }
 
     @Transactional
-    public Zone updateZone(String id, Authentication authentication, UpdateZoneRequest updateZoneRequest) {
+    public void removeMemberFromAllZone(MemberTemplate memberTemplate) {
+        try {
+            this.zoneRepository.pullMemberFromAllZones(memberTemplate.userId());
+            this.zoneRepository.deleteZonesWithOneMember();
+        } catch (Exception e) {
+            throw new InternalServerException(e);
+        }
+    }
+
+    @Transactional
+    public UpdateZoneResponse updateZone(String id, Authentication authentication, UpdateZoneRequest updateZoneRequest) {
         logger.info("Updating zone with ID: {}. User: {}", id, authentication.getName());
         logger.debug("Update zone request details: {}", updateZoneRequest);
         try {
             JWTClaimsUtil.JWTClaims claims = JWTClaimsUtil.getUsernameFromClaims(authentication);
-            MemberTemplate memberTemplateToAdd = new MemberTemplate(id);
-            MemberTemplate memberTemplateToRemove = new MemberTemplate(id);
+            MembersTemplate membersTemplateToAdd = new MembersTemplate(id);
+            MembersTemplate membersTemplateToRemove = new MembersTemplate(id);
             Optional<Zone> zone = this.zoneRepository.findByIdAndDeletedAtIsNullAndMembersList_UserId(id, claims.userId());
             if (zone.isEmpty()) {
                 logger.warn("Cannot update zone with ID: {}. Zone not found for user: {}.", id, authentication.getName());
@@ -174,18 +183,18 @@ public class ZoneService {
             this.zoneRepository.save(zoneDocument);
             logger.info("Successfully updated zone with ID: {}.", zoneDocument.getId());
             if (!membersToAdd.isEmpty()) {
-                memberTemplateToAdd.addMembers(membersToAdd);
+                membersTemplateToAdd.addMembers(membersToAdd);
 
-                this.kafkaProducerService.sendNewMembers(memberTemplateToAdd);
+                this.kafkaProducerService.sendNewMembers(membersTemplateToAdd);
                 logger.info("Sent new members event to Kafka for zone ID: {}.", zoneDocument.getId());
             }
             if (!membersToRemove.isEmpty()) {
-                memberTemplateToRemove.addMembers(membersToRemove);
-                this.kafkaProducerService.sendDeletedMembers(memberTemplateToRemove);
+                membersTemplateToRemove.addMembers(membersToRemove);
+                this.kafkaProducerService.sendDeletedMembers(membersTemplateToRemove);
                 logger.info("Sent members to remove event to Kafka for zone ID: {}.", zoneDocument.getId());
 
             }
-            return zoneDocument;
+            return new UpdateZoneResponse(zoneDocument);
 
         } catch (ZoneDoesntExistException e) {
             logger.warn("Attempted to update a non-existent zone: {}", e.getMessage());
@@ -197,14 +206,14 @@ public class ZoneService {
     }
 
     @Transactional(readOnly = true)
-    public List<Zone> getAllZones(Authentication authentication) {
+    public ZonesResponse getAllZones(Authentication authentication) {
         logger.info("Getting all zones for user: {}.", authentication.getName());
         try {
             JWTClaimsUtil.JWTClaims claims = JWTClaimsUtil.getUsernameFromClaims(authentication);
 
             List<Zone> zones = this.zoneRepository.findByDeletedAtIsNullAndMembersList_UserId(claims.userId());
             logger.info("Successfully retrieved {} zones for user: {}.", zones.size(), authentication.getName());
-            return zones;
+            return new ZonesResponse(zones);
         } catch (Exception e) {
             logger.error("An internal server error occurred while retrieving all zones for user: {}.", authentication.getName(), e);
             throw new InternalServerException(e);
@@ -212,7 +221,7 @@ public class ZoneService {
     }
 
     @Transactional(readOnly = true)
-    public List<Zone> getLastFourZones(Authentication authentication) {
+    public ZonesResponse getLastFourZones(Authentication authentication) {
         logger.info("Getting the last four zones for user: {}.", authentication.getName());
         try {
             JWTClaimsUtil.JWTClaims claims = JWTClaimsUtil.getUsernameFromClaims(authentication);
@@ -220,7 +229,7 @@ public class ZoneService {
 
             List<Zone> zones = this.zoneRepository.findByDeletedAtIsNullAndMembersList_UserId(claims.userId(), pageable);
             logger.info("Successfully retrieved the last {} zones for user: {}.", zones.size(), authentication.getName());
-            return zones;
+            return new ZonesResponse(zones);
         } catch (Exception e) {
             logger.error("An internal server error occurred while retrieving the last four zones for user: {}.", authentication.getName(), e);
             throw new InternalServerException(e);

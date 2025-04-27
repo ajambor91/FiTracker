@@ -2,7 +2,7 @@ package aj.FiTracker.FiTracker.Services;
 
 
 import aj.FiTracker.FiTracker.AbstractTest.AbstractIntegrationTest;
-import aj.FiTracker.FiTracker.DTO.REST.UpdateZoneRequest;
+import aj.FiTracker.FiTracker.DTO.REST.*;
 import aj.FiTracker.FiTracker.Documents.Zone;
 import aj.FiTracker.FiTracker.Enums.MemberRole;
 import aj.FiTracker.FiTracker.Exceptions.ZoneDoesntExistException;
@@ -52,11 +52,11 @@ public class ZoneServiceIntegrationTest extends AbstractIntegrationTest {
         when(this.jwtMock.getClaimAsString(eq("name"))).thenReturn(ZONE_TEST_NAME);
         when(this.jwtMock.getClaimAsString(eq("sub"))).thenReturn(String.valueOf(OWNER_TEST_ID));
         when(this.authenticationMock.getPrincipal()).thenReturn(jwtMock);
-        Zone zone = zoneService.addNewZone(ZoneFactory.createNewZoneTestRequest(), this.authenticationMock);
+        NewZoneResponse zone = zoneService.addNewZone(ZoneFactory.createNewZoneTestRequest(), this.authenticationMock);
         assertNotNull(zone);
-        assertNotNull(zone.getId());
-        assertEquals(ZONE_TEST_NAME, zone.getName());
-        assertEquals(ZONE_TEST_DESCRIPTION, zone.getDescription());
+        assertNotNull(zone.getZoneId());
+        assertEquals(ZONE_TEST_NAME, zone.getZoneName());
+        assertEquals(ZONE_TEST_DESCRIPTION, zone.getZoneDescription());
     }
 
     @Test
@@ -67,11 +67,11 @@ public class ZoneServiceIntegrationTest extends AbstractIntegrationTest {
         when(this.jwtMock.getClaimAsString(eq("sub"))).thenReturn(String.valueOf(OWNER_TEST_ID));
         when(this.authenticationMock.getPrincipal()).thenReturn(jwtMock);
         this.insertTestZoneIntoDB();
-        Zone zoneFromDB = zoneService.getExistingZoneById(ZONE_TEST_ID, this.authenticationMock);
+        GetZoneResponse zoneFromDB = zoneService.getExistingZoneById(ZONE_TEST_ID, this.authenticationMock);
         assertNotNull(zoneFromDB);
-        assertEquals(ZONE_TEST_ID, zoneFromDB.getId());
-        assertEquals(ZONE_TEST_NAME, zoneFromDB.getName());
-        assertEquals(ZONE_TEST_DESCRIPTION, zoneFromDB.getDescription());
+        assertEquals(ZONE_TEST_ID, zoneFromDB.getZoneId());
+        assertEquals(ZONE_TEST_NAME, zoneFromDB.getZoneName());
+        assertEquals(ZONE_TEST_DESCRIPTION, zoneFromDB.getZoneDescription());
     }
 
     @Test
@@ -95,10 +95,10 @@ public class ZoneServiceIntegrationTest extends AbstractIntegrationTest {
         when(this.jwtMock.getClaimAsString(eq("sub"))).thenReturn(String.valueOf(OWNER_TEST_ID));
         when(this.authenticationMock.getPrincipal()).thenReturn(jwtMock);
         this.insertTestZoneIntoDB();
-        Zone deletedZone = this.zoneService.removeZoneById(ZONE_TEST_ID, this.authenticationMock);
-        assertEquals(ZONE_TEST_ID, deletedZone.getId());
-        assertEquals(ZONE_TEST_NAME, deletedZone.getName());
-        assertEquals(ZONE_TEST_DESCRIPTION, deletedZone.getDescription());
+        DeletedZoneResponse deletedZone = this.zoneService.removeZoneById(ZONE_TEST_ID, this.authenticationMock);
+        assertEquals(ZONE_TEST_ID, deletedZone.getZoneId());
+        assertEquals(ZONE_TEST_NAME, deletedZone.getZoneName());
+        assertEquals(ZONE_TEST_DESCRIPTION, deletedZone.getZoneDescription());
         assertNotNull(deletedZone.getDeletedAt());
     }
 
@@ -125,11 +125,11 @@ public class ZoneServiceIntegrationTest extends AbstractIntegrationTest {
         when(this.authenticationMock.getPrincipal()).thenReturn(jwtMock);
         this.insertTestZoneIntoDB();
         UpdateZoneRequest updateZoneRequest = ZoneFactory.createUpdateZoneTestRequest();
-        Zone zone = this.zoneService.updateZone(ZONE_TEST_ID, this.authenticationMock, updateZoneRequest);
+        UpdateZoneResponse zone = this.zoneService.updateZone(ZONE_TEST_ID, this.authenticationMock, updateZoneRequest);
         assertNotNull(zone);
-        assertEquals(ZONE_TEST_ID, zone.getId());
-        assertEquals(ZONE_TEST_NAME, zone.getName());
-        assertEquals(ZONE_TEST_DESCRIPTION, zone.getDescription());
+        assertEquals(ZONE_TEST_ID, zone.getZoneId());
+        assertEquals(ZONE_TEST_NAME, zone.getZoneName());
+        assertEquals(ZONE_TEST_DESCRIPTION, zone.getZoneDescription());
 
     }
 
@@ -142,11 +142,11 @@ public class ZoneServiceIntegrationTest extends AbstractIntegrationTest {
         when(this.authenticationMock.getPrincipal()).thenReturn(jwtMock);
         this.insertTestZoneIntoDB();
         UpdateZoneRequest updateZoneRequest = ZoneFactory.createUpdateZoneTestRequestWithMember();
-        Zone zone = this.zoneService.updateZone(ZONE_TEST_ID, this.authenticationMock, updateZoneRequest);
+        UpdateZoneResponse zone = this.zoneService.updateZone(ZONE_TEST_ID, this.authenticationMock, updateZoneRequest);
         assertNotNull(zone);
-        assertEquals(ZONE_TEST_ID, zone.getId());
-        assertEquals(ZONE_TEST_NAME, zone.getName());
-        assertEquals(ZONE_TEST_DESCRIPTION, zone.getDescription());
+        assertEquals(ZONE_TEST_ID, zone.getZoneId());
+        assertEquals(ZONE_TEST_NAME, zone.getZoneName());
+        assertEquals(ZONE_TEST_DESCRIPTION, zone.getZoneDescription());
         assertEquals(1, zone.getMembersList().size());
     }
 
@@ -159,11 +159,11 @@ public class ZoneServiceIntegrationTest extends AbstractIntegrationTest {
         when(this.authenticationMock.getPrincipal()).thenReturn(jwtMock);
         this.insertTestZoneIntoDB();
         UpdateZoneRequest updateZoneRequest = ZoneFactory.createUpdateZoneTestRequestWithNameAndDescription();
-        Zone zone = this.zoneService.updateZone(ZONE_TEST_ID, this.authenticationMock, updateZoneRequest);
+        UpdateZoneResponse zone = this.zoneService.updateZone(ZONE_TEST_ID, this.authenticationMock, updateZoneRequest);
         assertNotNull(zone);
-        assertEquals(ZONE_TEST_ID, zone.getId());
-        assertEquals(ZONE_TEST_NAME_SECOND, zone.getName());
-        assertEquals(ZONE_TEST_DESCRIPTION_SECOND, zone.getDescription());
+        assertEquals(ZONE_TEST_ID, zone.getZoneId());
+        assertEquals(ZONE_TEST_NAME_SECOND, zone.getZoneName());
+        assertEquals(ZONE_TEST_DESCRIPTION_SECOND, zone.getZoneDescription());
     }
 
     @Test
@@ -187,11 +187,11 @@ public class ZoneServiceIntegrationTest extends AbstractIntegrationTest {
         when(this.jwtMock.getClaimAsString(eq("sub"))).thenReturn(String.valueOf(OWNER_TEST_ID));
         when(this.authenticationMock.getPrincipal()).thenReturn(jwtMock);
         this.insertTestZoneIntoDB();
-        Zone zone = this.zoneService.removeZoneMember(ZONE_TEST_ID, ZoneFactory.createRemoveZoneMemberRequest(), authenticationMock);
+        UpdateZoneResponse zone = this.zoneService.removeZoneMember(ZONE_TEST_ID, ZoneFactory.createRemoveZoneMemberRequest(), authenticationMock);
         assertNotNull(zone);
-        assertEquals(ZONE_TEST_ID, zone.getId());
-        assertEquals(ZONE_TEST_NAME, zone.getName());
-        assertEquals(ZONE_TEST_DESCRIPTION, zone.getDescription());
+        assertEquals(ZONE_TEST_ID, zone.getZoneId());
+        assertEquals(ZONE_TEST_NAME, zone.getZoneName());
+        assertEquals(ZONE_TEST_DESCRIPTION, zone.getZoneDescription());
         assertEquals(1, zone.getMembersList().size());
         assertEquals(OWNER_TEST_ID, zone.getMembersList().getFirst().getUserId());
     }

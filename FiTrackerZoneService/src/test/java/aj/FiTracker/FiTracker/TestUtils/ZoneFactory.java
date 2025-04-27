@@ -1,11 +1,11 @@
 package aj.FiTracker.FiTracker.TestUtils;
 
-import aj.FiTracker.FiTracker.DTO.REST.NewZoneRequest;
-import aj.FiTracker.FiTracker.DTO.REST.RemoveZoneMemberRequest;
-import aj.FiTracker.FiTracker.DTO.REST.UpdateZoneRequest;
+import aj.FiTracker.FiTracker.DTO.REST.*;
 import aj.FiTracker.FiTracker.Documents.Zone;
 import aj.FiTracker.FiTracker.Enums.MemberRole;
+import aj.FiTracker.FiTracker.Models.MemberTemplate;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -62,9 +62,51 @@ public final class ZoneFactory {
 
     }
 
+    public static Zone.Member createMember() {
+        return new Zone.Member(OWNER_TEST_ID, MemberRole.ADMIN, USER_TEST_NAME);
+    }
+
     public static Zone.Member createSecondMember() {
         return new Zone.Member(MEMBER_TEST_ID, MemberRole.MEMBER, MEMBER_TEST_NAME);
     }
 
+    public static Zone createZone() {
+        Zone zone = new Zone();
+        zone.setCreatedAt(LocalDateTime.now());
+        zone.setName(ZONE_TEST_NAME);
+        zone.setId(ZONE_TEST_ID);
+        zone.setOwnerId(OWNER_TEST_ID);
+        zone.setDescription(ZONE_TEST_DESCRIPTION);
+        zone.setMembersList(List.of(createMember()));
+        return zone;
+    }
+
+    public static NewZoneResponse createNewZoneResponse() {
+        return new NewZoneResponse(createZone());
+    }
+
+    public static GetZoneResponse createGetZoneResponse() {
+        return new GetZoneResponse(createZone());
+    }
+
+    public static DeletedZoneResponse createDeletedZoneResponse() {
+        DeletedZoneResponse deletedZoneResponse = new DeletedZoneResponse(createZone());
+        deletedZoneResponse.setDeletedAt(LocalDateTime.now());
+        return deletedZoneResponse;
+    }
+
+    public static UpdateZoneResponse createUpdateZoneResponse() {
+        UpdateZoneResponse updateZoneResponse = new UpdateZoneResponse(createZone());
+        return updateZoneResponse;
+    }
+
+    public static ZonesResponse createZonesResponse() {
+        ZonesResponse zonesResponse = new ZonesResponse(List.of(createZone()));
+        return zonesResponse;
+    }
+
+    public static MemberTemplate createMemberTemplate() {
+        return new MemberTemplate(MEMBER_TEST_ID);
+    }
 
 }

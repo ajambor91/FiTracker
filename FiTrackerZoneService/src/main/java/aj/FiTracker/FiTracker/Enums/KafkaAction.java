@@ -1,7 +1,7 @@
 package aj.FiTracker.FiTracker.Enums;
 
 public enum KafkaAction {
-    ADD_MEMBER("add_member"),
+    ADD_MEMBER("ADD_MEMBER"),
     REMOVE_MEMBER("REMOVE_MEMBER");
 
     private final String action;
@@ -12,5 +12,14 @@ public enum KafkaAction {
 
     public String getAction() {
         return this.action;
+    }
+
+    public static KafkaAction setAction(String value) {
+        for (KafkaAction enumValue : KafkaAction.values()) {
+            if (enumValue.getAction().equals(value)) {
+                return enumValue;
+            }
+        }
+        return null;
     }
 }

@@ -21,7 +21,7 @@ public class ZonesResponse {
 
     @Getter
     @Setter
-    private static class ZoneResponse extends BaseZoneResponse {
+    public static class ZoneResponse extends BaseZoneResponse {
 
         public ZoneResponse(Zone zone) {
             super(zone);

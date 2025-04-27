@@ -4,7 +4,7 @@ package aj.FiTracker.FiTracker.Services;
 import aj.FiTracker.FiTracker.AbstractTest.AbstractIntegrationTest;
 import aj.FiTracker.FiTracker.Documents.Zone;
 import aj.FiTracker.FiTracker.Enums.MemberRole;
-import aj.FiTracker.FiTracker.Models.MemberTemplate;
+import aj.FiTracker.FiTracker.Models.MembersTemplate;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
@@ -33,9 +33,9 @@ public class KafkaProducerServiceIntegrationTest extends AbstractIntegrationTest
     @Test
     @DisplayName("Should send a member message")
     public void testSendNewMembers() throws JsonProcessingException {
-        MemberTemplate memberTemplate = new MemberTemplate(ZONE_TEST_ID);
+        MembersTemplate membersTemplate = new MembersTemplate(ZONE_TEST_ID);
         Zone.Member member = new Zone.Member(OWNER_TEST_ID, MemberRole.ADMIN, USER_TEST_NAME);
-        memberTemplate.addMember(member);
-        this.kafkaProducerService.sendNewMembers(memberTemplate);
+        membersTemplate.addMember(member);
+        this.kafkaProducerService.sendNewMembers(membersTemplate);
     }
 }

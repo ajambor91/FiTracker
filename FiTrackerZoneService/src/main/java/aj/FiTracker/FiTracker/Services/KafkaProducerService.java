@@ -1,8 +1,8 @@
 package aj.FiTracker.FiTracker.Services;
 
 import aj.FiTracker.FiTracker.Enums.KafkaAction;
-import aj.FiTracker.FiTracker.Interfaces.KafkaModelTemplate;
-import aj.FiTracker.FiTracker.Models.MemberTemplate;
+import aj.FiTracker.FiTracker.Interfaces.KafkaTemplateInterface;
+import aj.FiTracker.FiTracker.Models.MembersTemplate;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
@@ -27,26 +27,26 @@ public class KafkaProducerService {
         this.objectMapper = objectMapper;
     }
 
-    public void sendNewMembers(MemberTemplate memberTemplate) throws JsonProcessingException {
+    public void sendNewMembers(MembersTemplate membersTemplate) throws JsonProcessingException {
         logger.info("Sending new members message to Kafka.");
-        logger.debug("New members template: {}", memberTemplate);
-        this.sendMessage(memberTemplate, KafkaAction.ADD_MEMBER);
+        logger.debug("New members template: {}", membersTemplate);
+        this.sendMessage(membersTemplate, KafkaAction.ADD_MEMBER);
         logger.info("Successfully sent new members message to Kafka.");
     }
 
-    public void sendDeletedMembers(MemberTemplate memberTemplate) throws JsonProcessingException {
+    public void sendDeletedMembers(MembersTemplate membersTemplate) throws JsonProcessingException {
         logger.info("Sending deleted members message to Kafka.");
-        logger.debug("Deleted members template: {}", memberTemplate);
-        this.sendMessage(memberTemplate, KafkaAction.REMOVE_MEMBER);
+        logger.debug("Deleted members template: {}", membersTemplate);
+        this.sendMessage(membersTemplate, KafkaAction.REMOVE_MEMBER);
         logger.info("Successfully sent deleted members message to Kafka.");
     }
 
-    private void sendMessage(KafkaModelTemplate kafkaModelTemplate, KafkaAction kafkaAction) throws JsonProcessingException {
+    private void sendMessage(KafkaTemplateInterface kafkaTemplateInterface, KafkaAction kafkaAction) throws JsonProcessingException {
         logger.info("Preparing to send a Kafka message with action: {}", kafkaAction);
-        logger.debug("Kafka model template: {}", kafkaModelTemplate);
+        logger.debug("Kafka model template: {}", kafkaTemplateInterface);
         String parsedMessage;
         try {
-            parsedMessage = this.objectMapper.writeValueAsString(kafkaModelTemplate);
+            parsedMessage = this.objectMapper.writeValueAsString(kafkaTemplateInterface);
             logger.debug("Parsed message for Kafka: {}", parsedMessage);
         } catch (JsonProcessingException e) {
             logger.error("Error while parsing message to JSON.", e);

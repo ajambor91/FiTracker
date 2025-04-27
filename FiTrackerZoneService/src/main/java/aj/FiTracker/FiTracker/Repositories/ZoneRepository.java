@@ -3,6 +3,8 @@ package aj.FiTracker.FiTracker.Repositories;
 import aj.FiTracker.FiTracker.Documents.Zone;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.mongodb.repository.Query;
+import org.springframework.data.mongodb.repository.Update;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -18,4 +20,10 @@ public interface ZoneRepository extends MongoRepository<Zone, String> {
 
     List<Zone> findByDeletedAtIsNullAndMembersList_UserId(long memberId, Pageable pageable);
 
+    @Query("{ 'deletedAt' : null, 'membersList.userId' : ?0 }")
+    @Update("{ '$pull' : { 'membersList' : { 'userId' : ?0 } } }")
+    void pullMemberFromAllZones(long userId);
+
+    @Query(value = "{ 'deletedAt' : null, 'membersList' : { $size: 1 } }", delete = true)
+    void deleteZonesWithOneMember();
 }

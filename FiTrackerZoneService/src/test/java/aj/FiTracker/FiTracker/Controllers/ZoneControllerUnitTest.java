@@ -45,11 +45,8 @@ public class ZoneControllerUnitTest {
     @DisplayName("Should return new Zone")
     public void testCreateZone() {
         NewZoneRequest newZoneRequest = ZoneFactory.createNewZoneTestRequest();
-        Zone zone = new Zone(ZoneFactory.createNewZoneTestRequest(), OWNER_TEST_ID);
-        zone.addMember(new Zone.Member(OWNER_TEST_ID, MemberRole.ADMIN, USER_TEST_NAME));
-        zone.setId(ZONE_TEST_ID);
-        zone.setCreatedAt(LocalDateTime.now());
-        when(this.zoneServiceMock.addNewZone(eq(newZoneRequest), any(Authentication.class))).thenReturn(zone);
+        NewZoneResponse newZoneResponse = ZoneFactory.createNewZoneResponse();
+        when(this.zoneServiceMock.addNewZone(eq(newZoneRequest), any(Authentication.class))).thenReturn(newZoneResponse);
         ResponseEntity<NewZoneResponse> response = this.zoneController.createZone(this.authenticationMock, newZoneRequest);
         assertEquals(HttpStatus.CREATED, response.getStatusCode());
         assertEquals(ZONE_TEST_ID, response.getBody().getZoneId());
@@ -69,10 +66,7 @@ public class ZoneControllerUnitTest {
     @Test
     @DisplayName("Should return found Zone")
     public void testGetZone() {
-        Zone zone = new Zone(ZoneFactory.createNewZoneTestRequest(), OWNER_TEST_ID);
-        zone.addMember(new Zone.Member(OWNER_TEST_ID, MemberRole.ADMIN, USER_TEST_NAME));
-        zone.setId(ZONE_TEST_ID);
-        zone.setCreatedAt(LocalDateTime.now());
+        GetZoneResponse zone = ZoneFactory.createGetZoneResponse();
         when(this.zoneServiceMock.getExistingZoneById(eq(ZONE_TEST_ID), any(Authentication.class))).thenReturn(zone);
         ResponseEntity<GetZoneResponse> response = this.zoneController.getZone(this.authenticationMock, ZONE_TEST_ID);
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -94,11 +88,7 @@ public class ZoneControllerUnitTest {
     @Test
     @DisplayName("Should return deleted Zone")
     public void testDeleteZone() {
-        Zone zone = new Zone(ZoneFactory.createNewZoneTestRequest(), OWNER_TEST_ID);
-        zone.addMember(new Zone.Member(OWNER_TEST_ID, MemberRole.ADMIN, USER_TEST_NAME));
-        zone.setId(ZONE_TEST_ID);
-        zone.setCreatedAt(LocalDateTime.now());
-        zone.setDeletedAt(LocalDateTime.now());
+        DeletedZoneResponse zone = ZoneFactory.createDeletedZoneResponse();
         when(this.zoneServiceMock.removeZoneById(eq(ZONE_TEST_ID), any(Authentication.class))).thenReturn(zone);
         ResponseEntity<DeletedZoneResponse> response = this.zoneController.deleteZone(this.authenticationMock, ZONE_TEST_ID);
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -122,10 +112,7 @@ public class ZoneControllerUnitTest {
     @DisplayName("Should return patched Zone")
     public void testUpdateZone() {
         UpdateZoneRequest updateZoneRequest = ZoneFactory.createUpdateZoneTestRequest();
-        Zone zone = new Zone(ZoneFactory.createNewZoneTestRequest(), OWNER_TEST_ID);
-        zone.addMember(new Zone.Member(OWNER_TEST_ID, MemberRole.ADMIN, USER_TEST_NAME));
-        zone.setId(ZONE_TEST_ID);
-        zone.setCreatedAt(LocalDateTime.now());
+        UpdateZoneResponse zone = ZoneFactory.createUpdateZoneResponse();
         when(this.zoneServiceMock.updateZone(eq(ZONE_TEST_ID), any(Authentication.class), eq(updateZoneRequest))).thenReturn(zone);
         ResponseEntity<UpdateZoneResponse> response = this.zoneController.updateZone(this.authenticationMock, updateZoneRequest, ZONE_TEST_ID);
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -147,10 +134,7 @@ public class ZoneControllerUnitTest {
     @DisplayName("Should remove member from Zone")
     public void testDeleteZoneMember() {
         RemoveZoneMemberRequest removeZoneMemberRequest = ZoneFactory.createRemoveZoneMemberRequest();
-        Zone zone = new Zone(ZoneFactory.createNewZoneTestRequest(), OWNER_TEST_ID);
-        zone.addMember(new Zone.Member(OWNER_TEST_ID, MemberRole.ADMIN, USER_TEST_NAME));
-        zone.setId(ZONE_TEST_ID);
-        zone.setCreatedAt(LocalDateTime.now());
+        UpdateZoneResponse zone = ZoneFactory.createUpdateZoneResponse();
         when(this.zoneServiceMock.removeZoneMember(eq(ZONE_TEST_ID), eq(removeZoneMemberRequest), any(Authentication.class))).thenReturn(zone);
         ResponseEntity<UpdateZoneResponse> response = this.zoneController.deleteZoneMember(this.authenticationMock, removeZoneMemberRequest, ZONE_TEST_ID);
         assertEquals(HttpStatus.OK, response.getStatusCode());
@@ -171,10 +155,8 @@ public class ZoneControllerUnitTest {
     @Test
     @DisplayName("Should return last four Zones")
     public void testGetUserZones() {
-        Zone zone = new Zone(ZoneFactory.createNewZoneTestRequest(), OWNER_TEST_ID);
-        zone.addMember(new Zone.Member(OWNER_TEST_ID, MemberRole.ADMIN, USER_TEST_NAME));
-        zone.setId(ZONE_TEST_ID);
-        when(this.zoneServiceMock.getLastFourZones(any(Authentication.class))).thenReturn(List.of(zone));
+        ZonesResponse zone = ZoneFactory.createZonesResponse();
+        when(this.zoneServiceMock.getLastFourZones(any(Authentication.class))).thenReturn(zone);
         ResponseEntity<ZonesResponse> response = this.zoneController.getUserZones(this.authenticationMock, false);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
@@ -185,10 +167,8 @@ public class ZoneControllerUnitTest {
     @Test
     @DisplayName("Should return all user Zones")
     public void testGetUserZonesAll() {
-        Zone zone = new Zone(ZoneFactory.createNewZoneTestRequest(), OWNER_TEST_ID);
-        zone.addMember(new Zone.Member(OWNER_TEST_ID, MemberRole.ADMIN, USER_TEST_NAME));
-        zone.setId(ZONE_TEST_ID);
-        when(this.zoneServiceMock.getAllZones(any(Authentication.class))).thenReturn(List.of(zone));
+        ZonesResponse zone = ZoneFactory.createZonesResponse();
+        when(this.zoneServiceMock.getAllZones(any(Authentication.class))).thenReturn(zone);
         ResponseEntity<ZonesResponse> response = this.zoneController.getUserZones(this.authenticationMock, true);
         assertEquals(HttpStatus.OK, response.getStatusCode());
         assertNotNull(response.getBody());
