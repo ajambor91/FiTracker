@@ -24,3 +24,7 @@ export * from './update-category-request.model'
 export * from './update-category-response.model'
 export * from './get-categories-response.model';
 export * from './summary-sum.model'
+export * from './delete-user-request.model';
+export * from './get-user-response.model'
+export * from './update-user-request.model'
+export * from './update-user-response.model'

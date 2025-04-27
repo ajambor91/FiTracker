@@ -9,6 +9,10 @@ import {BaseService} from './base.service';
 import {API_BASE_URL} from '../core/tokens';
 import {FindUserResponse} from '../models/find-user-response.model';
 import {ZoneMember} from '../models/zone-member.model';
+import {DeleteUserRequest} from '../models/delete-user-request.model';
+import {UpdateUserRequest} from '../models/update-user-request.model';
+import {UpdateUserResponse} from '../models/update-user-response.model';
+import {GetUserResponse} from '../models/get-user-response.model';
 
 @Injectable()
 export class ApiUsersService extends BaseService {
@@ -24,6 +28,18 @@ export class ApiUsersService extends BaseService {
 
   public loginUser(user: LoginRequest): Observable<LoginResponseSuccess> {
     return this.httpClient.post<LoginResponseSuccess>(`${this.path}login`, user);
+  }
+
+  public deleteUser(user: DeleteUserRequest): Observable<void> {
+    return this.httpClient.post<void>(`${this.path}user`, user)
+  }
+
+  public updateUser(user: UpdateUserRequest): Observable<UpdateUserResponse> {
+    return this.httpClient.patch<UpdateUserResponse>(`${this.path}user`, user)
+  }
+
+  public getUser(userId: number): Observable<GetUserResponse> {
+    return this.httpClient.get<GetUserResponse>(`${this.path}user/${userId}`)
   }
 
   public findUserByEmail(email: string): Observable<FindUserResponse> {
