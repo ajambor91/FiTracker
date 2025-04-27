@@ -1,8 +1,8 @@
 package aj.FiTracker.FiTrackerExpenses.Enums;
 
 public enum KafkaAction {
-    ADD_MEMBER("add_member"),
-    REMOVE_MEMBER("remove_member");
+    ADD_MEMBER("ADD_MEMBER"),
+    REMOVE_MEMBER("REMOVE_MEMBER");
 
     private final String action;
 

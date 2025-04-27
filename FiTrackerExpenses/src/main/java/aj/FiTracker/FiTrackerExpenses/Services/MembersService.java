@@ -4,6 +4,7 @@ import aj.FiTracker.FiTrackerExpenses.Entities.User;
 import aj.FiTracker.FiTrackerExpenses.Exceptions.InternalServerException;
 import aj.FiTracker.FiTrackerExpenses.Exceptions.UserUnauthorizedException;
 import aj.FiTracker.FiTrackerExpenses.Models.MemberTemplate;
+import aj.FiTracker.FiTrackerExpenses.Models.MembersTemplate;
 import aj.FiTracker.FiTrackerExpenses.Repositories.MembersRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,34 +29,48 @@ public class MembersService {
     }
 
     @Transactional
-    public void addNewMembers(MemberTemplate memberTemplate) {
+    public void addNewMembers(MembersTemplate membersTemplate) {
         List<User> users = new ArrayList<>();
-        logger.info("Started adding new members {} to zoneId {}", memberTemplate.getMembersList(), memberTemplate.getZoneId());
+        logger.info("Started adding new members {} to zoneId {}", membersTemplate.getMembersList(), membersTemplate.getZoneId());
         try {
-            for (MemberTemplate.Member member : memberTemplate.getMembersList()) {
-                users.add(new User(member.memberId(), memberTemplate.getZoneId()));
+            for (MembersTemplate.Member member : membersTemplate.getMembersList()) {
+                users.add(new User(member.memberId(), membersTemplate.getZoneId()));
             }
             this.membersRepository.saveAll(users);
-            logger.error("Added new members {} to zone {} successfull ", users, memberTemplate.getZoneId());
+            logger.error("Added new members {} to zone {} successfull ", users, membersTemplate.getZoneId());
 
         } catch (Exception e) {
-            logger.error("Cannot add members {} to zone {}, exception: {}", memberTemplate.getMembersList(), memberTemplate.getZoneId(), e.getMessage());
+            logger.error("Cannot add members {} to zone {}, exception: {}", membersTemplate.getMembersList(), membersTemplate.getZoneId(), e.getMessage());
             throw new InternalServerException(e);
         }
     }
 
     @Transactional
-    public void removeMembers(MemberTemplate memberTemplate) {
-        List<User> users = new ArrayList<>();
-        logger.info("Started removing new members {} to zoneId {}", memberTemplate.getMembersList(), memberTemplate.getZoneId());
+    public void removeMember(MemberTemplate memberTemplate) {
+        logger.info("Started removing new member {} from all zones",memberTemplate.userId());
         try {
-            for (MemberTemplate.Member member : memberTemplate.getMembersList()) {
-                this.membersRepository.removeMember(member.memberId(), memberTemplate.getZoneId());
-            }
-            logger.error("Removes members {} to zone {} successfull ", users, memberTemplate.getZoneId());
+
+            this.membersRepository.deleteByUserId(memberTemplate.userId());
+            logger.error("Removes member successfull ",memberTemplate.userId());
 
         } catch (Exception e) {
-            logger.error("Cannot remove members {} to zone {}, exception: {}", memberTemplate.getMembersList(), memberTemplate.getZoneId(), e.getMessage());
+            logger.error("Cannot remove member {}, exception: {}", memberTemplate.userId(), e.getMessage());
+            throw new InternalServerException(e);
+        }
+    }
+
+    @Transactional
+    public void removeMembers(MembersTemplate membersTemplate) {
+        List<User> users = new ArrayList<>();
+        logger.info("Started removing new members {} to zoneId {}", membersTemplate.getMembersList(), membersTemplate.getZoneId());
+        try {
+            for (MembersTemplate.Member member : membersTemplate.getMembersList()) {
+                this.membersRepository.deleteByUserIdAndZoneId(member.memberId(), membersTemplate.getZoneId());
+            }
+            logger.error("Removes members {} to zone {} successfull ", users, membersTemplate.getZoneId());
+
+        } catch (Exception e) {
+            logger.error("Cannot remove members {} to zone {}, exception: {}", membersTemplate.getMembersList(), membersTemplate.getZoneId(), e.getMessage());
             throw new InternalServerException(e);
         }
     }

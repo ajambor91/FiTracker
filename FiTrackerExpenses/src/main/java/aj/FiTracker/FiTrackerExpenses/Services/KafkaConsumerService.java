@@ -3,6 +3,7 @@ package aj.FiTracker.FiTrackerExpenses.Services;
 
 import aj.FiTracker.FiTrackerExpenses.Enums.KafkaAction;
 import aj.FiTracker.FiTrackerExpenses.Models.MemberTemplate;
+import aj.FiTracker.FiTrackerExpenses.Models.MembersTemplate;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -30,8 +31,37 @@ public class KafkaConsumerService {
         this.membersService = membersService;
     }
 
+    @KafkaListener(topics = "request-members", groupId = "fit-expenses-members-group")
+    public void listenForMember(ConsumerRecord<String, String> message) {
+        logger.info("Received Kafka message from topic '{}', partition {}, offset {}.",
+                message.topic(), message.partition(), message.offset());
+        logger.debug("Message headers: {}", message.headers());
+        logger.debug("Message value: {}", message.value());
+
+        KafkaAction action = this.extractTypHeader(message.headers());
+        if (action == null) {
+            logger.warn("Received message with no 'type' header. Skipping processing.");
+            return;
+        }
+        try {
+            if (action == KafkaAction.REMOVE_MEMBER) {
+                MemberTemplate memberTemplate = this.objectMapper.readValue(message.value(), MemberTemplate.class);
+                this.membersService.removeMember(memberTemplate);
+            }
+
+    } catch (JsonMappingException e) {
+        logger.error("JsonMappingException occurred while processing Kafka message.", e);
+        throw new RuntimeException("Failed to map Kafka message value", e);
+    } catch (JsonProcessingException e) {
+        logger.error("JsonProcessingException occurred while processing Kafka message.", e);
+        throw new RuntimeException("Failed to process Kafka message JSON", e);
+    } catch (Exception e) {
+        logger.error("An unexpected error occurred while processing Kafka message.", e);
+        throw new RuntimeException("Error processing Kafka message", e);
+    }
+    }
     @KafkaListener(topics = "request-zone-members", groupId = "fit-expenses-members-group")
-    public void listenForMembers(ConsumerRecord<String, String> message) {
+    public void listenForZoneMembers(ConsumerRecord<String, String> message) {
         logger.info("Received Kafka message from topic '{}', partition {}, offset {}.",
                 message.topic(), message.partition(), message.offset());
         logger.debug("Message headers: {}", message.headers());
@@ -47,16 +77,16 @@ public class KafkaConsumerService {
         try {
             if (action == KafkaAction.ADD_MEMBER) {
                 logger.debug("Processing message for action: ADD_MEMBER");
-                MemberTemplate memberTemplate = this.objectMapper.readValue(message.value(), MemberTemplate.class);
-                logger.debug("Message value successfully mapped to MemberTemplate: {}", memberTemplate);
-                this.membersService.addNewMembers(memberTemplate);
-                logger.info("Successfully processed ADD_MEMBER message for zone ID: {}", memberTemplate.getZoneId());
+                MembersTemplate membersTemplate = this.objectMapper.readValue(message.value(), MembersTemplate.class);
+                logger.debug("Message value successfully mapped to MembersTemplate: {}", membersTemplate);
+                this.membersService.addNewMembers(membersTemplate);
+                logger.info("Successfully processed ADD_MEMBER message for zone ID: {}", membersTemplate.getZoneId());
             } else if (action == KafkaAction.REMOVE_MEMBER) {
                 logger.debug("Processing message for action: REMOVE_MEMBER");
-                MemberTemplate memberTemplate = this.objectMapper.readValue(message.value(), MemberTemplate.class);
-                logger.debug("Message value successfully mapped to MemberTemplate: {}", memberTemplate);
-                this.membersService.removeMembers(memberTemplate);
-                logger.info("Successfully processed REMOVE_MEMBER message for zone ID: {}", memberTemplate.getZoneId());
+                MembersTemplate membersTemplate = this.objectMapper.readValue(message.value(), MembersTemplate.class);
+                logger.debug("Message value successfully mapped to MembersTemplate: {}", membersTemplate);
+                this.membersService.removeMembers(membersTemplate);
+                logger.info("Successfully processed REMOVE_MEMBER message for zone ID: {}", membersTemplate.getZoneId());
             } else {
                 logger.warn("Received Kafka message with unhandled action type: {}", action);
             }

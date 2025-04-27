@@ -7,7 +7,7 @@ import aj.FiTracker.FiTrackerExpenses.DTO.REST.UpdateCategoryRequest;
 import aj.FiTracker.FiTrackerExpenses.Entities.Category;
 import aj.FiTracker.FiTrackerExpenses.Entities.Expense;
 import aj.FiTracker.FiTrackerExpenses.Entities.User;
-import aj.FiTracker.FiTrackerExpenses.Models.MemberTemplate;
+import aj.FiTracker.FiTrackerExpenses.Models.MembersTemplate;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -37,17 +37,17 @@ public class TestUtils {
     public static String TEST_FROM_DATE_PARAM_BAD = "2020-04-01";
     public static String TEST_END_DATE_PARAM_BAD = "2021-04-30";
 
-    public static MemberTemplate createMemberTemplateOneMember() {
-        MemberTemplate memberTemplate = new MemberTemplate(ZONE_TEST_ID);
-        memberTemplate.setMembersList(List.of(new MemberTemplate.Member(MEMBER_TEST_ID)));
-        return memberTemplate;
+    public static MembersTemplate createMemberTemplateOneMember() {
+        MembersTemplate membersTemplate = new MembersTemplate(ZONE_TEST_ID);
+        membersTemplate.setMembersList(List.of(new MembersTemplate.Member(MEMBER_TEST_ID)));
+        return membersTemplate;
     }
 
 
-    public static MemberTemplate createMemberTemplate() {
-        MemberTemplate memberTemplate = new MemberTemplate(ZONE_TEST_ID);
-        memberTemplate.setMembersList(List.of(new MemberTemplate.Member(MEMBER_TEST_ID), new MemberTemplate.Member(MEMBER_TEST_ID_SECOND)));
-        return memberTemplate;
+    public static MembersTemplate createMemberTemplate() {
+        MembersTemplate membersTemplate = new MembersTemplate(ZONE_TEST_ID);
+        membersTemplate.setMembersList(List.of(new MembersTemplate.Member(MEMBER_TEST_ID), new MembersTemplate.Member(MEMBER_TEST_ID_SECOND)));
+        return membersTemplate;
     }
 
     public static User createTestUser() {

@@ -13,7 +13,8 @@ public interface MembersRepository extends JpaRepository<User, Long> {
     Optional<User> findByUserIdAndZoneId(long userId, String zoneId);
 
     @Modifying
-    @Query(value = "DELETE FROM app_data.app_user WHERE app_data.app_user.app_user_id = :userId AND app_data.app_user.app_zone_id = :zoneId",
-            nativeQuery = true)
-    int removeMember(@Param("userId") long userId, @Param("zoneId") String zoneId);
+    int deleteByUserIdAndZoneId( long userId, String zoneId);
+
+    @Modifying
+    int deleteByUserId(long userId);
 }

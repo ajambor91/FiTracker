@@ -3,6 +3,7 @@ package aj.FiTracker.FiTrackerExpenses.Services;
 
 import aj.FiTracker.FiTrackerExpenses.Enums.KafkaAction;
 import aj.FiTracker.FiTrackerExpenses.Models.MemberTemplate;
+import aj.FiTracker.FiTrackerExpenses.Models.MembersTemplate;
 import aj.FiTracker.FiTrackerExpenses.Utils.TestUtils;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -33,63 +34,109 @@ public class KafkaConsumerServiceUnitTest {
     private ObjectMapper objectMapper;
     private MembersService membersServiceMock;
     private KafkaConsumerService kafkaConsumerService;
-    private ConsumerRecord<String, String> consumerRecordMock;
-    private Headers headersMock;
-    private Header headerMock;
 
     @BeforeEach
     public void start() {
         this.objectMapper = new ObjectMapper();
-        this.headerMock = mock(Header.class);
-        this.headersMock = mock(Headers.class);
         this.membersServiceMock = mock(MembersService.class);
-        this.consumerRecordMock = mock(ConsumerRecord.class);
         this.kafkaConsumerService = new KafkaConsumerService(objectMapper, membersServiceMock);
     }
 
     @Test
-    @DisplayName("Listen for members, add members")
+    @DisplayName("Listen for zone members, add members")
     public void testListenForMembersAdd() throws JsonProcessingException {
-        when(this.headerMock.value()).thenReturn(KafkaAction.ADD_MEMBER.getAction().getBytes(StandardCharsets.UTF_8));
-        when(this.headersMock.lastHeader(eq("type"))).thenReturn(this.headerMock);
-        when(this.consumerRecordMock.headers()).thenReturn(this.headersMock);
-        when(this.consumerRecordMock.value()).thenReturn(this.objectMapper.writeValueAsString(TestUtils.createMemberTemplateOneMember()));
-        this.kafkaConsumerService.listenForMembers(this.consumerRecordMock);
-        ArgumentCaptor<MemberTemplate> argumentCaptor = ArgumentCaptor.forClass(MemberTemplate.class);
+        ConsumerRecord<String, String> consumerRecordMock = this.createAuthMock(
+                KafkaAction.ADD_MEMBER,
+                this.objectMapper.writeValueAsString(TestUtils.createMemberTemplateOneMember())
+        );
+
+        this.kafkaConsumerService.listenForZoneMembers(consumerRecordMock);
+        ArgumentCaptor<MembersTemplate> argumentCaptor = ArgumentCaptor.forClass(MembersTemplate.class);
         verify(this.membersServiceMock, times(1)).addNewMembers(argumentCaptor.capture());
-        MemberTemplate memberTemplate = argumentCaptor.getValue();
-        assertEquals(1, memberTemplate.getMembersList().size());
-        MemberTemplate.Member member = memberTemplate.getMembersList().getFirst();
+        MembersTemplate membersTemplate = argumentCaptor.getValue();
+        assertEquals(1, membersTemplate.getMembersList().size());
+        MembersTemplate.Member member = membersTemplate.getMembersList().getFirst();
         assertEquals(MEMBER_TEST_ID, member.memberId());
-        assertEquals(ZONE_TEST_ID, memberTemplate.getZoneId());
+        assertEquals(ZONE_TEST_ID, membersTemplate.getZoneId());
     }
 
     @Test
-    @DisplayName("Listen for members, remove members")
+    @DisplayName("Listen for zone members, remove members")
     public void testListenForMembersRemove() throws JsonProcessingException {
-        when(this.headerMock.value()).thenReturn(KafkaAction.REMOVE_MEMBER.getAction().getBytes(StandardCharsets.UTF_8));
-        when(this.headersMock.lastHeader(eq("type"))).thenReturn(this.headerMock);
-        when(this.consumerRecordMock.headers()).thenReturn(this.headersMock);
-        when(this.consumerRecordMock.value()).thenReturn(this.objectMapper.writeValueAsString(TestUtils.createMemberTemplateOneMember()));
-        this.kafkaConsumerService.listenForMembers(this.consumerRecordMock);
-        ArgumentCaptor<MemberTemplate> argumentCaptor = ArgumentCaptor.forClass(MemberTemplate.class);
+
+        ConsumerRecord<String, String> consumerRecordMock = this.createAuthMock(
+                KafkaAction.REMOVE_MEMBER,
+                this.objectMapper.writeValueAsString(TestUtils.createMemberTemplateOneMember())
+        );
+
+        this.kafkaConsumerService.listenForZoneMembers(consumerRecordMock);
+        ArgumentCaptor<MembersTemplate> argumentCaptor = ArgumentCaptor.forClass(MembersTemplate.class);
         verify(this.membersServiceMock, times(1)).removeMembers(argumentCaptor.capture());
-        MemberTemplate memberTemplate = argumentCaptor.getValue();
-        assertEquals(1, memberTemplate.getMembersList().size());
-        MemberTemplate.Member member = memberTemplate.getMembersList().getFirst();
+        MembersTemplate membersTemplate = argumentCaptor.getValue();
+        assertEquals(1, membersTemplate.getMembersList().size());
+        MembersTemplate.Member member = membersTemplate.getMembersList().getFirst();
         assertEquals(MEMBER_TEST_ID, member.memberId());
-        assertEquals(ZONE_TEST_ID, memberTemplate.getZoneId());
+        assertEquals(ZONE_TEST_ID, membersTemplate.getZoneId());
     }
 
     @Test
-    @DisplayName("Listen for members, unknown")
+    @DisplayName("Listen for zone members, unknown")
     public void testListenForMembersUnknown() throws JsonProcessingException {
-        when(this.headerMock.value()).thenReturn("UNKNOWN ACTION".getBytes(StandardCharsets.UTF_8));
-        when(this.headersMock.lastHeader(eq("type"))).thenReturn(this.headerMock);
-        when(this.consumerRecordMock.headers()).thenReturn(this.headersMock);
-        when(this.consumerRecordMock.value()).thenReturn(this.objectMapper.writeValueAsString(TestUtils.createMemberTemplateOneMember()));
-        this.kafkaConsumerService.listenForMembers(this.consumerRecordMock);
-        verify(this.membersServiceMock, never()).removeMembers(any(MemberTemplate.class));
-        verify(this.membersServiceMock, never()).addNewMembers(any(MemberTemplate.class));
+        ConsumerRecord<String, String> consumerRecordMock = this.createAuthMock("UNKONW ACTION", "MESSAGE");
+
+        this.kafkaConsumerService.listenForZoneMembers(consumerRecordMock);
+        verify(this.membersServiceMock, never()).removeMembers(any(MembersTemplate.class));
+        verify(this.membersServiceMock, never()).addNewMembers(any(MembersTemplate.class));
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+    @Test
+    @DisplayName("Listen for  member, remove members")
+    public void testlistenForMemberRemove() throws JsonProcessingException {
+        ConsumerRecord<String, String> consumerRecordMock = this.createAuthMock(KafkaAction.REMOVE_MEMBER,
+                this.objectMapper.writeValueAsString(new MemberTemplate(MEMBER_TEST_ID))
+                );
+        this.kafkaConsumerService.listenForZoneMembers(consumerRecordMock);
+        ArgumentCaptor<MembersTemplate> argumentCaptor = ArgumentCaptor.forClass(MembersTemplate.class);
+        verify(this.membersServiceMock, times(1)).removeMembers(argumentCaptor.capture());
+        MembersTemplate membersTemplate = argumentCaptor.getValue();
+        assertEquals(1, membersTemplate.getMembersList().size());
+        MembersTemplate.Member member = membersTemplate.getMembersList().getFirst();
+        assertEquals(MEMBER_TEST_ID, member.memberId());
+        assertEquals(ZONE_TEST_ID, membersTemplate.getZoneId());
+    }
+
+    @Test
+    @DisplayName("Listen for member, unknown")
+    public void testlistenForMemberUnknown() throws JsonProcessingException {
+        ConsumerRecord<String, String> consumerRecordMock = this.createAuthMock("UNKONW ACTION", "MESSAGE");
+        this.kafkaConsumerService.listenForMember(consumerRecordMock);
+        verify(this.membersServiceMock, never()).removeMembers(any(MembersTemplate.class));
+        verify(this.membersServiceMock, never()).addNewMembers(any(MembersTemplate.class));
+    }
+
+    private ConsumerRecord<String, String> createAuthMock(KafkaAction kafkaAction, String messageValue) throws JsonProcessingException {
+        return this.createAuthMock(kafkaAction.getAction(), messageValue);
+    }
+
+    private ConsumerRecord<String, String> createAuthMock(String kafkaActionString, String messageValue) throws JsonProcessingException {
+        Header headerMock = mock(Header.class);
+        Headers headersMock = mock(Headers.class);
+        ConsumerRecord<String, String> consumerRecordMock = mock(ConsumerRecord.class);
+        when(headerMock.value()).thenReturn(kafkaActionString.getBytes(StandardCharsets.UTF_8));
+        when(headersMock.lastHeader(eq("type"))).thenReturn(headerMock);
+        when(consumerRecordMock.headers()).thenReturn(headersMock);
+        when(consumerRecordMock.value()).thenReturn(this.objectMapper.writeValueAsString(TestUtils.createMemberTemplateOneMember()));
+        return consumerRecordMock;
     }
 }

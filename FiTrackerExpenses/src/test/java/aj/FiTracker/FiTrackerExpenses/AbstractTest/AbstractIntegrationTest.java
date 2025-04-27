@@ -33,8 +33,11 @@ public abstract class AbstractIntegrationTest {
     protected void insertTestData(String sql) {
         AbstractIntegrationTest.postgreSQLTestContainer.insertTestData(sql);
     }
+    protected List<Map<String, Object>> getTestData(String sql) {
+        return this.getTestData(sql, new Object[]{});
+    }
 
-    protected List<Map<String, Object>> getTestData(String sql, Object[] params) {
+        protected List<Map<String, Object>> getTestData(String sql, Object[] params) {
         return AbstractIntegrationTest.postgreSQLTestContainer.getTestData(sql, params);
     }
 }

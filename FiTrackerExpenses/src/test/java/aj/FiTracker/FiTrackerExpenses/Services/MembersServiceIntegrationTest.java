@@ -5,6 +5,7 @@ import aj.FiTracker.FiTrackerExpenses.AbstractTest.AbstractIntegrationTest;
 import aj.FiTracker.FiTrackerExpenses.Entities.User;
 import aj.FiTracker.FiTrackerExpenses.Exceptions.UserUnauthorizedException;
 import aj.FiTracker.FiTrackerExpenses.Models.MemberTemplate;
+import aj.FiTracker.FiTrackerExpenses.Models.MembersTemplate;
 import aj.FiTracker.FiTrackerExpenses.Repositories.MembersRepository;
 import aj.FiTracker.FiTrackerExpenses.Utils.TestUtils;
 import org.junit.jupiter.api.AfterEach;
@@ -44,32 +45,32 @@ public class MembersServiceIntegrationTest extends AbstractIntegrationTest {
     @DisplayName("Should add new members")
     public void testAddNewMembers() {
 
-        MemberTemplate memberTemplate = TestUtils.createMemberTemplate();
-        MemberTemplate.Member member = memberTemplate.getMembersList().getFirst();
-        MemberTemplate.Member anotherMember = memberTemplate.getMembersList().getLast();
-        this.membersService.addNewMembers(memberTemplate);
+        MembersTemplate membersTemplate = TestUtils.createMemberTemplate();
+        MembersTemplate.Member member = membersTemplate.getMembersList().getFirst();
+        MembersTemplate.Member anotherMember = membersTemplate.getMembersList().getLast();
+        this.membersService.addNewMembers(membersTemplate);
         List<Map<String, Object>> members = this.getTestData("SELECT app_data.app_user.id as id, app_data.app_user.app_user_id as userId, app_data.app_user.app_zone_id as zoneId " +
                 "FROM app_data.app_user WHERE app_data.app_user.app_user_id = ?", new Long[]{member.memberId()});
         Map<String, Object> memberFromDb = members.getFirst();
 
         assertEquals(member.memberId(), memberFromDb.get("userid"));
-        assertEquals(memberTemplate.getZoneId(), memberFromDb.get("zoneid"));
+        assertEquals(membersTemplate.getZoneId(), memberFromDb.get("zoneid"));
 
         List<Map<String, Object>> anotherMembers = this.getTestData("SELECT app_data.app_user.id as id, app_data.app_user.app_user_id as userId, app_data.app_user.app_zone_id as zoneId " +
                 "FROM app_data.app_user WHERE app_data.app_user.app_user_id = ?", new Long[]{anotherMember.memberId()});
         Map<String, Object> anotherMemberFromDb = anotherMembers.getFirst();
 
         assertEquals(anotherMember.memberId(), anotherMemberFromDb.get("userid"));
-        assertEquals(memberTemplate.getZoneId(), anotherMemberFromDb.get("zoneid"));
+        assertEquals(membersTemplate.getZoneId(), anotherMemberFromDb.get("zoneid"));
     }
 
     @Test
     @DisplayName("Should remove members")
     public void testRemoveMembers() {
         this.insertTestUsers();
-        MemberTemplate memberTemplate = TestUtils.createMemberTemplateOneMember();
-        MemberTemplate.Member member = memberTemplate.getMembersList().getFirst();
-        this.membersService.removeMembers(memberTemplate);
+        MembersTemplate membersTemplate = TestUtils.createMemberTemplateOneMember();
+        MembersTemplate.Member member = membersTemplate.getMembersList().getFirst();
+        this.membersService.removeMembers(membersTemplate);
         List<Map<String, Object>> members = this.getTestData("SELECT app_data.app_user.id as id, app_data.app_user.app_user_id as userId, app_data.app_user.app_zone_id as zoneId " +
                 "FROM app_data.app_user WHERE app_data.app_user.app_user_id = ?", new Long[]{member.memberId()});
         assertTrue(members.isEmpty());
@@ -96,6 +97,18 @@ public class MembersServiceIntegrationTest extends AbstractIntegrationTest {
             this.membersService.getUserByZoneIdAndId(USER_TEST_ID, ZONE_TEST_ID);
         });
         assertEquals("User does not have privileges to zone", user.getMessage());
+    }
+
+    @Test
+    @DisplayName("Should delete Member from all zones")
+    public void testRemoveMember() {
+        this.insertTestUsers();
+        this.insertTestData("INSERT INTO app_data.app_user (id, app_user_id, app_zone_id) VALUES (3, " + USER_TEST_ID + ", 'ANOTHER_ZONE_ID');");
+        this.membersService.removeMember(new MemberTemplate(USER_TEST_ID));
+        List<Map<String, Object>> members = this.getTestData("SELECT app_data.app_user.id as id, app_data.app_user.app_user_id as userId, app_data.app_user.app_zone_id as zoneId " +
+                "FROM app_data.app_user WHERE app_data.app_user.app_user_id = " + USER_TEST_ID);
+        assertTrue(members.isEmpty());
+
     }
 
     private void insertTestUsers() {

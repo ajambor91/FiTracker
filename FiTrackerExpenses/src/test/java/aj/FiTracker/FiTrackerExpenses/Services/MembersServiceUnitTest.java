@@ -5,6 +5,7 @@ import aj.FiTracker.FiTrackerExpenses.Entities.User;
 import aj.FiTracker.FiTrackerExpenses.Exceptions.InternalServerException;
 import aj.FiTracker.FiTrackerExpenses.Exceptions.UserUnauthorizedException;
 import aj.FiTracker.FiTrackerExpenses.Models.MemberTemplate;
+import aj.FiTracker.FiTrackerExpenses.Models.MembersTemplate;
 import aj.FiTracker.FiTrackerExpenses.Repositories.MembersRepository;
 import aj.FiTracker.FiTrackerExpenses.Utils.TestUtils;
 import org.junit.jupiter.api.BeforeEach;
@@ -40,8 +41,8 @@ public class MembersServiceUnitTest {
     @Test
     @DisplayName("Should add members")
     public void testAddNewMembers() {
-        MemberTemplate memberTemplate = TestUtils.createMemberTemplate();
-        this.membersService.addNewMembers(memberTemplate);
+        MembersTemplate membersTemplate = TestUtils.createMemberTemplate();
+        this.membersService.addNewMembers(membersTemplate);
         ArgumentCaptor<List<User>> captor = ArgumentCaptor.forClass(List.class);
         verify(this.membersRepositoryMock, times(1)).saveAll(captor.capture());
         List<User> captorValue = captor.getValue();
@@ -59,10 +60,10 @@ public class MembersServiceUnitTest {
     @Test
     @DisplayName("Should throw InternalServerException when adding members")
     public void testAddNewMembersInternalServerException() {
-        MemberTemplate memberTemplate = TestUtils.createMemberTemplate();
+        MembersTemplate membersTemplate = TestUtils.createMemberTemplate();
         when(this.membersRepositoryMock.saveAll(any(List.class))).thenThrow(RuntimeException.class);
         InternalServerException internalServerException = assertThrows(InternalServerException.class, () -> {
-            this.membersService.addNewMembers(memberTemplate);
+            this.membersService.addNewMembers(membersTemplate);
             ArgumentCaptor<List<User>> captor = ArgumentCaptor.forClass(List.class);
             verify(this.membersRepositoryMock, times(1)).saveAll(captor.capture());
             List<User> captorValue = captor.getValue();
@@ -106,14 +107,34 @@ public class MembersServiceUnitTest {
     @Test
     @DisplayName("Should remove users")
     public void testRemoveMembers() {
-        MemberTemplate memberTemplate = TestUtils.createMemberTemplateOneMember();
+        MembersTemplate membersTemplate = TestUtils.createMemberTemplateOneMember();
         ArgumentCaptor<Long> captor = ArgumentCaptor.forClass(Long.class);
         ArgumentCaptor<String> stringCaptor = ArgumentCaptor.forClass(String.class);
-        this.membersService.removeMembers(memberTemplate);
-        verify(this.membersRepositoryMock, times(1)).removeMember(captor.capture(), stringCaptor.capture());
+        this.membersService.removeMembers(membersTemplate);
+        verify(this.membersRepositoryMock, times(1)).deleteByUserIdAndZoneId(captor.capture(), stringCaptor.capture());
         String zoneId = stringCaptor.getValue();
         long userId = captor.getValue();
         assertEquals(ZONE_TEST_ID, zoneId);
         assertEquals(MEMBER_TEST_ID, userId);
+    }
+
+    @Test
+    @DisplayName("Should remove service from all zones")
+    public void testRemoveMember() {
+        MemberTemplate memberTemplate = new MemberTemplate(MEMBER_TEST_ID);
+        this.membersService.removeMember(memberTemplate);
+        verify(this.membersRepositoryMock, times(1)).deleteByUserId(eq(MEMBER_TEST_ID));
+    }
+
+    @Test
+    @DisplayName("Should throw InternalServerException on any Exception when trying to delete user")
+    public void testRemoveMemberInternalServerException() {
+        MemberTemplate memberTemplate = new MemberTemplate(MEMBER_TEST_ID);
+        when(this.membersRepositoryMock.deleteByUserId(eq(MEMBER_TEST_ID))).thenThrow(new RuntimeException("Boom!"));
+        InternalServerException exception = assertThrows(InternalServerException.class,
+                () -> {this.membersService.removeMember(memberTemplate);});
+        verify(this.membersRepositoryMock, times(1)).deleteByUserId(eq(MEMBER_TEST_ID));
+        assertInstanceOf(InternalServerException.class, exception);
+        assertEquals("Boom!", exception.getMessage());
     }
 }
