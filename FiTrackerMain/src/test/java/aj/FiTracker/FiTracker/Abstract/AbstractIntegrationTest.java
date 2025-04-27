@@ -6,10 +6,12 @@ import org.springframework.test.context.DynamicPropertySource;
 public abstract class AbstractIntegrationTest {
     private static final PostgreSQLTestContainer postgreSQLTestContainer;
     private static final VaultTestContainer vaultContainer;
-
+    private static final KafkaTestContainer kafkaContainer;
     static {
         vaultContainer = VaultTestContainer.getInstance();
         postgreSQLTestContainer = PostgreSQLTestContainer.getInstance();
+        kafkaContainer = KafkaTestContainer.getInstance();
+
         postgreSQLTestContainer.start();
         vaultContainer.start();
 
@@ -22,6 +24,7 @@ public abstract class AbstractIntegrationTest {
     public static void registerProperties(DynamicPropertyRegistry registry) throws Exception {
         PostgreSQLTestContainer.registerProperties(registry);
         VaultTestContainer.vaultProperties(registry);
+        KafkaTestContainer.setDynamicProperties(registry);
     }
 
     protected void truncateTable(String tableName) {

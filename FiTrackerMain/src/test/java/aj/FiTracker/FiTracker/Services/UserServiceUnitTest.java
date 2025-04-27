@@ -6,19 +6,19 @@ import aj.FiTracker.FiTracker.Exceptions.InternalServerException;
 import aj.FiTracker.FiTracker.Exceptions.UserAlreadyExistsException;
 import aj.FiTracker.FiTracker.Exceptions.UserDoesntExistException;
 import aj.FiTracker.FiTracker.Exceptions.UserUnauthorizedException;
+import aj.FiTracker.FiTracker.Models.MemberTemplate;
 import aj.FiTracker.FiTracker.Repositories.UserRepository;
 import aj.FiTracker.FiTracker.Security.JWTService;
 import aj.FiTracker.FiTracker.Security.PasswordEncoder;
 import aj.FiTracker.FiTracker.TestUtils.RequestsDataFactory;
 import aj.FiTracker.FiTracker.TestUtils.UserDataTestFactory;
-import aj.FiTracker.FiTracker.UserInterface;
+import aj.FiTracker.FiTracker.Interfaces.UserInterface;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -44,7 +44,7 @@ import static org.mockito.Mockito.*;
 @ActiveProfiles("unit")
 @Tag("unit")
 public class UserServiceUnitTest {
-
+    private KafkaProducerService kafkaProducerServiceMock;
     private JWTService jwtService;
     private UserRepository userRepository;
     private PasswordEncoder passwordEncoder;
@@ -55,14 +55,14 @@ public class UserServiceUnitTest {
 
     @BeforeEach
     public void setup() {
-
+        this.kafkaProducerServiceMock = mock(KafkaProducerService.class);
         this.passwordEncoder = new PasswordEncoder();
         this.jwtService = mock(JWTService.class);
         this.userRepository = mock(UserRepository.class);
         this.registerUserRequest = RequestsDataFactory.createTestRegisterUserRequest();
         this.user = UserDataTestFactory.createTestUser();
         this.loginRequest = RequestsDataFactory.createTestLoginRequestData();
-        this.userService = new UserService(passwordEncoder, userRepository, jwtService);
+        this.userService = new UserService(passwordEncoder, userRepository, jwtService, kafkaProducerServiceMock);
     }
 
     @Test
@@ -394,7 +394,7 @@ public class UserServiceUnitTest {
 
     @Test
     @DisplayName("Should delete user")
-    public void testDeleteUser() {
+    public void testDeleteUser() throws JsonProcessingException {
         User user = UserDataTestFactory.createTestUser();
 
         DeleteUserRequest deleteUserRequest = RequestsDataFactory.createDeleteUser();
@@ -408,11 +408,13 @@ public class UserServiceUnitTest {
         verify(passwordEncoderMock, times(1)).checkPass(any(UserInterface.class), any(UserInterface.class));
         verify(this.userRepository,times(1)).deleteById(eq(TEST_USER_ID));
         verify(this.userRepository, times(1)).findOneById(eq(TEST_USER_ID));
+        verify(this.kafkaProducerServiceMock, times(1)).sendDeletedMember(any(MemberTemplate.class));
+
     }
 
     @Test
     @DisplayName("Should when UserUnauthorizedException when deleting user")
-    public void testDeleteUserUserUnauthorizedException() {
+    public void testDeleteUserUserUnauthorizedException() throws JsonProcessingException {
         User user = UserDataTestFactory.createTestUser();
         DeleteUserRequest deleteUserRequest = RequestsDataFactory.createDeleteUser();
         Authentication authentication = this.createAuthMock();
@@ -426,13 +428,14 @@ public class UserServiceUnitTest {
         verify(passwordEncoderMock, times(1)).checkPass(any(UserInterface.class), any(UserInterface.class));
         verify(this.userRepository,never()).deleteById(anyLong());
         verify(this.userRepository, times(1)).findOneById(eq(TEST_USER_ID));
+        verify(this.kafkaProducerServiceMock, never()).sendDeletedMember(any(MemberTemplate.class));
         assertInstanceOf(UserUnauthorizedException.class, userUnauthorizedException);
         assertEquals("Incorrect password for user " + TEST_USER_ID, userUnauthorizedException.getMessage());
     }
 
     @Test
     @DisplayName("Should throw UserDoesntExistException when deleting user")
-    public void testDeleteUserUserDoesntExistException() {
+    public void testDeleteUserUserDoesntExistException() throws JsonProcessingException {
         DeleteUserRequest deleteUserRequest = RequestsDataFactory.createDeleteUser();
         Authentication authentication = this.createAuthMock();
         when(this.userRepository.findOneById(eq(TEST_USER_ID))).thenReturn(Optional.empty());
@@ -441,13 +444,15 @@ public class UserServiceUnitTest {
         });
         verify(this.userRepository,never()).deleteById(anyLong());
         verify(this.userRepository, times(1)).findOneById(eq(TEST_USER_ID));
+        verify(this.kafkaProducerServiceMock, never()).sendDeletedMember(any(MemberTemplate.class));
+
         assertInstanceOf(UserDoesntExistException.class, exception);
         assertEquals("Cannot find user " + TEST_USER_ID, exception.getMessage());
     }
 
     @Test
     @DisplayName("Should throw InternalServerException when deleting user")
-    public void testDeleteUserInternalServerException() {
+    public void testDeleteUserInternalServerException() throws JsonProcessingException {
         DeleteUserRequest deleteUserRequest = RequestsDataFactory.createDeleteUser();
         Authentication authentication = this.createAuthMock();
         when(this.userRepository.findOneById(eq(TEST_USER_ID))).thenThrow(new RuntimeException("Boom!"));
@@ -456,6 +461,7 @@ public class UserServiceUnitTest {
         });
         verify(this.userRepository,never()).deleteById(anyLong());
         verify(this.userRepository, times(1)).findOneById(eq(TEST_USER_ID));
+        verify(this.kafkaProducerServiceMock, never()).sendDeletedMember(any(MemberTemplate.class));
         assertInstanceOf(InternalServerException.class, exception);
         assertEquals("Boom!", exception.getMessage());
     }

@@ -6,12 +6,13 @@ import aj.FiTracker.FiTracker.Exceptions.InternalServerException;
 import aj.FiTracker.FiTracker.Exceptions.UserAlreadyExistsException;
 import aj.FiTracker.FiTracker.Exceptions.UserDoesntExistException;
 import aj.FiTracker.FiTracker.Exceptions.UserUnauthorizedException;
+import aj.FiTracker.FiTracker.Models.MemberTemplate;
 import aj.FiTracker.FiTracker.Models.UserImpl;
 import aj.FiTracker.FiTracker.Repositories.UserRepository;
 import aj.FiTracker.FiTracker.Security.JWTClaimsUtil;
 import aj.FiTracker.FiTracker.Security.JWTService;
 import aj.FiTracker.FiTracker.Security.PasswordEncoder;
-import aj.FiTracker.FiTracker.UserInterface;
+import aj.FiTracker.FiTracker.Interfaces.UserInterface;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,17 +31,20 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final JWTService jwtService;
     private final UserRepository userRepository;
+    private final KafkaProducerService kafkaProducerService;
 
     @Autowired
     public UserService(
             PasswordEncoder passwordEncoder,
             UserRepository userRepository,
-            JWTService jwtService
+            JWTService jwtService,
+            KafkaProducerService kafkaProducerService
     ) {
         this.logger = LoggerFactory.getLogger(UserService.class);
         this.passwordEncoder = passwordEncoder;
         this.userRepository = userRepository;
         this.jwtService = jwtService;
+        this.kafkaProducerService = kafkaProducerService;
     }
 
     @Transactional
@@ -180,6 +184,7 @@ public class UserService {
                 throw new UserUnauthorizedException("Incorrect password for user " + jwtClaims.userId());
             }
             this.userRepository.deleteById(jwtClaims.userId());
+            this.kafkaProducerService.sendDeletedMember(new MemberTemplate(userToDelete));
         } catch (UserDoesntExistException | UserUnauthorizedException exception) {
             logger.error("User credentials error {}",exception.getMessage());
             throw exception;

@@ -10,15 +10,15 @@ import java.util.List;
 
 @Getter
 @Setter
-public class MemberTemplate implements KafkaModelTemplate {
+public class MembersTemplate implements KafkaModelTemplate {
 
     private List<Member> membersList;
     private String zoneId;
 
-    public MemberTemplate() {
+    public MembersTemplate() {
     }
 
-    public MemberTemplate(String zoneId) {
+    public MembersTemplate(String zoneId) {
         this.zoneId = zoneId;
         this.membersList = new ArrayList<>();
     }

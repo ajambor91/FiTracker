@@ -1,7 +1,6 @@
 package aj.FiTracker.FiTracker.DTO.BaseModels;
 
-import aj.FiTracker.FiTracker.UserInterface;
-import jakarta.validation.constraints.NotBlank;
+import aj.FiTracker.FiTracker.Interfaces.UserInterface;
 import lombok.Getter;
 import lombok.Setter;
 @Getter

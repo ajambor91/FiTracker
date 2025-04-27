@@ -1,7 +1,7 @@
 package aj.FiTracker.FiTracker.Entities;
 
 import aj.FiTracker.FiTracker.DTO.REST.RegisterUserRequestRequest;
-import aj.FiTracker.FiTracker.UserInterface;
+import aj.FiTracker.FiTracker.Interfaces.UserInterface;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;

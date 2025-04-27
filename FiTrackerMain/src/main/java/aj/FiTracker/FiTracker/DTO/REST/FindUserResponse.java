@@ -1,7 +1,6 @@
 package aj.FiTracker.FiTracker.DTO.REST;
 
-import aj.FiTracker.FiTracker.Entities.User;
-import aj.FiTracker.FiTracker.UserInterface;
+import aj.FiTracker.FiTracker.Interfaces.UserInterface;
 import lombok.Getter;
 import lombok.Setter;
 

@@ -2,6 +2,7 @@ package aj.FiTracker.FiTracker.TestUtils;
 
 import aj.FiTracker.FiTracker.DTO.REST.*;
 import aj.FiTracker.FiTracker.Entities.User;
+import aj.FiTracker.FiTracker.Models.MemberTemplate;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -54,4 +55,6 @@ public class UserDataTestFactory {
     public static UpdateUserResponse getUpdateRename() {
         return new UpdateUserResponse(createTestUser());
     }
+
+    public static MemberTemplate createMemberTemplate() {return new MemberTemplate(createTestUser());}
 }

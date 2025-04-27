@@ -3,7 +3,7 @@ package aj.FiTracker.FiTracker.Security;
 
 import aj.FiTracker.FiTracker.Entities.User;
 import aj.FiTracker.FiTracker.TestUtils.UserDataTestFactory;
-import aj.FiTracker.FiTracker.UserInterface;
+import aj.FiTracker.FiTracker.Interfaces.UserInterface;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;

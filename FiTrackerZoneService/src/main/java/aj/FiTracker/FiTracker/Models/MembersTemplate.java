@@ -2,7 +2,7 @@ package aj.FiTracker.FiTracker.Models;
 
 
 import aj.FiTracker.FiTracker.Documents.Zone;
-import aj.FiTracker.FiTracker.Interfaces.KafkaModelTemplate;
+import aj.FiTracker.FiTracker.Interfaces.KafkaTemplateInterface;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -11,12 +11,12 @@ import java.util.List;
 
 @Getter
 @Setter
-public class MemberTemplate implements KafkaModelTemplate {
+public class MembersTemplate implements KafkaTemplateInterface {
 
     private List<Member> membersList;
     private String zoneId;
 
-    public MemberTemplate(String zoneId) {
+    public MembersTemplate(String zoneId) {
         this.zoneId = zoneId;
         this.membersList = new ArrayList<>();
     }

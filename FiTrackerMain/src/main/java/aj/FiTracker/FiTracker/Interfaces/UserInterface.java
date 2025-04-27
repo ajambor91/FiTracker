@@ -1,4 +1,4 @@
-package aj.FiTracker.FiTracker;
+package aj.FiTracker.FiTracker.Interfaces;
 
 import java.time.LocalDateTime;
 import java.util.UUID;

@@ -55,8 +55,8 @@ dependencies {
 	implementation 'ch.qos.logback:logback-classic:1.5.18'
 	implementation 'com.github.loki4j:loki-logback-appender:1.5.2'
 	implementation 'org.springframework.boot:spring-boot-starter-actuator'
-
-
+	testImplementation "org.testcontainers:kafka:1.20.6"
+	implementation 'org.springframework.kafka:spring-kafka'
 }
 
 

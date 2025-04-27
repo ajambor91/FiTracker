@@ -1,7 +1,7 @@
 package aj.FiTracker.FiTracker.Security;
 
 import aj.FiTracker.FiTracker.Entities.User;
-import aj.FiTracker.FiTracker.UserInterface;
+import aj.FiTracker.FiTracker.Interfaces.UserInterface;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;

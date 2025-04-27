@@ -3,7 +3,7 @@ package aj.FiTracker.FiTracker.Models;
 import aj.FiTracker.FiTracker.DTO.REST.DeleteUserRequest;
 import aj.FiTracker.FiTracker.DTO.REST.LoginRequest;
 import aj.FiTracker.FiTracker.DTO.REST.UpdateUserRequest;
-import aj.FiTracker.FiTracker.UserInterface;
+import aj.FiTracker.FiTracker.Interfaces.UserInterface;
 import lombok.Getter;
 import lombok.Setter;
 

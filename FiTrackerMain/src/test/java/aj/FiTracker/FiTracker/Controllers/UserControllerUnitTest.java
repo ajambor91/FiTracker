@@ -4,7 +4,7 @@ import aj.FiTracker.FiTracker.DTO.REST.*;
 import aj.FiTracker.FiTracker.Services.UserService;
 import aj.FiTracker.FiTracker.TestUtils.RequestsDataFactory;
 import aj.FiTracker.FiTracker.TestUtils.UserDataTestFactory;
-import aj.FiTracker.FiTracker.UserInterface;
+import aj.FiTracker.FiTracker.Interfaces.UserInterface;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
@@ -14,7 +14,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.test.context.ActiveProfiles;
 
 import java.util.ArrayList;

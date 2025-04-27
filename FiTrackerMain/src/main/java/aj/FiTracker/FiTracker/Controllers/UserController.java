@@ -64,7 +64,7 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body(updateUserResponse);
 
     }
-    @DeleteMapping("/user")
+    @PostMapping("/user")
     public ResponseEntity<?> deleteUser(@RequestBody @Valid DeleteUserRequest deleteUserRequest, Authentication authentication) {
         logger.info("Received request for user remove");
         this.userService.deleteUser(deleteUserRequest, authentication);

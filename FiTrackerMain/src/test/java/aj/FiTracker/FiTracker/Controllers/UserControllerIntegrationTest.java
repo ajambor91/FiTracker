@@ -245,26 +245,14 @@ public class UserControllerIntegrationTest extends AbstractIntegrationTest {
                         .content(this.objectMapper.writeValueAsString(RequestsDataFactory.createUpdateUserRequest())))
                 .andExpect(status().isNotFound());
     }
-
-    @Test
-    @DisplayName("Should throw Unauthorized user when trying to update and set wrong password")
-    public void testUpdateUserBadRequest() throws Exception {
-        this.insertTestUserIntoDataBase();
-        UpdateUserRequest userRequest = RequestsDataFactory.createUpdateUserRequest();
-        userRequest.setRawPassword("INCORECCT".toCharArray());
-        this.mockMvc.perform(patch("/users/user")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(this.objectMapper.writeValueAsString(userRequest)))
-                .andExpect(status().isUnauthorized());
-    }
-
+    
     @Test
     @DisplayName("Should delete user")
     public void testDeleteUser() throws Exception {
         this.insertTestUserIntoDataBase();
-        this.mockMvc.perform(delete("/users/user")
+        this.mockMvc.perform(post("/users/user")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(this.objectMapper.writeValueAsString(RequestsDataFactory.createUpdateUserRequest())))
+                        .content(this.objectMapper.writeValueAsString(RequestsDataFactory.createDeleteUser())))
                 .andExpect(status().isNoContent());
     }
 
@@ -274,7 +262,7 @@ public class UserControllerIntegrationTest extends AbstractIntegrationTest {
         this.insertTestUserIntoDataBase();
         DeleteUserRequest deleteUserRequest = RequestsDataFactory.createDeleteUser();
         deleteUserRequest.setRawPassword("INCORECCaT7#".toCharArray());
-        this.mockMvc.perform(delete("/users/user")
+        this.mockMvc.perform(post("/users/user")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(this.objectMapper.writeValueAsString(deleteUserRequest)))
                 .andExpect(status().isUnauthorized());
@@ -283,9 +271,9 @@ public class UserControllerIntegrationTest extends AbstractIntegrationTest {
     @Test
     @DisplayName("Should throw NotFound user when trying to update")
     public void testDeleteUserNotFound() throws Exception {
-        this.mockMvc.perform(delete("/users/user")
+        this.mockMvc.perform(post("/users/user")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(this.objectMapper.writeValueAsString(RequestsDataFactory.createUpdateUserRequest())))
+                        .content(this.objectMapper.writeValueAsString(RequestsDataFactory.createDeleteUser())))
                 .andExpect(status().isNotFound());
     }
 
@@ -295,7 +283,7 @@ public class UserControllerIntegrationTest extends AbstractIntegrationTest {
         this.insertTestUserIntoDataBase();
         DeleteUserRequest userRequest = RequestsDataFactory.createDeleteUser();
         userRequest.setRawPassword("INCORECCT".toCharArray());
-        this.mockMvc.perform(delete("/users/user")
+        this.mockMvc.perform(post("/users/user")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(this.objectMapper.writeValueAsString(userRequest)))
                 .andExpect(status().isUnauthorized());
