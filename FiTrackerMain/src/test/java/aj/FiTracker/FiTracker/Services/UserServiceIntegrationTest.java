@@ -33,7 +33,7 @@ public class UserServiceIntegrationTest extends AbstractIntegrationTest {
 
     private UserRepository userRepository;
     private PasswordEncoder passwordEncoder;
-    private UserService userService;
+    private final UserService userService;
     private User user;
     private RegisterUserRequestRequest duplicatedUser;
     private RegisterUserRequestRequest registerUserRequest;
@@ -167,7 +167,7 @@ public class UserServiceIntegrationTest extends AbstractIntegrationTest {
     public void testGetUserUserDoesntExistException() {
         UserDoesntExistException exception = assertThrows(UserDoesntExistException.class, () -> {
             this.userService.getUser(TEST_USER_ID);
-        }) ;
+        });
         assertInstanceOf(UserDoesntExistException.class, exception);
         assertEquals("Cannot find user " + TEST_USER_ID, exception.getMessage());
     }

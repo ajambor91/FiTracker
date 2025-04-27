@@ -56,5 +56,7 @@ public class UserDataTestFactory {
         return new UpdateUserResponse(createTestUser());
     }
 
-    public static MemberTemplate createMemberTemplate() {return new MemberTemplate(createTestUser());}
+    public static MemberTemplate createMemberTemplate() {
+        return new MemberTemplate(createTestUser());
+    }
 }

@@ -132,7 +132,9 @@ public class MembersServiceUnitTest {
         MemberTemplate memberTemplate = new MemberTemplate(MEMBER_TEST_ID);
         when(this.membersRepositoryMock.deleteByUserId(eq(MEMBER_TEST_ID))).thenThrow(new RuntimeException("Boom!"));
         InternalServerException exception = assertThrows(InternalServerException.class,
-                () -> {this.membersService.removeMember(memberTemplate);});
+                () -> {
+                    this.membersService.removeMember(memberTemplate);
+                });
         verify(this.membersRepositoryMock, times(1)).deleteByUserId(eq(MEMBER_TEST_ID));
         assertInstanceOf(InternalServerException.class, exception);
         assertEquals("Boom!", exception.getMessage());

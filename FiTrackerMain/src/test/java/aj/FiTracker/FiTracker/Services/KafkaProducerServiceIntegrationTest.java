@@ -1,8 +1,6 @@
 package aj.FiTracker.FiTracker.Services;
 
 
-
-
 import aj.FiTracker.FiTracker.Abstract.AbstractIntegrationTest;
 import aj.FiTracker.FiTracker.Models.MemberTemplate;
 import aj.FiTracker.FiTracker.TestUtils.UserDataTestFactory;
@@ -14,8 +12,6 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-
-
 
 
 @ActiveProfiles("integration")

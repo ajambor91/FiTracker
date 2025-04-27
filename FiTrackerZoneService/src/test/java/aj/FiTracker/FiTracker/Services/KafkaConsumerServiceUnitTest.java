@@ -2,7 +2,7 @@ package aj.FiTracker.FiTracker.Services;
 
 import aj.FiTracker.FiTracker.Enums.KafkaAction;
 import aj.FiTracker.FiTracker.Models.MemberTemplate;
-import aj.FiTracker.FiTracker.TestUtils.*;
+import aj.FiTracker.FiTracker.TestUtils.ZoneFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -16,15 +16,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.context.ActiveProfiles;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 
 import java.nio.charset.StandardCharsets;
 
-import static aj.FiTracker.FiTracker.TestUtils.ZoneFactory.*;
+import static aj.FiTracker.FiTracker.TestUtils.ZoneFactory.MEMBER_TEST_ID;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.times;
 
 @ExtendWith(MockitoExtension.class)
 @Tag("unit")
@@ -35,7 +33,8 @@ public class KafkaConsumerServiceUnitTest {
     private Headers headersMock;
     private Header headerMock;
     private ZoneService zoneServiceMock;
-    private ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
     @BeforeEach
     public void setup() {
 

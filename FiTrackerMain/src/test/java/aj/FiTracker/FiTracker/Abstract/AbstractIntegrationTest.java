@@ -7,6 +7,7 @@ public abstract class AbstractIntegrationTest {
     private static final PostgreSQLTestContainer postgreSQLTestContainer;
     private static final VaultTestContainer vaultContainer;
     private static final KafkaTestContainer kafkaContainer;
+
     static {
         vaultContainer = VaultTestContainer.getInstance();
         postgreSQLTestContainer = PostgreSQLTestContainer.getInstance();

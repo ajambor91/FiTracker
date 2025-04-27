@@ -19,7 +19,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ActiveProfiles("integrationWithCSRF")
 public class CoreControllerIntegrationTest extends AbstractIntegrationTest {
     private final CoreController coreContoller;
-    private MockMvc mockMvc;
+    private final MockMvc mockMvc;
 
     @Autowired
     public CoreControllerIntegrationTest(MockMvc mockMvc, CoreController coreContoller) {

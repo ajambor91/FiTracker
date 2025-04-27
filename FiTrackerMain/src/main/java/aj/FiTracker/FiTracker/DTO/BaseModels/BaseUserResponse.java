@@ -3,6 +3,7 @@ package aj.FiTracker.FiTracker.DTO.BaseModels;
 import aj.FiTracker.FiTracker.Interfaces.UserInterface;
 import lombok.Getter;
 import lombok.Setter;
+
 @Getter
 @Setter
 public abstract class BaseUserResponse {
@@ -10,6 +11,7 @@ public abstract class BaseUserResponse {
     private String name;
     private String email;
     private long userId;
+
     public BaseUserResponse() {
     }
 

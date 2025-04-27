@@ -6,13 +6,13 @@ import aj.FiTracker.FiTracker.Exceptions.InternalServerException;
 import aj.FiTracker.FiTracker.Exceptions.UserAlreadyExistsException;
 import aj.FiTracker.FiTracker.Exceptions.UserDoesntExistException;
 import aj.FiTracker.FiTracker.Exceptions.UserUnauthorizedException;
+import aj.FiTracker.FiTracker.Interfaces.UserInterface;
 import aj.FiTracker.FiTracker.Models.MemberTemplate;
 import aj.FiTracker.FiTracker.Models.UserImpl;
 import aj.FiTracker.FiTracker.Repositories.UserRepository;
 import aj.FiTracker.FiTracker.Security.JWTClaimsUtil;
 import aj.FiTracker.FiTracker.Security.JWTService;
 import aj.FiTracker.FiTracker.Security.PasswordEncoder;
-import aj.FiTracker.FiTracker.Interfaces.UserInterface;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -105,7 +105,7 @@ public class UserService {
         logger.info("Finding users by email: email={}", email);
         try {
             String regexp = "^" + email;
-             List<UserInterface> userList = this.userRepository.findUsersByEmail(regexp).stream().map(user -> (UserInterface) user).toList();
+            List<UserInterface> userList = this.userRepository.findUsersByEmail(regexp).stream().map(user -> (UserInterface) user).toList();
 
             return new FindUserResponse(userList);
         } catch (Exception e) {
@@ -138,9 +138,9 @@ public class UserService {
 
         } catch (UserDoesntExistException userDoesntExistException) {
             logger.error("Cannot find user with id {}", id);
-            throw  userDoesntExistException;
+            throw userDoesntExistException;
         } catch (Exception e) {
-            logger.error("Unexpected error {}" , e.getMessage());
+            logger.error("Unexpected error {}", e.getMessage());
             throw new InternalServerException(e);
         }
     }
@@ -162,7 +162,7 @@ public class UserService {
             this.userRepository.save(user);
             return new UpdateUserResponse(user);
         } catch (UserDoesntExistException | UserUnauthorizedException exception) {
-            logger.error("User credentials error {}",exception.getMessage());
+            logger.error("User credentials error {}", exception.getMessage());
             throw exception;
         } catch (Exception e) {
             logger.error("Unexpected error {}", e.getMessage());
@@ -186,7 +186,7 @@ public class UserService {
             this.userRepository.deleteById(jwtClaims.userId());
             this.kafkaProducerService.sendDeletedMember(new MemberTemplate(userToDelete));
         } catch (UserDoesntExistException | UserUnauthorizedException exception) {
-            logger.error("User credentials error {}",exception.getMessage());
+            logger.error("User credentials error {}", exception.getMessage());
             throw exception;
         } catch (Exception e) {
             throw new InternalServerException(e);

@@ -90,22 +90,12 @@ public class KafkaConsumerServiceUnitTest {
     }
 
 
-
-
-
-
-
-
-
-
-
-
     @Test
     @DisplayName("Listen for  member, remove members")
     public void testlistenForMemberRemove() throws JsonProcessingException {
         ConsumerRecord<String, String> consumerRecordMock = this.createAuthMock(KafkaAction.REMOVE_MEMBER,
                 this.objectMapper.writeValueAsString(new MemberTemplate(MEMBER_TEST_ID))
-                );
+        );
         this.kafkaConsumerService.listenForZoneMembers(consumerRecordMock);
         ArgumentCaptor<MembersTemplate> argumentCaptor = ArgumentCaptor.forClass(MembersTemplate.class);
         verify(this.membersServiceMock, times(1)).removeMembers(argumentCaptor.capture());

@@ -9,6 +9,7 @@ import lombok.Setter;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
+
 @Getter
 @Setter
 public class UserImpl implements UserInterface {

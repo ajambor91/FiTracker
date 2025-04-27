@@ -1,7 +1,6 @@
 package aj.FiTracker.FiTracker.Controllers;
 
 import aj.FiTracker.FiTracker.DTO.REST.*;
-import aj.FiTracker.FiTracker.Documents.Zone;
 import aj.FiTracker.FiTracker.Services.ZoneService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -12,9 +11,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @RestController
 @RequestMapping("/zones")

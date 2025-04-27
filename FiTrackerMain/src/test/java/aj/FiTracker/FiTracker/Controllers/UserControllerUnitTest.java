@@ -1,10 +1,10 @@
 package aj.FiTracker.FiTracker.Controllers;
 
 import aj.FiTracker.FiTracker.DTO.REST.*;
+import aj.FiTracker.FiTracker.Interfaces.UserInterface;
 import aj.FiTracker.FiTracker.Services.UserService;
 import aj.FiTracker.FiTracker.TestUtils.RequestsDataFactory;
 import aj.FiTracker.FiTracker.TestUtils.UserDataTestFactory;
-import aj.FiTracker.FiTracker.Interfaces.UserInterface;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;

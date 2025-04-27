@@ -49,17 +49,18 @@ public class KafkaConsumerService {
                 this.membersService.removeMember(memberTemplate);
             }
 
-    } catch (JsonMappingException e) {
-        logger.error("JsonMappingException occurred while processing Kafka message.", e);
-        throw new RuntimeException("Failed to map Kafka message value", e);
-    } catch (JsonProcessingException e) {
-        logger.error("JsonProcessingException occurred while processing Kafka message.", e);
-        throw new RuntimeException("Failed to process Kafka message JSON", e);
-    } catch (Exception e) {
-        logger.error("An unexpected error occurred while processing Kafka message.", e);
-        throw new RuntimeException("Error processing Kafka message", e);
+        } catch (JsonMappingException e) {
+            logger.error("JsonMappingException occurred while processing Kafka message.", e);
+            throw new RuntimeException("Failed to map Kafka message value", e);
+        } catch (JsonProcessingException e) {
+            logger.error("JsonProcessingException occurred while processing Kafka message.", e);
+            throw new RuntimeException("Failed to process Kafka message JSON", e);
+        } catch (Exception e) {
+            logger.error("An unexpected error occurred while processing Kafka message.", e);
+            throw new RuntimeException("Error processing Kafka message", e);
+        }
     }
-    }
+
     @KafkaListener(topics = "request-zone-members", groupId = "fit-expenses-members-group")
     public void listenForZoneMembers(ConsumerRecord<String, String> message) {
         logger.info("Received Kafka message from topic '{}', partition {}, offset {}.",

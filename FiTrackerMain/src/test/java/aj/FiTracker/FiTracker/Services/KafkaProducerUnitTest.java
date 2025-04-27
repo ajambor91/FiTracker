@@ -27,6 +27,7 @@ public class KafkaProducerUnitTest {
     private KafkaTemplate<String, String> kafkaTemplateMock;
     private KafkaProducerService kafkaProducerService;
     private MemberTemplate memberTemplate;
+
     @BeforeEach
     public void setup() {
         this.memberTemplate = UserDataTestFactory.createMemberTemplate();

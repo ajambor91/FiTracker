@@ -9,9 +9,10 @@ import lombok.Setter;
 @Getter
 @Setter
 public class DeleteUserRequest {
-    public DeleteUserRequest() {}
     @NotNull
     private String login;
     @JsonDeserialize(using = PasswordDeserializer.class)
     private char[] rawPassword;
+    public DeleteUserRequest() {
+    }
 }

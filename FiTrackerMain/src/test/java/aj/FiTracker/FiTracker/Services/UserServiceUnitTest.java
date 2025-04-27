@@ -6,13 +6,13 @@ import aj.FiTracker.FiTracker.Exceptions.InternalServerException;
 import aj.FiTracker.FiTracker.Exceptions.UserAlreadyExistsException;
 import aj.FiTracker.FiTracker.Exceptions.UserDoesntExistException;
 import aj.FiTracker.FiTracker.Exceptions.UserUnauthorizedException;
+import aj.FiTracker.FiTracker.Interfaces.UserInterface;
 import aj.FiTracker.FiTracker.Models.MemberTemplate;
 import aj.FiTracker.FiTracker.Repositories.UserRepository;
 import aj.FiTracker.FiTracker.Security.JWTService;
 import aj.FiTracker.FiTracker.Security.PasswordEncoder;
 import aj.FiTracker.FiTracker.TestUtils.RequestsDataFactory;
 import aj.FiTracker.FiTracker.TestUtils.UserDataTestFactory;
-import aj.FiTracker.FiTracker.Interfaces.UserInterface;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -273,7 +273,7 @@ public class UserServiceUnitTest {
     public void testGetUserUserDoesntExistException() {
         when(this.userRepository.findOneById(anyLong())).thenThrow(new UserDoesntExistException("User cannot be found"));
         UserDoesntExistException exception = assertThrows(UserDoesntExistException.class, () -> {
-           this.userService.getUser(TEST_USER_ID);
+            this.userService.getUser(TEST_USER_ID);
         });
         verify(this.userRepository, times(1)).findOneById(anyLong());
         assertInstanceOf(UserDoesntExistException.class, exception);
@@ -303,7 +303,7 @@ public class UserServiceUnitTest {
         when(this.userRepository.findOneById(eq(TEST_USER_ID))).thenReturn(Optional.of(user));
         UpdateUserRequest userRequest = RequestsDataFactory.createUpdateUserRequest();
         UpdateUserResponse updateUserResponse = this.userService.updateUser(userRequest, authentication);
-        verify(this.userRepository,times(1)).save(any(User.class));
+        verify(this.userRepository, times(1)).save(any(User.class));
         verify(passwordEncoderMock, times(1)).checkPass(any(UserInterface.class), any(UserInterface.class));
         verify(this.userRepository, times(1)).findOneById(eq(TEST_USER_ID));
         assertEquals(TEST_USER_LOGIN, updateUserResponse.getLogin());
@@ -320,7 +320,7 @@ public class UserServiceUnitTest {
         InternalServerException exception = assertThrows(InternalServerException.class, () -> {
             this.userService.updateUser(userRequest, authentication);
         });
-        verify(this.userRepository,never()).save(any(User.class));
+        verify(this.userRepository, never()).save(any(User.class));
         verify(this.userRepository, never()).findOneById(anyLong());
         assertInstanceOf(InternalServerException.class, exception);
         assertEquals("Cannot parse null string", exception.getMessage());
@@ -334,7 +334,7 @@ public class UserServiceUnitTest {
         UserDoesntExistException exception = assertThrows(UserDoesntExistException.class, () -> {
             this.userService.updateUser(userRequest, authentication);
         });
-        verify(this.userRepository,never()).save(any(User.class));
+        verify(this.userRepository, never()).save(any(User.class));
         verify(this.userRepository, times(1)).findOneById(eq(TEST_USER_ID));
         assertInstanceOf(UserDoesntExistException.class, exception);
         assertEquals("Cannot find user " + TEST_USER_ID, exception.getMessage());
@@ -350,7 +350,7 @@ public class UserServiceUnitTest {
         UserUnauthorizedException exception = assertThrows(UserUnauthorizedException.class, () -> {
             this.userService.updateUser(userRequest, authentication);
         });
-        verify(this.userRepository,never()).save(any(User.class));
+        verify(this.userRepository, never()).save(any(User.class));
         verify(this.userRepository, times(1)).findOneById(eq(TEST_USER_ID));
         assertInstanceOf(UserUnauthorizedException.class, exception);
         assertEquals("Incorrect password for user " + TEST_USER_ID, exception.getMessage());
@@ -365,7 +365,7 @@ public class UserServiceUnitTest {
         InternalServerException exception = assertThrows(InternalServerException.class, () -> {
             this.userService.updateUser(userRequest, authentication);
         });
-        verify(this.userRepository,never()).save(any(User.class));
+        verify(this.userRepository, never()).save(any(User.class));
         verify(this.userRepository, times(1)).findOneById(eq(TEST_USER_ID));
         assertInstanceOf(InternalServerException.class, exception);
         assertEquals("Boom!", exception.getMessage());
@@ -386,7 +386,7 @@ public class UserServiceUnitTest {
             this.userService.updateUser(userRequest, authentication);
         });
         verify(passwordEncoderMock, times(1)).checkPass(any(UserInterface.class), any(UserInterface.class));
-        verify(this.userRepository,times(1)).save(any(User.class));
+        verify(this.userRepository, times(1)).save(any(User.class));
         verify(this.userRepository, times(1)).findOneById(eq(TEST_USER_ID));
         assertInstanceOf(InternalServerException.class, exception);
         assertEquals("Boom!", exception.getMessage());
@@ -406,7 +406,7 @@ public class UserServiceUnitTest {
 
         this.userService.deleteUser(deleteUserRequest, authentication);
         verify(passwordEncoderMock, times(1)).checkPass(any(UserInterface.class), any(UserInterface.class));
-        verify(this.userRepository,times(1)).deleteById(eq(TEST_USER_ID));
+        verify(this.userRepository, times(1)).deleteById(eq(TEST_USER_ID));
         verify(this.userRepository, times(1)).findOneById(eq(TEST_USER_ID));
         verify(this.kafkaProducerServiceMock, times(1)).sendDeletedMember(any(MemberTemplate.class));
 
@@ -426,7 +426,7 @@ public class UserServiceUnitTest {
             this.userService.deleteUser(deleteUserRequest, authentication);
         });
         verify(passwordEncoderMock, times(1)).checkPass(any(UserInterface.class), any(UserInterface.class));
-        verify(this.userRepository,never()).deleteById(anyLong());
+        verify(this.userRepository, never()).deleteById(anyLong());
         verify(this.userRepository, times(1)).findOneById(eq(TEST_USER_ID));
         verify(this.kafkaProducerServiceMock, never()).sendDeletedMember(any(MemberTemplate.class));
         assertInstanceOf(UserUnauthorizedException.class, userUnauthorizedException);
@@ -442,7 +442,7 @@ public class UserServiceUnitTest {
         UserDoesntExistException exception = assertThrows(UserDoesntExistException.class, () -> {
             this.userService.deleteUser(deleteUserRequest, authentication);
         });
-        verify(this.userRepository,never()).deleteById(anyLong());
+        verify(this.userRepository, never()).deleteById(anyLong());
         verify(this.userRepository, times(1)).findOneById(eq(TEST_USER_ID));
         verify(this.kafkaProducerServiceMock, never()).sendDeletedMember(any(MemberTemplate.class));
 
@@ -459,7 +459,7 @@ public class UserServiceUnitTest {
         InternalServerException exception = assertThrows(InternalServerException.class, () -> {
             this.userService.deleteUser(deleteUserRequest, authentication);
         });
-        verify(this.userRepository,never()).deleteById(anyLong());
+        verify(this.userRepository, never()).deleteById(anyLong());
         verify(this.userRepository, times(1)).findOneById(eq(TEST_USER_ID));
         verify(this.kafkaProducerServiceMock, never()).sendDeletedMember(any(MemberTemplate.class));
         assertInstanceOf(InternalServerException.class, exception);
@@ -474,6 +474,7 @@ public class UserServiceUnitTest {
         when(authenticationMock.getPrincipal()).thenReturn(jwtMock);
         return authenticationMock;
     }
+
     private Authentication createAuthMockWithNullId() {
         Jwt jwtMock = mock(Jwt.class);
         when(jwtMock.getClaimAsString(eq("sub"))).thenReturn(null);

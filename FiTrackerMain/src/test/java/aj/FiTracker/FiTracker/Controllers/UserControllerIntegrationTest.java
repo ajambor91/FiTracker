@@ -78,7 +78,6 @@ public class UserControllerIntegrationTest extends AbstractIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.email").value(TEST_USER_EMAIL))
                 .andExpect(jsonPath("$.name").value(TEST_USER_NAME));
-        ;
     }
 
     @Test
@@ -88,7 +87,6 @@ public class UserControllerIntegrationTest extends AbstractIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(this.objectMapper.writeValueAsString(RequestsDataFactory.createTestLoginRequestData())))
                 .andExpect(status().isNotFound());
-        ;
     }
 
     @Test
@@ -245,7 +243,7 @@ public class UserControllerIntegrationTest extends AbstractIntegrationTest {
                         .content(this.objectMapper.writeValueAsString(RequestsDataFactory.createUpdateUserRequest())))
                 .andExpect(status().isNotFound());
     }
-    
+
     @Test
     @DisplayName("Should delete user")
     public void testDeleteUser() throws Exception {

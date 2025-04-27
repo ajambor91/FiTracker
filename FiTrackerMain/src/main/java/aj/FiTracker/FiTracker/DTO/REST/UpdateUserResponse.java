@@ -9,6 +9,7 @@ import lombok.Setter;
 @Setter
 public class UpdateUserResponse extends BaseUserResponse {
     private long id;
+
     public UpdateUserResponse(UserInterface userInterface) {
         super(userInterface);
         this.id = userInterface.getId();

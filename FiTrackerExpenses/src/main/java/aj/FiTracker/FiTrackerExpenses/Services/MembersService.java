@@ -47,11 +47,11 @@ public class MembersService {
 
     @Transactional
     public void removeMember(MemberTemplate memberTemplate) {
-        logger.info("Started removing new member {} from all zones",memberTemplate.userId());
+        logger.info("Started removing new member {} from all zones", memberTemplate.userId());
         try {
 
             this.membersRepository.deleteByUserId(memberTemplate.userId());
-            logger.error("Removes member successfull ",memberTemplate.userId());
+            logger.error("Removes member successfull ", memberTemplate.userId());
 
         } catch (Exception e) {
             logger.error("Cannot remove member {}, exception: {}", memberTemplate.userId(), e.getMessage());

@@ -36,7 +36,7 @@ import static org.mockito.Mockito.when;
 @ActiveProfiles("unit")
 public class JWTServiceUnitTest {
     private SecretKey jwt;
-    private long tokenExpiration = 3600000;
+    private final long tokenExpiration = 3600000;
     private JWTService jwtService;
     private User testUser;
     private JwtParser parser;

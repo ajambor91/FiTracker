@@ -41,13 +41,14 @@ public class UserController {
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@Valid @RequestBody LoginRequest userRequest) {
         logger.info("Login attempt for user: login={}", userRequest.getLogin());
-        LoginResponse authUser =  this.userService.loginUser(userRequest);
+        LoginResponse authUser = this.userService.loginUser(userRequest);
         logger.info("User logged in successfully: login={}, JWT token generated", authUser.getLogin());
         return ResponseEntity
                 .status(HttpStatus.OK)
                 .header(HttpHeaders.AUTHORIZATION, authUser.getJwt())
                 .body(authUser);
     }
+
     @GetMapping("/user/{id}")
     public ResponseEntity<GetUserResponse> getUser(@PathVariable("id") @NotNull Long id) {
         logger.info("Getting user {}", id);
@@ -64,6 +65,7 @@ public class UserController {
         return ResponseEntity.status(HttpStatus.OK).body(updateUserResponse);
 
     }
+
     @PostMapping("/user")
     public ResponseEntity<?> deleteUser(@RequestBody @Valid DeleteUserRequest deleteUserRequest, Authentication authentication) {
         logger.info("Received request for user remove");
@@ -87,7 +89,6 @@ public class UserController {
         logger.info("Found {} users matches ids {}", users.getUserData().size(), ids);
         return ResponseEntity.status(HttpStatus.OK).body(users);
     }
-
 
 
 }

@@ -2,8 +2,8 @@ package aj.FiTracker.FiTracker.Security;
 
 
 import aj.FiTracker.FiTracker.Entities.User;
-import aj.FiTracker.FiTracker.TestUtils.UserDataTestFactory;
 import aj.FiTracker.FiTracker.Interfaces.UserInterface;
+import aj.FiTracker.FiTracker.TestUtils.UserDataTestFactory;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Tag;
@@ -52,7 +52,7 @@ public class PasswordEncoderUnitTest {
     public void testShouldComparePasswordsAndReturnFalseWhenPasswordIsIncorrect() {
         UserInterface userWithEncryptedPassword = passwordEncoder.prepareForRegister(user);
         User userToLogin = UserDataTestFactory.createTestUser();
-        userToLogin.setRawPassword(new String("IncorrectPasswrd").toCharArray());
+        userToLogin.setRawPassword("IncorrectPasswrd".toCharArray());
         boolean isCorrectPassword = passwordEncoder.checkPass(userToLogin, userWithEncryptedPassword);
         assertNull(userWithEncryptedPassword.getRawPassword());
         assertFalse(isCorrectPassword);

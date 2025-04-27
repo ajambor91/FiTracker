@@ -20,7 +20,6 @@ public class PostgreSQLTestContainer extends PostgreSQLContainer<PostgreSQLTestC
             .withPassword("examplePassword")
             .withDatabaseName("fit");
     private Connection connection;
-    ;
 
     private PostgreSQLTestContainer() {
         super(IMAGE_VERSION);
