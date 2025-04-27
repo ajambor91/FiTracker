@@ -4,6 +4,7 @@ import aj.FiTracker.FiTrackerExpenses.Entities.User;
 import aj.FiTracker.FiTrackerExpenses.Exceptions.InternalServerException;
 import aj.FiTracker.FiTrackerExpenses.Exceptions.UserUnauthorizedException;
 import aj.FiTracker.FiTrackerExpenses.Models.MemberTemplate;
+import aj.FiTracker.FiTrackerExpenses.Models.MembersTemplate;
 import aj.FiTracker.FiTrackerExpenses.Repositories.MembersRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,60 +23,74 @@ public class MembersService {
     private final MembersRepository membersRepository;
 
     @Autowired
-<span class="fc" id="L25">    public MembersService(MembersRepository membersRepository) {</span>
-<span class="fc" id="L26">        this.logger = LoggerFactory.getLogger(MembersService.class);</span>
-<span class="fc" id="L27">        this.membersRepository = membersRepository;</span>
-<span class="fc" id="L28">    }</span>
+<span class="fc" id="L26">    public MembersService(MembersRepository membersRepository) {</span>
+<span class="fc" id="L27">        this.logger = LoggerFactory.getLogger(MembersService.class);</span>
+<span class="fc" id="L28">        this.membersRepository = membersRepository;</span>
+<span class="fc" id="L29">    }</span>
 
     @Transactional
-    public void addNewMembers(MemberTemplate memberTemplate) {
-<span class="fc" id="L32">        List&lt;User&gt; users = new ArrayList&lt;&gt;();</span>
-<span class="fc" id="L33">        logger.info(&quot;Started adding new members {} to zoneId {}&quot;, memberTemplate.getMembersList(), memberTemplate.getZoneId());</span>
+    public void addNewMembers(MembersTemplate membersTemplate) {
+<span class="fc" id="L33">        List&lt;User&gt; users = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L34">        logger.info(&quot;Started adding new members {} to zoneId {}&quot;, membersTemplate.getMembersList(), membersTemplate.getZoneId());</span>
         try {
-<span class="fc bfc" id="L35" title="All 2 branches covered.">            for (MemberTemplate.Member member : memberTemplate.getMembersList()) {</span>
-<span class="fc" id="L36">                users.add(new User(member.memberId(), memberTemplate.getZoneId()));</span>
-<span class="fc" id="L37">            }</span>
-<span class="fc" id="L38">            this.membersRepository.saveAll(users);</span>
-<span class="fc" id="L39">            logger.error(&quot;Added new members {} to zone {} successfull &quot;, users, memberTemplate.getZoneId());</span>
+<span class="fc bfc" id="L36" title="All 2 branches covered.">            for (MembersTemplate.Member member : membersTemplate.getMembersList()) {</span>
+<span class="fc" id="L37">                users.add(new User(member.memberId(), membersTemplate.getZoneId()));</span>
+<span class="fc" id="L38">            }</span>
+<span class="fc" id="L39">            this.membersRepository.saveAll(users);</span>
+<span class="fc" id="L40">            logger.error(&quot;Added new members {} to zone {} successfull &quot;, users, membersTemplate.getZoneId());</span>
 
-<span class="fc" id="L41">        } catch (Exception e) {</span>
-<span class="fc" id="L42">            logger.error(&quot;Cannot add members {} to zone {}, exception: {}&quot;, memberTemplate.getMembersList(), memberTemplate.getZoneId(), e.getMessage());</span>
-<span class="fc" id="L43">            throw new InternalServerException(e);</span>
-<span class="fc" id="L44">        }</span>
-<span class="fc" id="L45">    }</span>
+<span class="fc" id="L42">        } catch (Exception e) {</span>
+<span class="fc" id="L43">            logger.error(&quot;Cannot add members {} to zone {}, exception: {}&quot;, membersTemplate.getMembersList(), membersTemplate.getZoneId(), e.getMessage());</span>
+<span class="fc" id="L44">            throw new InternalServerException(e);</span>
+<span class="fc" id="L45">        }</span>
+<span class="fc" id="L46">    }</span>
 
     @Transactional
-    public void removeMembers(MemberTemplate memberTemplate) {
-<span class="fc" id="L49">        List&lt;User&gt; users = new ArrayList&lt;&gt;();</span>
-<span class="fc" id="L50">        logger.info(&quot;Started removing new members {} to zoneId {}&quot;, memberTemplate.getMembersList(), memberTemplate.getZoneId());</span>
+    public void removeMember(MemberTemplate memberTemplate) {
+<span class="fc" id="L50">        logger.info(&quot;Started removing new member {} from all zones&quot;, memberTemplate.userId());</span>
         try {
-<span class="fc bfc" id="L52" title="All 2 branches covered.">            for (MemberTemplate.Member member : memberTemplate.getMembersList()) {</span>
-<span class="fc" id="L53">                this.membersRepository.removeMember(member.memberId(), memberTemplate.getZoneId());</span>
-<span class="fc" id="L54">            }</span>
-<span class="fc" id="L55">            logger.error(&quot;Removes members {} to zone {} successfull &quot;, users, memberTemplate.getZoneId());</span>
 
-<span class="nc" id="L57">        } catch (Exception e) {</span>
-<span class="nc" id="L58">            logger.error(&quot;Cannot remove members {} to zone {}, exception: {}&quot;, memberTemplate.getMembersList(), memberTemplate.getZoneId(), e.getMessage());</span>
-<span class="nc" id="L59">            throw new InternalServerException(e);</span>
-<span class="fc" id="L60">        }</span>
-<span class="fc" id="L61">    }</span>
+<span class="fc" id="L53">            this.membersRepository.deleteByUserId(memberTemplate.userId());</span>
+<span class="fc" id="L54">            logger.error(&quot;Removes member successfull &quot;, memberTemplate.userId());</span>
+
+<span class="fc" id="L56">        } catch (Exception e) {</span>
+<span class="fc" id="L57">            logger.error(&quot;Cannot remove member {}, exception: {}&quot;, memberTemplate.userId(), e.getMessage());</span>
+<span class="fc" id="L58">            throw new InternalServerException(e);</span>
+<span class="fc" id="L59">        }</span>
+<span class="fc" id="L60">    }</span>
+
+    @Transactional
+    public void removeMembers(MembersTemplate membersTemplate) {
+<span class="fc" id="L64">        List&lt;User&gt; users = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L65">        logger.info(&quot;Started removing new members {} to zoneId {}&quot;, membersTemplate.getMembersList(), membersTemplate.getZoneId());</span>
+        try {
+<span class="fc bfc" id="L67" title="All 2 branches covered.">            for (MembersTemplate.Member member : membersTemplate.getMembersList()) {</span>
+<span class="fc" id="L68">                this.membersRepository.deleteByUserIdAndZoneId(member.memberId(), membersTemplate.getZoneId());</span>
+<span class="fc" id="L69">            }</span>
+<span class="fc" id="L70">            logger.error(&quot;Removes members {} to zone {} successfull &quot;, users, membersTemplate.getZoneId());</span>
+
+<span class="nc" id="L72">        } catch (Exception e) {</span>
+<span class="nc" id="L73">            logger.error(&quot;Cannot remove members {} to zone {}, exception: {}&quot;, membersTemplate.getMembersList(), membersTemplate.getZoneId(), e.getMessage());</span>
+<span class="nc" id="L74">            throw new InternalServerException(e);</span>
+<span class="fc" id="L75">        }</span>
+<span class="fc" id="L76">    }</span>
 
     @Transactional(readOnly = true)
     public User getUserByZoneIdAndId(long userId, String zoneId) {
-<span class="fc" id="L65">        logger.info(&quot;Get user {} for zone {}&quot;, userId, zoneId);</span>
+<span class="fc" id="L80">        logger.info(&quot;Get user {} for zone {}&quot;, userId, zoneId);</span>
         try {
-<span class="fc" id="L67">            Optional&lt;User&gt; user = this.membersRepository.findByUserIdAndZoneId(userId, zoneId);</span>
-<span class="fc bfc" id="L68" title="All 2 branches covered.">            if (user.isEmpty()) {</span>
-<span class="fc" id="L69">                logger.info(&quot;Cannot find user {} for zone {}&quot;, userId, zoneId);</span>
-<span class="fc" id="L70">                throw new UserUnauthorizedException(&quot;User does not have privileges to zone&quot;);</span>
+<span class="fc" id="L82">            Optional&lt;User&gt; user = this.membersRepository.findByUserIdAndZoneId(userId, zoneId);</span>
+<span class="fc bfc" id="L83" title="All 2 branches covered.">            if (user.isEmpty()) {</span>
+<span class="fc" id="L84">                logger.info(&quot;Cannot find user {} for zone {}&quot;, userId, zoneId);</span>
+<span class="fc" id="L85">                throw new UserUnauthorizedException(&quot;User does not have privileges to zone&quot;);</span>
             }
-<span class="fc" id="L72">            logger.info(&quot;Return user {} for zone {}&quot;, userId, zoneId);</span>
-<span class="fc" id="L73">            return user.get();</span>
-<span class="fc" id="L74">        } catch (UserUnauthorizedException e) {</span>
-<span class="fc" id="L75">            throw e;</span>
-<span class="nc" id="L76">        } catch (Exception e) {</span>
-<span class="nc" id="L77">            logger.error(&quot;Cannot get user {}, zone {}, exception&quot;, userId, zoneId, e.getMessage());</span>
-<span class="nc" id="L78">            throw new InternalServerException(e);</span>
+<span class="fc" id="L87">            logger.info(&quot;Return user {} for zone {}&quot;, userId, zoneId);</span>
+<span class="fc" id="L88">            return user.get();</span>
+<span class="fc" id="L89">        } catch (UserUnauthorizedException e) {</span>
+<span class="fc" id="L90">            throw e;</span>
+<span class="nc" id="L91">        } catch (Exception e) {</span>
+<span class="nc" id="L92">            logger.error(&quot;Cannot get user {}, zone {}, exception&quot;, userId, zoneId, e.getMessage());</span>
+<span class="nc" id="L93">            throw new InternalServerException(e);</span>
         }
     }
 }

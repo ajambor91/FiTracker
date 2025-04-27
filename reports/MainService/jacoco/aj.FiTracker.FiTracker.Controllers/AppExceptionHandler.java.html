@@ -85,8 +85,8 @@ import org.springframework.web.servlet.resource.NoResourceFoundException;
             NoResourceFoundException ex,
             HttpServletRequest request
     ) {
-<span class="nc" id="L88">        ErrorResponseDTO errorResponse = new ErrorResponseDTO(ex, request);</span>
-<span class="nc" id="L89">        return new ResponseEntity&lt;&gt;(errorResponse, HttpStatus.NOT_FOUND);</span>
+<span class="fc" id="L88">        ErrorResponseDTO errorResponse = new ErrorResponseDTO(ex, request);</span>
+<span class="fc" id="L89">        return new ResponseEntity&lt;&gt;(errorResponse, HttpStatus.NOT_FOUND);</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

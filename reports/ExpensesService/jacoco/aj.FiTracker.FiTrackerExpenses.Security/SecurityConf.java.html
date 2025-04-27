@@ -8,27 +8,26 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @Configuration
 @EnableWebSecurity
 @Profile(&quot;!integration&quot;)
-<span class="nc" id="L16">public class SecurityConf {</span>
+<span class="nc" id="L15">public class SecurityConf {</span>
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
-<span class="nc" id="L19">        return httpSecurity</span>
-<span class="nc" id="L20">                .authorizeHttpRequests(authorize -&gt; authorize</span>
-<span class="nc" id="L21">                        .requestMatchers(&quot;/actuator/**&quot;).permitAll()</span>
-<span class="nc" id="L22">                        .anyRequest().authenticated()</span>
+<span class="nc" id="L18">        return httpSecurity</span>
+<span class="nc" id="L19">                .authorizeHttpRequests(authorize -&gt; authorize</span>
+<span class="nc" id="L20">                        .requestMatchers(&quot;/actuator/**&quot;).permitAll()</span>
+<span class="nc" id="L21">                        .anyRequest().authenticated()</span>
                 )
-<span class="nc" id="L24">                .oauth2ResourceServer(oauth2 -&gt; oauth2.jwt(Customizer.withDefaults()))</span>
-<span class="nc" id="L25">                .build();</span>
+<span class="nc" id="L23">                .oauth2ResourceServer(oauth2 -&gt; oauth2.jwt(Customizer.withDefaults()))</span>
+<span class="nc" id="L24">                .build();</span>
     }
 
 
     @Bean
     public JwtDecoder jwtDecoder() {
-<span class="nc" id="L31">        return JWTDecode.getDecoder();</span>
+<span class="nc" id="L30">        return JWTDecode.getDecoder();</span>
     }
 
 }

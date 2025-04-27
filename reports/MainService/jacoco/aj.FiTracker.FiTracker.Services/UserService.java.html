@@ -1,19 +1,23 @@
 <?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="pl"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>UserService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">FiTracker</a> &gt; <a href="index.source.html" class="el_package">aj.FiTracker.FiTracker.Services</a> &gt; <span class="el_source">UserService.java</span></div><h1>UserService.java</h1><pre class="source lang-java linenums">package aj.FiTracker.FiTracker.Services;
 
-import aj.FiTracker.FiTracker.DTO.REST.LoginRequest;
-import aj.FiTracker.FiTracker.DTO.REST.RegisterUserRequest;
+import aj.FiTracker.FiTracker.DTO.REST.*;
 import aj.FiTracker.FiTracker.Entities.User;
 import aj.FiTracker.FiTracker.Exceptions.InternalServerException;
 import aj.FiTracker.FiTracker.Exceptions.UserAlreadyExistsException;
 import aj.FiTracker.FiTracker.Exceptions.UserDoesntExistException;
 import aj.FiTracker.FiTracker.Exceptions.UserUnauthorizedException;
+import aj.FiTracker.FiTracker.Models.MemberTemplate;
+import aj.FiTracker.FiTracker.Models.UserImpl;
 import aj.FiTracker.FiTracker.Repositories.UserRepository;
+import aj.FiTracker.FiTracker.Security.JWTClaimsUtil;
 import aj.FiTracker.FiTracker.Security.JWTService;
 import aj.FiTracker.FiTracker.Security.PasswordEncoder;
+import aj.FiTracker.FiTracker.Interfaces.UserInterface;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,93 +31,166 @@ public class UserService {
     private final PasswordEncoder passwordEncoder;
     private final JWTService jwtService;
     private final UserRepository userRepository;
+    private final KafkaProducerService kafkaProducerService;
 
     @Autowired
     public UserService(
             PasswordEncoder passwordEncoder,
             UserRepository userRepository,
-            JWTService jwtService
-<span class="fc" id="L36">    ) {</span>
-<span class="fc" id="L37">        this.logger = LoggerFactory.getLogger(UserService.class);</span>
-<span class="fc" id="L38">        this.passwordEncoder = passwordEncoder;</span>
-<span class="fc" id="L39">        this.userRepository = userRepository;</span>
-<span class="fc" id="L40">        this.jwtService = jwtService;</span>
-<span class="fc" id="L41">    }</span>
+            JWTService jwtService,
+            KafkaProducerService kafkaProducerService
+<span class="fc" id="L42">    ) {</span>
+<span class="fc" id="L43">        this.logger = LoggerFactory.getLogger(UserService.class);</span>
+<span class="fc" id="L44">        this.passwordEncoder = passwordEncoder;</span>
+<span class="fc" id="L45">        this.userRepository = userRepository;</span>
+<span class="fc" id="L46">        this.jwtService = jwtService;</span>
+<span class="fc" id="L47">        this.kafkaProducerService = kafkaProducerService;</span>
+<span class="fc" id="L48">    }</span>
 
     @Transactional
-    public User registerUser(RegisterUserRequest registerUserRequest) {
-<span class="fc" id="L45">        Objects.requireNonNull(registerUserRequest, &quot;RegisterUserRequest cannot be null (programmer error)&quot;);</span>
-<span class="fc" id="L46">        User user = new User(registerUserRequest);</span>
-<span class="fc" id="L47">        logger.info(&quot;Created new User: name={}, login={}&quot;, user.getName(), user.getLogin());</span>
-<span class="fc" id="L48">        user = this.passwordEncoder.encryptPassword(user);</span>
-<span class="fc" id="L49">        logger.info(&quot;Password hashed for User: name={}, login={}&quot;, user.getName(), user.getLogin());</span>
+    public RegisterUserRequestResponse registerUser(RegisterUserRequestRequest registerUserRequest) {
+<span class="fc" id="L52">        Objects.requireNonNull(registerUserRequest, &quot;RegisterUserRequestRequest cannot be null (programmer error)&quot;);</span>
+<span class="fc" id="L53">        User user = new User(registerUserRequest);</span>
+<span class="fc" id="L54">        logger.info(&quot;Created new User: name={}, login={}&quot;, user.getName(), user.getLogin());</span>
+<span class="fc" id="L55">        user = this.passwordEncoder.prepareForRegister(user);</span>
+<span class="fc" id="L56">        logger.info(&quot;Password hashed for User: name={}, login={}&quot;, user.getName(), user.getLogin());</span>
         try {
-<span class="fc" id="L51">            User savedUser = this.userRepository.saveAndFlush(user);</span>
-<span class="fc" id="L52">            logger.info(&quot;User saved successfully: name={}, login={}, userId={}&quot;, user.getName(), user.getLogin(), savedUser.getId());</span>
-<span class="fc" id="L53">            return savedUser;</span>
-<span class="fc" id="L54">        } catch (DataIntegrityViolationException e) {</span>
-<span class="fc" id="L55">            logger.error(&quot;User already exists: name={}, login={}. Error: {}&quot;, user.getName(), user.getLogin(), e.getMessage());</span>
-<span class="fc" id="L56">            throw new UserAlreadyExistsException(e);</span>
-<span class="fc" id="L57">        } catch (Exception e) {</span>
-<span class="fc" id="L58">            logger.error(&quot;Failed to save user: name={}, login={}. Error: {}&quot;, user.getName(), user.getLogin(), e.getMessage());</span>
-<span class="fc" id="L59">            throw new InternalServerException(e);</span>
+<span class="fc" id="L58">            User savedUser = this.userRepository.saveAndFlush(user);</span>
+<span class="fc" id="L59">            logger.info(&quot;User saved successfully: name={}, login={}, userId={}&quot;, user.getName(), user.getLogin(), savedUser.getId());</span>
+<span class="fc" id="L60">            return new RegisterUserRequestResponse(user);</span>
+<span class="fc" id="L61">        } catch (DataIntegrityViolationException e) {</span>
+<span class="fc" id="L62">            logger.error(&quot;User already exists: name={}, login={}. Error: {}&quot;, user.getName(), user.getLogin(), e.getMessage());</span>
+<span class="fc" id="L63">            throw new UserAlreadyExistsException(e);</span>
+<span class="fc" id="L64">        } catch (Exception e) {</span>
+<span class="fc" id="L65">            logger.error(&quot;Failed to save user: name={}, login={}. Error: {}&quot;, user.getName(), user.getLogin(), e.getMessage());</span>
+<span class="fc" id="L66">            throw new InternalServerException(e);</span>
         }
     }
 
     @Transactional(readOnly = true)
-    public User loginUser(LoginRequest loginRequest) {
-<span class="fc" id="L65">        Objects.requireNonNull(loginRequest, &quot;LoginRequest cannot be null (programmer error)&quot;);</span>
-<span class="fc" id="L66">        User userToAuth = new User(loginRequest);</span>
-<span class="fc" id="L67">        logger.info(&quot;Attempting to log in user with login: {}&quot;, userToAuth.getLogin());</span>
+    public LoginResponse loginUser(LoginRequest loginRequest) {
+<span class="fc" id="L72">        Objects.requireNonNull(loginRequest, &quot;LoginRequest cannot be null (programmer error)&quot;);</span>
+<span class="fc" id="L73">        UserInterface userToAuth = new UserImpl(loginRequest);</span>
+<span class="fc" id="L74">        logger.info(&quot;Attempting to log in user with login: {}&quot;, userToAuth.getLogin());</span>
         try {
-<span class="fc" id="L69">            logger.info(&quot;Searching for user in the database: login={}&quot;, userToAuth.getLogin());</span>
-<span class="fc" id="L70">            Optional&lt;User&gt; savedUser = this.userRepository.findOneByLogin(userToAuth.getLogin());</span>
-<span class="fc bfc" id="L71" title="All 2 branches covered.">            if (savedUser.isEmpty()) {</span>
-<span class="fc" id="L72">                logger.warn(&quot;User not found in the database: login={}&quot;, userToAuth.getLogin());</span>
-<span class="fc" id="L73">                throw new UserDoesntExistException(&quot;User with login &quot; + userToAuth.getLogin() + &quot; does not exist.&quot;);</span>
+<span class="fc" id="L76">            logger.info(&quot;Searching for user in the database: login={}&quot;, userToAuth.getLogin());</span>
+<span class="fc" id="L77">            Optional&lt;User&gt; savedUser = this.userRepository.findOneByLogin(userToAuth.getLogin());</span>
+<span class="fc bfc" id="L78" title="All 2 branches covered.">            if (savedUser.isEmpty()) {</span>
+<span class="fc" id="L79">                logger.warn(&quot;User not found in the database: login={}&quot;, userToAuth.getLogin());</span>
+<span class="fc" id="L80">                throw new UserDoesntExistException(&quot;User with login &quot; + userToAuth.getLogin() + &quot; does not exist.&quot;);</span>
             }
-<span class="fc" id="L75">            User user = savedUser.get();</span>
-<span class="fc" id="L76">            logger.info(&quot;User found in the database: login={}, userId={}&quot;, user.getLogin(), user.getId());</span>
-<span class="fc" id="L77">            logger.info(&quot;Verifying password for user: login={}&quot;, user.getLogin());</span>
-<span class="fc bfc" id="L78" title="All 2 branches covered.">            if (!this.passwordEncoder.checkPass(userToAuth, user)) {</span>
-<span class="fc" id="L79">                logger.warn(&quot;Password verification failed for user: login={}&quot;, user.getLogin());</span>
-<span class="fc" id="L80">                throw new UserUnauthorizedException(&quot;Incorrect password for user &quot; + user.getLogin());</span>
+<span class="fc" id="L82">            User user = savedUser.get();</span>
+<span class="fc" id="L83">            logger.info(&quot;User found in the database: login={}, userId={}&quot;, user.getLogin(), user.getId());</span>
+<span class="fc" id="L84">            logger.info(&quot;Verifying password for user: login={}&quot;, user.getLogin());</span>
+<span class="fc bfc" id="L85" title="All 2 branches covered.">            if (!this.passwordEncoder.checkPass(userToAuth, user)) {</span>
+<span class="fc" id="L86">                logger.warn(&quot;Password verification failed for user: login={}&quot;, user.getLogin());</span>
+<span class="fc" id="L87">                throw new UserUnauthorizedException(&quot;Incorrect password for user &quot; + user.getLogin());</span>
             }
-<span class="fc" id="L82">            logger.info(&quot;Password verified successfully for user: login={}. Generating JWT token...&quot;, user.getLogin());</span>
-<span class="fc" id="L83">            user = this.jwtService.generateToken(user);</span>
-<span class="fc" id="L84">            logger.info(&quot;JWT token generated successfully for user: login={}&quot;, user.getLogin());</span>
-<span class="fc" id="L85">            return user;</span>
+<span class="fc" id="L89">            logger.info(&quot;Password verified successfully for user: login={}. Generating JWT token...&quot;, user.getLogin());</span>
+<span class="fc" id="L90">            user = this.jwtService.generateToken(user);</span>
+<span class="fc" id="L91">            logger.info(&quot;JWT token generated successfully for user: login={}&quot;, user.getLogin());</span>
+<span class="fc" id="L92">            return new LoginResponse(user);</span>
 
-<span class="fc" id="L87">        } catch (UserDoesntExistException | UserUnauthorizedException e) {</span>
-<span class="fc" id="L88">            logger.error(&quot;Login failed: {}&quot;, e.getMessage());</span>
-<span class="fc" id="L89">            throw e;</span>
-<span class="fc" id="L90">        } catch (Exception e) {</span>
-<span class="fc" id="L91">            logger.error(&quot;Unexpected error during login for user: login={}. Error: {}&quot;, userToAuth.getLogin(), e.getMessage(), e);</span>
-<span class="fc" id="L92">            throw new InternalServerException(e);</span>
+<span class="fc" id="L94">        } catch (UserDoesntExistException | UserUnauthorizedException e) {</span>
+<span class="fc" id="L95">            logger.error(&quot;Login failed: {}&quot;, e.getMessage());</span>
+<span class="fc" id="L96">            throw e;</span>
+<span class="fc" id="L97">        } catch (Exception e) {</span>
+<span class="fc" id="L98">            logger.error(&quot;Unexpected error during login for user: login={}. Error: {}&quot;, userToAuth.getLogin(), e.getMessage(), e);</span>
+<span class="fc" id="L99">            throw new InternalServerException(e);</span>
         }
     }
 
     @Transactional(readOnly = true)
-    public List&lt;User&gt; findUsersByEmail(String email) {
-<span class="fc" id="L98">        logger.info(&quot;Finding users by email: email={}&quot;, email);</span>
+    public FindUserResponse findUsersByEmail(String email) {
+<span class="fc" id="L105">        logger.info(&quot;Finding users by email: email={}&quot;, email);</span>
         try {
-<span class="fc" id="L100">            String regexp = &quot;^&quot; + email;</span>
-<span class="fc" id="L101">            return this.userRepository.findUsersByEmail(regexp);</span>
-<span class="fc" id="L102">        } catch (Exception e) {</span>
-<span class="fc" id="L103">            logger.error(&quot;Error while finding users by email: email={}. Error: {}&quot;, email, e.getMessage(), e);</span>
-<span class="fc" id="L104">            throw new InternalServerException(e);</span>
+<span class="fc" id="L107">            String regexp = &quot;^&quot; + email;</span>
+<span class="fc" id="L108">             List&lt;UserInterface&gt; userList = this.userRepository.findUsersByEmail(regexp).stream().map(user -&gt; (UserInterface) user).toList();</span>
+
+<span class="fc" id="L110">            return new FindUserResponse(userList);</span>
+<span class="fc" id="L111">        } catch (Exception e) {</span>
+<span class="fc" id="L112">            logger.error(&quot;Error while finding users by email: email={}. Error: {}&quot;, email, e.getMessage(), e);</span>
+<span class="fc" id="L113">            throw new InternalServerException(e);</span>
         }
     }
 
     @Transactional(readOnly = true)
-    public List&lt;User&gt; findUsersByIds(List&lt;Long&gt; ids) {
-<span class="fc" id="L110">        logger.info(&quot;Finding users by IDs: ids={}&quot;, ids);</span>
+    public FindUserResponse findUsersByIds(List&lt;Long&gt; ids) {
+<span class="fc" id="L119">        logger.info(&quot;Finding users by IDs: ids={}&quot;, ids);</span>
         try {
-<span class="fc" id="L112">            return this.userRepository.findUsersByIds(ids);</span>
-<span class="fc" id="L113">        } catch (Exception e) {</span>
-<span class="fc" id="L114">            logger.error(&quot;Error while finding users by IDs: ids={}. Error: {}&quot;, ids, e.getMessage(), e);</span>
-<span class="fc" id="L115">            throw new InternalServerException(e);</span>
+<span class="fc" id="L121">            List&lt;UserInterface&gt; users = this.userRepository.findUsersByIds(ids).stream().map(user -&gt; (UserInterface) user).toList();</span>
+<span class="fc" id="L122">            return new FindUserResponse(users);</span>
+<span class="fc" id="L123">        } catch (Exception e) {</span>
+<span class="fc" id="L124">            logger.error(&quot;Error while finding users by IDs: ids={}. Error: {}&quot;, ids, e.getMessage(), e);</span>
+<span class="fc" id="L125">            throw new InternalServerException(e);</span>
         }
     }
+
+    @Transactional(readOnly = true)
+    public GetUserResponse getUser(long id) {
+<span class="fc" id="L131">        logger.info(&quot;Getting user {}&quot;, id);</span>
+        try {
+<span class="fc" id="L133">            Optional&lt;User&gt; optionalUser = this.userRepository.findOneById(id);</span>
+<span class="fc bfc" id="L134" title="All 2 branches covered.">            if (optionalUser.isEmpty()) {</span>
+<span class="fc" id="L135">                throw new UserDoesntExistException(&quot;Cannot find user &quot; + id);</span>
+            }
+<span class="fc" id="L137">            return new GetUserResponse(optionalUser.get());</span>
+
+<span class="fc" id="L139">        } catch (UserDoesntExistException userDoesntExistException) {</span>
+<span class="fc" id="L140">            logger.error(&quot;Cannot find user with id {}&quot;, id);</span>
+<span class="fc" id="L141">            throw  userDoesntExistException;</span>
+<span class="fc" id="L142">        } catch (Exception e) {</span>
+<span class="fc" id="L143">            logger.error(&quot;Unexpected error {}&quot; , e.getMessage());</span>
+<span class="fc" id="L144">            throw new InternalServerException(e);</span>
+        }
+    }
+
+    @Transactional()
+    public UpdateUserResponse updateUser(UpdateUserRequest userRequest, Authentication authentication) {
+        try {
+<span class="fc" id="L151">            JWTClaimsUtil.JWTClaims jwtClaims = JWTClaimsUtil.getUsernameFromClaims(authentication);</span>
+<span class="fc" id="L152">            Optional&lt;User&gt; optionalUser = this.userRepository.findOneById(jwtClaims.userId());</span>
+<span class="fc bfc" id="L153" title="All 2 branches covered.">            if (optionalUser.isEmpty()) {</span>
+<span class="fc" id="L154">                throw new UserDoesntExistException(&quot;Cannot find user &quot; + jwtClaims.userId());</span>
+            }
+<span class="fc" id="L156">            User user = optionalUser.get();</span>
+<span class="fc" id="L157">            UserInterface userToUpdate = new UserImpl(userRequest);</span>
+<span class="fc bfc" id="L158" title="All 2 branches covered.">            if (!this.passwordEncoder.checkPass(userToUpdate, user)) {</span>
+<span class="fc" id="L159">                throw new UserUnauthorizedException(&quot;Incorrect password for user &quot; + jwtClaims.userId());</span>
+            }
+<span class="fc" id="L161">            user.updateUser(userToUpdate);</span>
+<span class="fc" id="L162">            this.userRepository.save(user);</span>
+<span class="fc" id="L163">            return new UpdateUserResponse(user);</span>
+<span class="fc" id="L164">        } catch (UserDoesntExistException | UserUnauthorizedException exception) {</span>
+<span class="fc" id="L165">            logger.error(&quot;User credentials error {}&quot;,exception.getMessage());</span>
+<span class="fc" id="L166">            throw exception;</span>
+<span class="fc" id="L167">        } catch (Exception e) {</span>
+<span class="fc" id="L168">            logger.error(&quot;Unexpected error {}&quot;, e.getMessage());</span>
+<span class="fc" id="L169">            throw new InternalServerException(e);</span>
+        }
+    }
+
+    @Transactional()
+    public void deleteUser(DeleteUserRequest deleteUserRequest, Authentication authentication) {
+        try {
+<span class="fc" id="L176">            JWTClaimsUtil.JWTClaims jwtClaims = JWTClaimsUtil.getUsernameFromClaims(authentication);</span>
+<span class="fc" id="L177">            Optional&lt;User&gt; optionalUser = this.userRepository.findOneById(jwtClaims.userId());</span>
+<span class="fc bfc" id="L178" title="All 2 branches covered.">            if (optionalUser.isEmpty()) {</span>
+<span class="fc" id="L179">                throw new UserDoesntExistException(&quot;Cannot find user &quot; + jwtClaims.userId());</span>
+            }
+<span class="fc" id="L181">            User user = optionalUser.get();</span>
+<span class="fc" id="L182">            UserInterface userToDelete = new UserImpl(deleteUserRequest, jwtClaims.userId());</span>
+<span class="fc bfc" id="L183" title="All 2 branches covered.">            if (!this.passwordEncoder.checkPass(userToDelete, user)) {</span>
+<span class="fc" id="L184">                throw new UserUnauthorizedException(&quot;Incorrect password for user &quot; + jwtClaims.userId());</span>
+            }
+<span class="fc" id="L186">            this.userRepository.deleteById(jwtClaims.userId());</span>
+<span class="fc" id="L187">            this.kafkaProducerService.sendDeletedMember(new MemberTemplate(userToDelete));</span>
+<span class="fc" id="L188">        } catch (UserDoesntExistException | UserUnauthorizedException exception) {</span>
+<span class="fc" id="L189">            logger.error(&quot;User credentials error {}&quot;,exception.getMessage());</span>
+<span class="fc" id="L190">            throw exception;</span>
+<span class="fc" id="L191">        } catch (Exception e) {</span>
+<span class="fc" id="L192">            throw new InternalServerException(e);</span>
+<span class="fc" id="L193">        }</span>
+<span class="fc" id="L194">    }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

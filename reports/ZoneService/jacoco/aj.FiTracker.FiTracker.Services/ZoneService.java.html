@@ -1,8 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="pl"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ZoneService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">FiTrackerZone</a> &gt; <a href="index.source.html" class="el_package">aj.FiTracker.FiTracker.Services</a> &gt; <span class="el_source">ZoneService.java</span></div><h1>ZoneService.java</h1><pre class="source lang-java linenums">package aj.FiTracker.FiTracker.Services;
 
-import aj.FiTracker.FiTracker.DTO.REST.NewZoneRequest;
-import aj.FiTracker.FiTracker.DTO.REST.RemoveZoneMemberRequest;
-import aj.FiTracker.FiTracker.DTO.REST.UpdateZoneRequest;
+import aj.FiTracker.FiTracker.DTO.REST.*;
 import aj.FiTracker.FiTracker.Documents.Zone;
 import aj.FiTracker.FiTracker.Enums.MemberRole;
 import aj.FiTracker.FiTracker.Exceptions.InternalServerException;
@@ -10,6 +8,7 @@ import aj.FiTracker.FiTracker.Exceptions.ZoneAlreadyExistsException;
 import aj.FiTracker.FiTracker.Exceptions.ZoneDoesntExistException;
 import aj.FiTracker.FiTracker.Factories.MembersFactory;
 import aj.FiTracker.FiTracker.Models.MemberTemplate;
+import aj.FiTracker.FiTracker.Models.MembersTemplate;
 import aj.FiTracker.FiTracker.Repositories.ZoneRepository;
 import aj.FiTracker.FiTracker.Security.JWTClaimsUtil;
 import com.mongodb.DuplicateKeyException;
@@ -30,246 +29,256 @@ import java.util.Optional;
 
 @Component
 public class ZoneService {
-<span class="fc" id="L33">    private final Logger logger = LoggerFactory.getLogger(ZoneService.class);</span>
+<span class="fc" id="L32">    private final Logger logger = LoggerFactory.getLogger(ZoneService.class);</span>
     private final ZoneRepository zoneRepository;
     private final KafkaProducerService kafkaProducerService;
 
     @Autowired
-<span class="fc" id="L38">    public ZoneService(ZoneRepository zoneRepository, KafkaProducerService kafkaProducerService) {</span>
-<span class="fc" id="L39">        logger.info(&quot;Initializing ZoneService.&quot;);</span>
-<span class="fc" id="L40">        this.zoneRepository = zoneRepository;</span>
-<span class="fc" id="L41">        this.kafkaProducerService = kafkaProducerService;</span>
-<span class="fc" id="L42">    }</span>
+<span class="fc" id="L37">    public ZoneService(ZoneRepository zoneRepository, KafkaProducerService kafkaProducerService) {</span>
+<span class="fc" id="L38">        logger.info(&quot;Initializing ZoneService.&quot;);</span>
+<span class="fc" id="L39">        this.zoneRepository = zoneRepository;</span>
+<span class="fc" id="L40">        this.kafkaProducerService = kafkaProducerService;</span>
+<span class="fc" id="L41">    }</span>
 
     @Transactional
-    public Zone addNewZone(NewZoneRequest newZoneRequest, Authentication authentication) {
-<span class="fc" id="L46">        logger.info(&quot;Adding a new zone. User: {}&quot;, authentication.getName());</span>
-<span class="fc" id="L47">        logger.debug(&quot;New zone request details: {}&quot;, newZoneRequest);</span>
+    public NewZoneResponse addNewZone(NewZoneRequest newZoneRequest, Authentication authentication) {
+<span class="fc" id="L45">        logger.info(&quot;Adding a new zone. User: {}&quot;, authentication.getName());</span>
+<span class="fc" id="L46">        logger.debug(&quot;New zone request details: {}&quot;, newZoneRequest);</span>
         try {
-<span class="fc" id="L49">            JWTClaimsUtil.JWTClaims claims = JWTClaimsUtil.getUsernameFromClaims(authentication);</span>
-<span class="fc" id="L50">            Zone zone = new Zone(newZoneRequest, claims.userId());</span>
-<span class="fc" id="L51">            zone.addMember(new Zone.Member(claims.userId(), MemberRole.ADMIN, claims.name()));</span>
-<span class="fc" id="L52">            zone = this.zoneRepository.save(zone);</span>
-<span class="fc" id="L53">            logger.info(&quot;Successfully saved new zone with ID: {}&quot;, zone.getId());</span>
-<span class="fc" id="L54">            MemberTemplate memberTemplate = MembersFactory.createMemberTemplate(zone);</span>
-<span class="fc" id="L55">            this.kafkaProducerService.sendNewMembers(memberTemplate);</span>
-<span class="fc" id="L56">            logger.info(&quot;Sent new members event to Kafka for zone ID: {}&quot;, zone.getId());</span>
-<span class="fc" id="L57">            return zone;</span>
-<span class="fc" id="L58">        } catch (DuplicateKeyException exception) {</span>
-<span class="fc" id="L59">            logger.warn(&quot;Attempted to create a zone that already exists.&quot;, exception);</span>
-<span class="fc" id="L60">            throw new ZoneAlreadyExistsException(exception);</span>
-<span class="fc" id="L61">        } catch (Exception e) {</span>
-<span class="fc" id="L62">            logger.error(&quot;An internal server error occurred while adding a new zone.&quot;, e);</span>
-<span class="fc" id="L63">            throw new InternalServerException(e);</span>
+<span class="fc" id="L48">            JWTClaimsUtil.JWTClaims claims = JWTClaimsUtil.getUsernameFromClaims(authentication);</span>
+<span class="fc" id="L49">            Zone zone = new Zone(newZoneRequest, claims.userId());</span>
+<span class="fc" id="L50">            zone.addMember(new Zone.Member(claims.userId(), MemberRole.ADMIN, claims.name()));</span>
+<span class="fc" id="L51">            zone = this.zoneRepository.save(zone);</span>
+<span class="fc" id="L52">            logger.info(&quot;Successfully saved new zone with ID: {}&quot;, zone.getId());</span>
+<span class="fc" id="L53">            MembersTemplate membersTemplate = MembersFactory.createMemberTemplate(zone);</span>
+<span class="fc" id="L54">            this.kafkaProducerService.sendNewMembers(membersTemplate);</span>
+<span class="fc" id="L55">            logger.info(&quot;Sent new members event to Kafka for zone ID: {}&quot;, zone.getId());</span>
+<span class="fc" id="L56">            return new NewZoneResponse(zone);</span>
+<span class="fc" id="L57">        } catch (DuplicateKeyException exception) {</span>
+<span class="fc" id="L58">            logger.warn(&quot;Attempted to create a zone that already exists.&quot;, exception);</span>
+<span class="fc" id="L59">            throw new ZoneAlreadyExistsException(exception);</span>
+<span class="fc" id="L60">        } catch (Exception e) {</span>
+<span class="fc" id="L61">            logger.error(&quot;An internal server error occurred while adding a new zone.&quot;, e);</span>
+<span class="fc" id="L62">            throw new InternalServerException(e);</span>
         }
     }
 
     @Transactional(readOnly = true)
-    public Zone getExistingZoneById(String id, Authentication authentication) {
-<span class="fc" id="L69">        logger.info(&quot;Getting zone with ID: {}. User: {}&quot;, id, authentication.getName());</span>
+    public GetZoneResponse getExistingZoneById(String id, Authentication authentication) {
+<span class="fc" id="L68">        logger.info(&quot;Getting zone with ID: {}. User: {}&quot;, id, authentication.getName());</span>
         try {
-<span class="fc" id="L71">            JWTClaimsUtil.JWTClaims claims = JWTClaimsUtil.getUsernameFromClaims(authentication);</span>
+<span class="fc" id="L70">            JWTClaimsUtil.JWTClaims claims = JWTClaimsUtil.getUsernameFromClaims(authentication);</span>
 
-<span class="fc" id="L73">            Optional&lt;Zone&gt; zone = this.zoneRepository.findByIdAndDeletedAtIsNullAndMembersList_UserId(id, claims.userId());</span>
-<span class="fc bfc" id="L74" title="All 2 branches covered.">            if (zone.isEmpty()) {</span>
-<span class="fc" id="L75">                logger.warn(&quot;Zone with ID: {} not found for user: {}.&quot;, id, authentication.getName());</span>
-<span class="fc" id="L76">                throw new ZoneDoesntExistException(&quot;Zone does not exist&quot;);</span>
+<span class="fc" id="L72">            Optional&lt;Zone&gt; zone = this.zoneRepository.findByIdAndDeletedAtIsNullAndMembersList_UserId(id, claims.userId());</span>
+<span class="fc bfc" id="L73" title="All 2 branches covered.">            if (zone.isEmpty()) {</span>
+<span class="fc" id="L74">                logger.warn(&quot;Zone with ID: {} not found for user: {}.&quot;, id, authentication.getName());</span>
+<span class="fc" id="L75">                throw new ZoneDoesntExistException(&quot;Zone does not exist&quot;);</span>
             }
-<span class="fc" id="L78">            logger.info(&quot;Successfully retrieved zone with ID: {}.&quot;, zone.get().getId());</span>
-<span class="fc" id="L79">            return zone.get();</span>
-<span class="fc" id="L80">        } catch (ZoneDoesntExistException e) {</span>
-<span class="fc" id="L81">            logger.warn(&quot;Requested zone does not exist: {}&quot;, e.getMessage());</span>
-<span class="fc" id="L82">            throw e;</span>
-<span class="fc" id="L83">        } catch (Exception e) {</span>
-<span class="fc" id="L84">            logger.error(&quot;An internal server error occurred while retrieving zone with ID: {}.&quot;, id, e);</span>
-<span class="fc" id="L85">            throw new InternalServerException(e);</span>
+<span class="fc" id="L77">            logger.info(&quot;Successfully retrieved zone with ID: {}.&quot;, zone.get().getId());</span>
+<span class="fc" id="L78">            return new GetZoneResponse(zone.get());</span>
+<span class="fc" id="L79">        } catch (ZoneDoesntExistException e) {</span>
+<span class="fc" id="L80">            logger.warn(&quot;Requested zone does not exist: {}&quot;, e.getMessage());</span>
+<span class="fc" id="L81">            throw e;</span>
+<span class="fc" id="L82">        } catch (Exception e) {</span>
+<span class="fc" id="L83">            logger.error(&quot;An internal server error occurred while retrieving zone with ID: {}.&quot;, id, e);</span>
+<span class="fc" id="L84">            throw new InternalServerException(e);</span>
         }
     }
 
     @Transactional()
-    public Zone removeZoneById(String id, Authentication authentication) {
-<span class="fc" id="L91">        logger.info(&quot;Removing zone with ID: {}. User: {}&quot;, id, authentication.getName());</span>
+    public DeletedZoneResponse removeZoneById(String id, Authentication authentication) {
+<span class="fc" id="L90">        logger.info(&quot;Removing zone with ID: {}. User: {}&quot;, id, authentication.getName());</span>
         try {
-<span class="fc" id="L93">            JWTClaimsUtil.JWTClaims claims = JWTClaimsUtil.getUsernameFromClaims(authentication);</span>
+<span class="fc" id="L92">            JWTClaimsUtil.JWTClaims claims = JWTClaimsUtil.getUsernameFromClaims(authentication);</span>
 
-<span class="fc" id="L95">            Optional&lt;Zone&gt; zone = this.zoneRepository.findByIdAndDeletedAtIsNullAndMembersList_UserId(id, claims.userId());</span>
-<span class="fc bfc" id="L96" title="All 2 branches covered.">            if (zone.isEmpty()) {</span>
-<span class="fc" id="L97">                logger.warn(&quot;Cannot delete zone with ID: {}. Zone not found for user: {}.&quot;, id, authentication.getName());</span>
-<span class="fc" id="L98">                throw new ZoneDoesntExistException(&quot;Zone does not exist&quot;);</span>
+<span class="fc" id="L94">            Optional&lt;Zone&gt; zone = this.zoneRepository.findByIdAndDeletedAtIsNullAndMembersList_UserId(id, claims.userId());</span>
+<span class="fc bfc" id="L95" title="All 2 branches covered.">            if (zone.isEmpty()) {</span>
+<span class="fc" id="L96">                logger.warn(&quot;Cannot delete zone with ID: {}. Zone not found for user: {}.&quot;, id, authentication.getName());</span>
+<span class="fc" id="L97">                throw new ZoneDoesntExistException(&quot;Zone does not exist&quot;);</span>
             }
-<span class="fc" id="L100">            Zone zoneDocument = zone.get();</span>
-<span class="fc" id="L101">            zoneDocument.setDeletedAt(LocalDateTime.now());</span>
-<span class="fc" id="L102">            this.zoneRepository.save(zoneDocument);</span>
-<span class="fc" id="L103">            logger.info(&quot;Successfully marked zone with ID: {} as deleted.&quot;, zoneDocument.getId());</span>
-<span class="fc" id="L104">            return zoneDocument;</span>
+<span class="fc" id="L99">            Zone zoneDocument = zone.get();</span>
+<span class="fc" id="L100">            zoneDocument.setDeletedAt(LocalDateTime.now());</span>
+<span class="fc" id="L101">            this.zoneRepository.save(zoneDocument);</span>
+<span class="fc" id="L102">            logger.info(&quot;Successfully marked zone with ID: {} as deleted.&quot;, zoneDocument.getId());</span>
+<span class="fc" id="L103">            return new DeletedZoneResponse(zoneDocument);</span>
 
-<span class="fc" id="L106">        } catch (ZoneDoesntExistException e) {</span>
-<span class="fc" id="L107">            logger.warn(&quot;Attempted to delete a non-existent zone: {}&quot;, e.getMessage());</span>
-<span class="fc" id="L108">            throw e;</span>
-<span class="nc" id="L109">        } catch (Exception e) {</span>
-<span class="nc" id="L110">            logger.error(&quot;An internal server error occurred while removing zone with ID: {}.&quot;, id, e);</span>
-<span class="nc" id="L111">            throw new InternalServerException(e);</span>
+<span class="fc" id="L105">        } catch (ZoneDoesntExistException e) {</span>
+<span class="fc" id="L106">            logger.warn(&quot;Attempted to delete a non-existent zone: {}&quot;, e.getMessage());</span>
+<span class="fc" id="L107">            throw e;</span>
+<span class="nc" id="L108">        } catch (Exception e) {</span>
+<span class="nc" id="L109">            logger.error(&quot;An internal server error occurred while removing zone with ID: {}.&quot;, id, e);</span>
+<span class="nc" id="L110">            throw new InternalServerException(e);</span>
         }
     }
 
     @Transactional()
-    public Zone removeZoneMember(String id, RemoveZoneMemberRequest removeZoneMemberRequest, Authentication authentication) {
-<span class="fc" id="L117">        logger.info(&quot;Removing member(s) from zone with ID: {}. User: {}&quot;, id, authentication.getName());</span>
-<span class="fc" id="L118">        logger.debug(&quot;Remove member request details: {}&quot;, removeZoneMemberRequest);</span>
+    public UpdateZoneResponse removeZoneMember(String id, RemoveZoneMemberRequest removeZoneMemberRequest, Authentication authentication) {
+<span class="fc" id="L116">        logger.info(&quot;Removing member(s) from zone with ID: {}. User: {}&quot;, id, authentication.getName());</span>
+<span class="fc" id="L117">        logger.debug(&quot;Remove member request details: {}&quot;, removeZoneMemberRequest);</span>
         try {
-<span class="fc" id="L120">            JWTClaimsUtil.JWTClaims claims = JWTClaimsUtil.getUsernameFromClaims(authentication);</span>
+<span class="fc" id="L119">            JWTClaimsUtil.JWTClaims claims = JWTClaimsUtil.getUsernameFromClaims(authentication);</span>
 
-<span class="fc" id="L122">            Optional&lt;Zone&gt; zone = this.zoneRepository.findByIdAndOwnerIdAndDeletedAtIsNull(id, claims.userId());</span>
-<span class="fc bfc" id="L123" title="All 2 branches covered.">            if (zone.isEmpty()) {</span>
-<span class="fc" id="L124">                logger.warn(&quot;Cannot remove member(s) from zone with ID: {}. Zone not found or user is not the owner.&quot;, id, authentication.getName());</span>
-<span class="fc" id="L125">                throw new ZoneDoesntExistException(&quot;Zone does not exist&quot;);</span>
+<span class="fc" id="L121">            Optional&lt;Zone&gt; zone = this.zoneRepository.findByIdAndOwnerIdAndDeletedAtIsNull(id, claims.userId());</span>
+<span class="fc bfc" id="L122" title="All 2 branches covered.">            if (zone.isEmpty()) {</span>
+<span class="fc" id="L123">                logger.warn(&quot;Cannot remove member(s) from zone with ID: {}. Zone not found or user is not the owner.&quot;, id, authentication.getName());</span>
+<span class="fc" id="L124">                throw new ZoneDoesntExistException(&quot;Zone does not exist&quot;);</span>
             }
-<span class="fc" id="L127">            Zone zoneDocument = zone.get();</span>
-<span class="fc" id="L128">            Zone updatedZone = this.removeMembers(zoneDocument, removeZoneMemberRequest);</span>
-<span class="fc" id="L129">            this.zoneRepository.save(updatedZone);</span>
-<span class="fc" id="L130">            logger.info(&quot;Successfully removed member(s) from zone with ID: {}.&quot;, zoneDocument.getId());</span>
-<span class="fc" id="L131">            MemberTemplate memberTemplate = MembersFactory.createMemberTemplate(removeZoneMemberRequest);</span>
-<span class="fc" id="L132">            this.kafkaProducerService.sendDeletedMembers(memberTemplate);</span>
-<span class="fc" id="L133">            logger.info(&quot;Sent deleted members event to Kafka for zone ID: {}.&quot;, zoneDocument.getId());</span>
-<span class="fc" id="L134">            return zoneDocument;</span>
+<span class="fc" id="L126">            Zone zoneDocument = zone.get();</span>
+<span class="fc" id="L127">            Zone updatedZone = this.removeMembers(zoneDocument, removeZoneMemberRequest);</span>
+<span class="fc" id="L128">            this.zoneRepository.save(updatedZone);</span>
+<span class="fc" id="L129">            logger.info(&quot;Successfully removed member(s) from zone with ID: {}.&quot;, zoneDocument.getId());</span>
+<span class="fc" id="L130">            MembersTemplate membersTemplate = MembersFactory.createMemberTemplate(removeZoneMemberRequest);</span>
+<span class="fc" id="L131">            this.kafkaProducerService.sendDeletedMembers(membersTemplate);</span>
+<span class="fc" id="L132">            logger.info(&quot;Sent deleted members event to Kafka for zone ID: {}.&quot;, zoneDocument.getId());</span>
+<span class="fc" id="L133">            return new UpdateZoneResponse(zoneDocument);</span>
 
-<span class="fc" id="L136">        } catch (ZoneDoesntExistException e) {</span>
-<span class="fc" id="L137">            logger.warn(&quot;Attempted to remove member(s) from a non-existent zone: {}&quot;, e.getMessage());</span>
-<span class="fc" id="L138">            throw e;</span>
-<span class="nc" id="L139">        } catch (Exception e) {</span>
-<span class="nc" id="L140">            logger.error(&quot;An internal server error occurred while removing member(s) from zone with ID: {}.&quot;, id, e);</span>
-<span class="nc" id="L141">            throw new InternalServerException(e);</span>
+<span class="fc" id="L135">        } catch (ZoneDoesntExistException e) {</span>
+<span class="fc" id="L136">            logger.warn(&quot;Attempted to remove member(s) from a non-existent zone: {}&quot;, e.getMessage());</span>
+<span class="fc" id="L137">            throw e;</span>
+<span class="nc" id="L138">        } catch (Exception e) {</span>
+<span class="nc" id="L139">            logger.error(&quot;An internal server error occurred while removing member(s) from zone with ID: {}.&quot;, id, e);</span>
+<span class="nc" id="L140">            throw new InternalServerException(e);</span>
         }
     }
 
     @Transactional
-    public Zone updateZone(String id, Authentication authentication, UpdateZoneRequest updateZoneRequest) {
-<span class="fc" id="L147">        logger.info(&quot;Updating zone with ID: {}. User: {}&quot;, id, authentication.getName());</span>
-<span class="fc" id="L148">        logger.debug(&quot;Update zone request details: {}&quot;, updateZoneRequest);</span>
+    public void removeMemberFromAllZone(MemberTemplate memberTemplate) {
         try {
-<span class="fc" id="L150">            JWTClaimsUtil.JWTClaims claims = JWTClaimsUtil.getUsernameFromClaims(authentication);</span>
-<span class="fc" id="L151">            MemberTemplate memberTemplateToAdd = new MemberTemplate(id);</span>
-<span class="fc" id="L152">            MemberTemplate memberTemplateToRemove = new MemberTemplate(id);</span>
-<span class="fc" id="L153">            Optional&lt;Zone&gt; zone = this.zoneRepository.findByIdAndDeletedAtIsNullAndMembersList_UserId(id, claims.userId());</span>
-<span class="fc bfc" id="L154" title="All 2 branches covered.">            if (zone.isEmpty()) {</span>
-<span class="fc" id="L155">                logger.warn(&quot;Cannot update zone with ID: {}. Zone not found for user: {}.&quot;, id, authentication.getName());</span>
-<span class="fc" id="L156">                throw new ZoneDoesntExistException(&quot;Zone does not exist&quot;);</span>
-            }
-<span class="fc" id="L158">            List&lt;Zone.Member&gt; membersToAdd = new ArrayList&lt;&gt;();</span>
-<span class="fc" id="L159">            List&lt;Zone.Member&gt; membersToRemove = new ArrayList&lt;&gt;();</span>
-<span class="fc" id="L160">            Zone zoneDocument = zone.get();</span>
-<span class="pc bpc" id="L161" title="1 of 2 branches missed.">            if (!updateZoneRequest.getZoneName().isEmpty()) {</span>
-<span class="fc" id="L162">                logger.info(&quot;Updating zone name for ID: {} to: {}&quot;, id, updateZoneRequest.getZoneName());</span>
-<span class="fc" id="L163">                zoneDocument.setName(updateZoneRequest.getZoneName());</span>
-            }
-<span class="pc bpc" id="L165" title="1 of 2 branches missed.">            if (!updateZoneRequest.getZoneDescription().isEmpty()) {</span>
-<span class="fc" id="L166">                logger.info(&quot;Updating zone description for ID: {}&quot;, id);</span>
-<span class="fc" id="L167">                zoneDocument.setDescription(updateZoneRequest.getZoneDescription());</span>
-            }
-<span class="pc bpc" id="L169" title="1 of 4 branches missed.">            if (updateZoneRequest.getMembersList() != null &amp;&amp; !updateZoneRequest.getMembersList().isEmpty()) {</span>
-<span class="fc" id="L170">                logger.info(&quot;Updating members list for zone ID: {}.&quot;, id);</span>
-<span class="fc" id="L171">                zoneDocument = this.updateMembers(zoneDocument, updateZoneRequest, membersToAdd, membersToRemove);</span>
-<span class="fc" id="L172">                logger.debug(&quot;Members to add: {}&quot;, membersToAdd);</span>
-            }
-<span class="fc" id="L174">            this.zoneRepository.save(zoneDocument);</span>
-<span class="fc" id="L175">            logger.info(&quot;Successfully updated zone with ID: {}.&quot;, zoneDocument.getId());</span>
-<span class="fc bfc" id="L176" title="All 2 branches covered.">            if (!membersToAdd.isEmpty()) {</span>
-<span class="fc" id="L177">                memberTemplateToAdd.addMembers(membersToAdd);</span>
+<span class="fc" id="L147">            this.zoneRepository.pullMemberFromAllZones(memberTemplate.userId());</span>
+<span class="fc" id="L148">            this.zoneRepository.deleteZonesWithOneMember();</span>
+<span class="nc" id="L149">        } catch (Exception e) {</span>
+<span class="nc" id="L150">            throw new InternalServerException(e);</span>
+<span class="fc" id="L151">        }</span>
+<span class="fc" id="L152">    }</span>
 
-<span class="fc" id="L179">                this.kafkaProducerService.sendNewMembers(memberTemplateToAdd);</span>
-<span class="fc" id="L180">                logger.info(&quot;Sent new members event to Kafka for zone ID: {}.&quot;, zoneDocument.getId());</span>
+    @Transactional
+    public UpdateZoneResponse updateZone(String id, Authentication authentication, UpdateZoneRequest updateZoneRequest) {
+<span class="fc" id="L156">        logger.info(&quot;Updating zone with ID: {}. User: {}&quot;, id, authentication.getName());</span>
+<span class="fc" id="L157">        logger.debug(&quot;Update zone request details: {}&quot;, updateZoneRequest);</span>
+        try {
+<span class="fc" id="L159">            JWTClaimsUtil.JWTClaims claims = JWTClaimsUtil.getUsernameFromClaims(authentication);</span>
+<span class="fc" id="L160">            MembersTemplate membersTemplateToAdd = new MembersTemplate(id);</span>
+<span class="fc" id="L161">            MembersTemplate membersTemplateToRemove = new MembersTemplate(id);</span>
+<span class="fc" id="L162">            Optional&lt;Zone&gt; zone = this.zoneRepository.findByIdAndDeletedAtIsNullAndMembersList_UserId(id, claims.userId());</span>
+<span class="fc bfc" id="L163" title="All 2 branches covered.">            if (zone.isEmpty()) {</span>
+<span class="fc" id="L164">                logger.warn(&quot;Cannot update zone with ID: {}. Zone not found for user: {}.&quot;, id, authentication.getName());</span>
+<span class="fc" id="L165">                throw new ZoneDoesntExistException(&quot;Zone does not exist&quot;);</span>
             }
-<span class="fc bfc" id="L182" title="All 2 branches covered.">            if (!membersToRemove.isEmpty()) {</span>
-<span class="fc" id="L183">                memberTemplateToRemove.addMembers(membersToRemove);</span>
-<span class="fc" id="L184">                this.kafkaProducerService.sendDeletedMembers(memberTemplateToRemove);</span>
-<span class="fc" id="L185">                logger.info(&quot;Sent members to remove event to Kafka for zone ID: {}.&quot;, zoneDocument.getId());</span>
+<span class="fc" id="L167">            List&lt;Zone.Member&gt; membersToAdd = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L168">            List&lt;Zone.Member&gt; membersToRemove = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L169">            Zone zoneDocument = zone.get();</span>
+<span class="pc bpc" id="L170" title="1 of 2 branches missed.">            if (!updateZoneRequest.getZoneName().isEmpty()) {</span>
+<span class="fc" id="L171">                logger.info(&quot;Updating zone name for ID: {} to: {}&quot;, id, updateZoneRequest.getZoneName());</span>
+<span class="fc" id="L172">                zoneDocument.setName(updateZoneRequest.getZoneName());</span>
+            }
+<span class="pc bpc" id="L174" title="1 of 2 branches missed.">            if (!updateZoneRequest.getZoneDescription().isEmpty()) {</span>
+<span class="fc" id="L175">                logger.info(&quot;Updating zone description for ID: {}&quot;, id);</span>
+<span class="fc" id="L176">                zoneDocument.setDescription(updateZoneRequest.getZoneDescription());</span>
+            }
+<span class="pc bpc" id="L178" title="1 of 4 branches missed.">            if (updateZoneRequest.getMembersList() != null &amp;&amp; !updateZoneRequest.getMembersList().isEmpty()) {</span>
+<span class="fc" id="L179">                logger.info(&quot;Updating members list for zone ID: {}.&quot;, id);</span>
+<span class="fc" id="L180">                zoneDocument = this.updateMembers(zoneDocument, updateZoneRequest, membersToAdd, membersToRemove);</span>
+<span class="fc" id="L181">                logger.debug(&quot;Members to add: {}&quot;, membersToAdd);</span>
+            }
+<span class="fc" id="L183">            this.zoneRepository.save(zoneDocument);</span>
+<span class="fc" id="L184">            logger.info(&quot;Successfully updated zone with ID: {}.&quot;, zoneDocument.getId());</span>
+<span class="fc bfc" id="L185" title="All 2 branches covered.">            if (!membersToAdd.isEmpty()) {</span>
+<span class="fc" id="L186">                membersTemplateToAdd.addMembers(membersToAdd);</span>
+
+<span class="fc" id="L188">                this.kafkaProducerService.sendNewMembers(membersTemplateToAdd);</span>
+<span class="fc" id="L189">                logger.info(&quot;Sent new members event to Kafka for zone ID: {}.&quot;, zoneDocument.getId());</span>
+            }
+<span class="fc bfc" id="L191" title="All 2 branches covered.">            if (!membersToRemove.isEmpty()) {</span>
+<span class="fc" id="L192">                membersTemplateToRemove.addMembers(membersToRemove);</span>
+<span class="fc" id="L193">                this.kafkaProducerService.sendDeletedMembers(membersTemplateToRemove);</span>
+<span class="fc" id="L194">                logger.info(&quot;Sent members to remove event to Kafka for zone ID: {}.&quot;, zoneDocument.getId());</span>
 
             }
-<span class="fc" id="L188">            return zoneDocument;</span>
+<span class="fc" id="L197">            return new UpdateZoneResponse(zoneDocument);</span>
 
-<span class="fc" id="L190">        } catch (ZoneDoesntExistException e) {</span>
-<span class="fc" id="L191">            logger.warn(&quot;Attempted to update a non-existent zone: {}&quot;, e.getMessage());</span>
-<span class="fc" id="L192">            throw e;</span>
-<span class="nc" id="L193">        } catch (Exception e) {</span>
-<span class="nc" id="L194">            logger.error(&quot;An internal server error occurred while updating zone with ID: {}.&quot;, id, e);</span>
-<span class="nc" id="L195">            throw new InternalServerException(e);</span>
+<span class="fc" id="L199">        } catch (ZoneDoesntExistException e) {</span>
+<span class="fc" id="L200">            logger.warn(&quot;Attempted to update a non-existent zone: {}&quot;, e.getMessage());</span>
+<span class="fc" id="L201">            throw e;</span>
+<span class="nc" id="L202">        } catch (Exception e) {</span>
+<span class="nc" id="L203">            logger.error(&quot;An internal server error occurred while updating zone with ID: {}.&quot;, id, e);</span>
+<span class="nc" id="L204">            throw new InternalServerException(e);</span>
         }
     }
 
     @Transactional(readOnly = true)
-    public List&lt;Zone&gt; getAllZones(Authentication authentication) {
-<span class="fc" id="L201">        logger.info(&quot;Getting all zones for user: {}.&quot;, authentication.getName());</span>
+    public ZonesResponse getAllZones(Authentication authentication) {
+<span class="fc" id="L210">        logger.info(&quot;Getting all zones for user: {}.&quot;, authentication.getName());</span>
         try {
-<span class="fc" id="L203">            JWTClaimsUtil.JWTClaims claims = JWTClaimsUtil.getUsernameFromClaims(authentication);</span>
+<span class="fc" id="L212">            JWTClaimsUtil.JWTClaims claims = JWTClaimsUtil.getUsernameFromClaims(authentication);</span>
 
-<span class="fc" id="L205">            List&lt;Zone&gt; zones = this.zoneRepository.findByDeletedAtIsNullAndMembersList_UserId(claims.userId());</span>
-<span class="fc" id="L206">            logger.info(&quot;Successfully retrieved {} zones for user: {}.&quot;, zones.size(), authentication.getName());</span>
-<span class="fc" id="L207">            return zones;</span>
-<span class="fc" id="L208">        } catch (Exception e) {</span>
-<span class="fc" id="L209">            logger.error(&quot;An internal server error occurred while retrieving all zones for user: {}.&quot;, authentication.getName(), e);</span>
-<span class="fc" id="L210">            throw new InternalServerException(e);</span>
+<span class="fc" id="L214">            List&lt;Zone&gt; zones = this.zoneRepository.findByDeletedAtIsNullAndMembersList_UserId(claims.userId());</span>
+<span class="fc" id="L215">            logger.info(&quot;Successfully retrieved {} zones for user: {}.&quot;, zones.size(), authentication.getName());</span>
+<span class="fc" id="L216">            return new ZonesResponse(zones);</span>
+<span class="fc" id="L217">        } catch (Exception e) {</span>
+<span class="fc" id="L218">            logger.error(&quot;An internal server error occurred while retrieving all zones for user: {}.&quot;, authentication.getName(), e);</span>
+<span class="fc" id="L219">            throw new InternalServerException(e);</span>
         }
     }
 
     @Transactional(readOnly = true)
-    public List&lt;Zone&gt; getLastFourZones(Authentication authentication) {
-<span class="fc" id="L216">        logger.info(&quot;Getting the last four zones for user: {}.&quot;, authentication.getName());</span>
+    public ZonesResponse getLastFourZones(Authentication authentication) {
+<span class="fc" id="L225">        logger.info(&quot;Getting the last four zones for user: {}.&quot;, authentication.getName());</span>
         try {
-<span class="fc" id="L218">            JWTClaimsUtil.JWTClaims claims = JWTClaimsUtil.getUsernameFromClaims(authentication);</span>
-<span class="fc" id="L219">            Pageable pageable = PageRequest.of(0, 4, Sort.by(Sort.Direction.DESC, &quot;createdAt&quot;));</span>
+<span class="fc" id="L227">            JWTClaimsUtil.JWTClaims claims = JWTClaimsUtil.getUsernameFromClaims(authentication);</span>
+<span class="fc" id="L228">            Pageable pageable = PageRequest.of(0, 4, Sort.by(Sort.Direction.DESC, &quot;createdAt&quot;));</span>
 
-<span class="fc" id="L221">            List&lt;Zone&gt; zones = this.zoneRepository.findByDeletedAtIsNullAndMembersList_UserId(claims.userId(), pageable);</span>
-<span class="fc" id="L222">            logger.info(&quot;Successfully retrieved the last {} zones for user: {}.&quot;, zones.size(), authentication.getName());</span>
-<span class="fc" id="L223">            return zones;</span>
-<span class="nc" id="L224">        } catch (Exception e) {</span>
-<span class="nc" id="L225">            logger.error(&quot;An internal server error occurred while retrieving the last four zones for user: {}.&quot;, authentication.getName(), e);</span>
-<span class="nc" id="L226">            throw new InternalServerException(e);</span>
+<span class="fc" id="L230">            List&lt;Zone&gt; zones = this.zoneRepository.findByDeletedAtIsNullAndMembersList_UserId(claims.userId(), pageable);</span>
+<span class="fc" id="L231">            logger.info(&quot;Successfully retrieved the last {} zones for user: {}.&quot;, zones.size(), authentication.getName());</span>
+<span class="fc" id="L232">            return new ZonesResponse(zones);</span>
+<span class="nc" id="L233">        } catch (Exception e) {</span>
+<span class="nc" id="L234">            logger.error(&quot;An internal server error occurred while retrieving the last four zones for user: {}.&quot;, authentication.getName(), e);</span>
+<span class="nc" id="L235">            throw new InternalServerException(e);</span>
         }
     }
 
     private Zone removeMembers(Zone existingZone, RemoveZoneMemberRequest removeZoneMemberRequest) {
-<span class="fc" id="L231">        logger.info(&quot;Removing members from zone ID: {}. Number of members to remove: {}&quot;, existingZone.getId(), removeZoneMemberRequest.getMembersList().size());</span>
-<span class="fc bfc" id="L232" title="All 2 branches covered.">        for (Zone.Member memberToRemove : removeZoneMemberRequest.getMembersList()) {</span>
-<span class="fc bfc" id="L233" title="All 2 branches covered.">            existingZone.getMembersList().removeIf(existingMember -&gt; memberToRemove.getUserId() == existingMember.getUserId());</span>
-<span class="fc" id="L234">            logger.debug(&quot;Removed member with user ID: {} from zone ID: {}&quot;, memberToRemove.getUserId(), existingZone.getId());</span>
-<span class="fc" id="L235">        }</span>
-<span class="fc" id="L236">        return existingZone;</span>
+<span class="fc" id="L240">        logger.info(&quot;Removing members from zone ID: {}. Number of members to remove: {}&quot;, existingZone.getId(), removeZoneMemberRequest.getMembersList().size());</span>
+<span class="fc bfc" id="L241" title="All 2 branches covered.">        for (Zone.Member memberToRemove : removeZoneMemberRequest.getMembersList()) {</span>
+<span class="fc bfc" id="L242" title="All 2 branches covered.">            existingZone.getMembersList().removeIf(existingMember -&gt; memberToRemove.getUserId() == existingMember.getUserId());</span>
+<span class="fc" id="L243">            logger.debug(&quot;Removed member with user ID: {} from zone ID: {}&quot;, memberToRemove.getUserId(), existingZone.getId());</span>
+<span class="fc" id="L244">        }</span>
+<span class="fc" id="L245">        return existingZone;</span>
     }
 
     private Zone updateMembers(Zone existingZone, UpdateZoneRequest updateZone, List&lt;Zone.Member&gt; membersToAdd, List&lt;Zone.Member&gt; membersToRemove) {
-<span class="fc" id="L240">        logger.info(&quot;Updating members for zone ID: {}. Number of members to add: {}&quot;, existingZone.getId(), updateZone.getMembersList().size());</span>
-<span class="fc" id="L241">        logger.debug(&quot;Members to add to zone ID {}: {}&quot;, existingZone.getId(), membersToAdd);</span>
-<span class="fc" id="L242">        List&lt;Zone.Member&gt; currentMembers = new ArrayList&lt;&gt;(existingZone.getMembersList());</span>
-<span class="fc bfc" id="L243" title="All 2 branches covered.">        for (Zone.Member existingMember : currentMembers) {</span>
-<span class="fc" id="L244">            boolean found = false;</span>
-<span class="fc bfc" id="L245" title="All 2 branches covered.">            for (Zone.Member memberToAdd : updateZone.getMembersList()) {</span>
-<span class="fc bfc" id="L246" title="All 2 branches covered.">                if (existingMember.getUserId() == memberToAdd.getUserId()) {</span>
-<span class="fc" id="L247">                    found = true;</span>
-<span class="fc" id="L248">                    break;</span>
+<span class="fc" id="L249">        logger.info(&quot;Updating members for zone ID: {}. Number of members to add: {}&quot;, existingZone.getId(), updateZone.getMembersList().size());</span>
+<span class="fc" id="L250">        logger.debug(&quot;Members to add to zone ID {}: {}&quot;, existingZone.getId(), membersToAdd);</span>
+<span class="fc" id="L251">        List&lt;Zone.Member&gt; currentMembers = new ArrayList&lt;&gt;(existingZone.getMembersList());</span>
+<span class="fc bfc" id="L252" title="All 2 branches covered.">        for (Zone.Member existingMember : currentMembers) {</span>
+<span class="fc" id="L253">            boolean found = false;</span>
+<span class="fc bfc" id="L254" title="All 2 branches covered.">            for (Zone.Member memberToAdd : updateZone.getMembersList()) {</span>
+<span class="fc bfc" id="L255" title="All 2 branches covered.">                if (existingMember.getUserId() == memberToAdd.getUserId()) {</span>
+<span class="fc" id="L256">                    found = true;</span>
+<span class="fc" id="L257">                    break;</span>
                 }
-<span class="fc" id="L250">            }</span>
-<span class="fc bfc" id="L251" title="All 2 branches covered.">            if (!found) {</span>
-<span class="fc" id="L252">                membersToRemove.add(existingMember);</span>
-<span class="fc" id="L253">                logger.debug(&quot;Member with user ID: {} will be removed from zone ID: {}&quot;, existingMember.getUserId(), existingZone.getId());</span>
+<span class="fc" id="L259">            }</span>
+<span class="fc bfc" id="L260" title="All 2 branches covered.">            if (!found) {</span>
+<span class="fc" id="L261">                membersToRemove.add(existingMember);</span>
+<span class="fc" id="L262">                logger.debug(&quot;Member with user ID: {} will be removed from zone ID: {}&quot;, existingMember.getUserId(), existingZone.getId());</span>
             }
-<span class="fc" id="L255">        }</span>
+<span class="fc" id="L264">        }</span>
 
-<span class="fc bfc" id="L257" title="All 2 branches covered.">        for (Zone.Member updateMember : updateZone.getMembersList()) {</span>
-<span class="fc" id="L258">            boolean found = false;</span>
-<span class="fc bfc" id="L259" title="All 2 branches covered.">            for (Zone.Member currentMember : existingZone.getMembersList()) {</span>
-<span class="fc bfc" id="L260" title="All 2 branches covered.">                if (currentMember.getUserId() == updateMember.getUserId()) {</span>
-<span class="fc" id="L261">                    found = true;</span>
-<span class="fc" id="L262">                    break;</span>
+<span class="fc bfc" id="L266" title="All 2 branches covered.">        for (Zone.Member updateMember : updateZone.getMembersList()) {</span>
+<span class="fc" id="L267">            boolean found = false;</span>
+<span class="fc bfc" id="L268" title="All 2 branches covered.">            for (Zone.Member currentMember : existingZone.getMembersList()) {</span>
+<span class="fc bfc" id="L269" title="All 2 branches covered.">                if (currentMember.getUserId() == updateMember.getUserId()) {</span>
+<span class="fc" id="L270">                    found = true;</span>
+<span class="fc" id="L271">                    break;</span>
                 }
-<span class="fc" id="L264">            }</span>
-<span class="fc bfc" id="L265" title="All 2 branches covered.">            if (!found) {</span>
-<span class="fc" id="L266">                membersToAdd.add(updateMember);</span>
-<span class="fc" id="L267">                logger.debug(&quot;Member with user ID: {} will be added to zone ID: {}&quot;, updateMember.getUserId(), existingZone.getId());</span>
+<span class="fc" id="L273">            }</span>
+<span class="fc bfc" id="L274" title="All 2 branches covered.">            if (!found) {</span>
+<span class="fc" id="L275">                membersToAdd.add(updateMember);</span>
+<span class="fc" id="L276">                logger.debug(&quot;Member with user ID: {} will be added to zone ID: {}&quot;, updateMember.getUserId(), existingZone.getId());</span>
 
             }
-<span class="fc" id="L270">        }</span>
-<span class="fc" id="L271">        existingZone.setMembersList(updateZone.getMembersList());</span>
-<span class="fc" id="L272">        return existingZone;</span>
+<span class="fc" id="L279">        }</span>
+<span class="fc" id="L280">        existingZone.setMembersList(updateZone.getMembersList());</span>
+<span class="fc" id="L281">        return existingZone;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

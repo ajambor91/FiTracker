@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="pl"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>FindUserResponse.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">FiTracker</a> &gt; <a href="index.source.html" class="el_package">aj.FiTracker.FiTracker.DTO.REST</a> &gt; <span class="el_source">FindUserResponse.java</span></div><h1>FindUserResponse.java</h1><pre class="source lang-java linenums">package aj.FiTracker.FiTracker.DTO.REST;
 
-import aj.FiTracker.FiTracker.Entities.User;
+import aj.FiTracker.FiTracker.Interfaces.UserInterface;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -13,11 +13,11 @@ public class FindUserResponse {
 
     private List&lt;FindUser&gt; userData;
 
-<span class="fc" id="L16">    public FindUserResponse(List&lt;User&gt; users) {</span>
+<span class="fc" id="L16">    public FindUserResponse(List&lt;UserInterface&gt; users) {</span>
 <span class="fc" id="L17">        this.userData = getUsers(users);</span>
 <span class="fc" id="L18">    }</span>
 
-    private List&lt;FindUser&gt; getUsers(List&lt;User&gt; users) {
+    private List&lt;FindUser&gt; getUsers(List&lt;UserInterface&gt; users) {
 <span class="fc" id="L21">        List&lt;FindUser&gt; userList = new ArrayList&lt;&gt;();</span>
 <span class="fc" id="L22">        users.forEach(user -&gt; {</span>
 <span class="fc" id="L23">            userList.add(new FindUser(user.getId(), user.getName(), user.getEmail()));</span>

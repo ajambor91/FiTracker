@@ -3,26 +3,26 @@
 import aj.FiTracker.FiTracker.DTO.REST.RemoveZoneMemberRequest;
 import aj.FiTracker.FiTracker.DTO.REST.UpdateZoneRequest;
 import aj.FiTracker.FiTracker.Documents.Zone;
-import aj.FiTracker.FiTracker.Models.MemberTemplate;
+import aj.FiTracker.FiTracker.Models.MembersTemplate;
 
 <span class="nc" id="L8">public class MembersFactory {</span>
 
-    public static MemberTemplate createMemberTemplate(Zone zone) {
-<span class="fc" id="L11">        MemberTemplate memberTemplate = new MemberTemplate(zone.getId());</span>
-<span class="fc" id="L12">        zone.getMembersList().forEach(memberTemplate::addMember);</span>
-<span class="fc" id="L13">        return memberTemplate;</span>
+    public static MembersTemplate createMemberTemplate(Zone zone) {
+<span class="fc" id="L11">        MembersTemplate membersTemplate = new MembersTemplate(zone.getId());</span>
+<span class="fc" id="L12">        zone.getMembersList().forEach(membersTemplate::addMember);</span>
+<span class="fc" id="L13">        return membersTemplate;</span>
     }
 
-    public static MemberTemplate createMemberTemplate(UpdateZoneRequest zone) {
-<span class="nc" id="L17">        MemberTemplate memberTemplate = new MemberTemplate(zone.getZoneId());</span>
-<span class="nc" id="L18">        zone.getMembersList().forEach(memberTemplate::addMember);</span>
-<span class="nc" id="L19">        return memberTemplate;</span>
+    public static MembersTemplate createMemberTemplate(UpdateZoneRequest zone) {
+<span class="nc" id="L17">        MembersTemplate membersTemplate = new MembersTemplate(zone.getZoneId());</span>
+<span class="nc" id="L18">        zone.getMembersList().forEach(membersTemplate::addMember);</span>
+<span class="nc" id="L19">        return membersTemplate;</span>
     }
 
-    public static MemberTemplate createMemberTemplate(RemoveZoneMemberRequest zone) {
-<span class="fc" id="L23">        MemberTemplate memberTemplate = new MemberTemplate(zone.getZoneId());</span>
-<span class="fc" id="L24">        zone.getMembersList().forEach(memberTemplate::addMember);</span>
-<span class="fc" id="L25">        return memberTemplate;</span>
+    public static MembersTemplate createMemberTemplate(RemoveZoneMemberRequest zone) {
+<span class="fc" id="L23">        MembersTemplate membersTemplate = new MembersTemplate(zone.getZoneId());</span>
+<span class="fc" id="L24">        zone.getMembersList().forEach(membersTemplate::addMember);</span>
+<span class="fc" id="L25">        return membersTemplate;</span>
     }
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

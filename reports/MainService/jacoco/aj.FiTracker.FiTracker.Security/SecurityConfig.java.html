@@ -17,7 +17,7 @@ import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
-@Profile(&quot;!integration&quot;)
+@Profile(&quot;!integration &amp;&amp; !integrationWithCSRF&quot;)
 @Configuration
 @EnableWebSecurity
 <span class="nc" id="L23">public class SecurityConfig {</span>

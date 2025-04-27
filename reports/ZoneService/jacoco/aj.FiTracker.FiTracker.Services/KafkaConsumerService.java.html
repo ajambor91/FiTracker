@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="pl"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>KafkaConsumerService.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">FiTrackerZone</a> &gt; <a href="index.source.html" class="el_package">aj.FiTracker.FiTracker.Services</a> &gt; <span class="el_source">KafkaConsumerService.java</span></div><h1>KafkaConsumerService.java</h1><pre class="source lang-java linenums">package aj.FiTracker.FiTracker.Services;
+
+
+import aj.FiTracker.FiTracker.Enums.KafkaAction;
+import aj.FiTracker.FiTracker.Models.MemberTemplate;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.common.header.Header;
+import org.apache.kafka.common.header.Headers;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.stereotype.Component;
+
+import java.nio.charset.StandardCharsets;
+
+@Component
+public class KafkaConsumerService {
+<span class="fc" id="L22">    private final Logger logger = LoggerFactory.getLogger(KafkaConsumerService.class);</span>
+    private final ZoneService zoneService;
+    private final ObjectMapper objectMapper;
+
+    @Autowired
+    public KafkaConsumerService(
+            ZoneService zoneService,
+            ObjectMapper objectMapper
+<span class="fc" id="L30">    ) {</span>
+<span class="fc" id="L31">        this.zoneService = zoneService;</span>
+<span class="fc" id="L32">        this.objectMapper = objectMapper;</span>
+<span class="fc" id="L33">    }</span>
+
+    @KafkaListener(topics = &quot;request-members&quot;, groupId = &quot;fit-zone-members-group&quot;)
+    public void listenForMembers(ConsumerRecord&lt;String, String&gt; message) {
+<span class="fc" id="L37">        KafkaAction action = this.extractTypHeader(message.headers());</span>
+        try {
+<span class="fc bfc" id="L39" title="All 2 branches covered.">            if (action == KafkaAction.REMOVE_MEMBER) {</span>
+<span class="fc" id="L40">                logger.debug(&quot;Processing message for action: REMOVE_MEMBER&quot;);</span>
+<span class="fc" id="L41">                MemberTemplate memberTemplate = this.objectMapper.readValue(message.value(), MemberTemplate.class);</span>
+<span class="fc" id="L42">                logger.debug(&quot;Message value successfully mapped to MembersTemplate: {}&quot;, memberTemplate);</span>
+<span class="fc" id="L43">                this.zoneService.removeMemberFromAllZone(memberTemplate);</span>
+<span class="fc" id="L44">            } else {</span>
+<span class="fc" id="L45">                logger.warn(&quot;Received Kafka message with unhandled action type: {}&quot;, action);</span>
+            }
+<span class="nc" id="L47">        } catch (JsonMappingException e) {</span>
+<span class="nc" id="L48">            logger.error(&quot;JsonMappingException occurred while processing Kafka message.&quot;, e);</span>
+<span class="nc" id="L49">            throw new RuntimeException(&quot;Failed to map Kafka message value&quot;, e);</span>
+<span class="nc" id="L50">        } catch (JsonProcessingException e) {</span>
+<span class="nc" id="L51">            logger.error(&quot;JsonProcessingException occurred while processing Kafka message.&quot;, e);</span>
+<span class="nc" id="L52">            throw new RuntimeException(&quot;Failed to process Kafka message JSON&quot;, e);</span>
+<span class="nc" id="L53">        } catch (Exception e) {</span>
+<span class="nc" id="L54">            logger.error(&quot;An unexpected error occurred while processing Kafka message.&quot;, e);</span>
+<span class="nc" id="L55">            throw new RuntimeException(&quot;Error processing Kafka message&quot;, e);</span>
+<span class="fc" id="L56">        }</span>
+<span class="fc" id="L57">    }</span>
+
+    private KafkaAction extractTypHeader(Headers headers) {
+<span class="fc" id="L60">        logger.debug(&quot;Extracting 'type' header from message headers.&quot;);</span>
+<span class="fc" id="L61">        Header typeHeader = headers.lastHeader(&quot;type&quot;);</span>
+<span class="pc bpc" id="L62" title="1 of 2 branches missed.">        if (typeHeader == null) {</span>
+<span class="nc" id="L63">            logger.warn(&quot;'type' header not found in message headers.&quot;);</span>
+<span class="nc" id="L64">            return null;</span>
+        }
+<span class="fc" id="L66">        String valueType = new String(typeHeader.value(), StandardCharsets.UTF_8);</span>
+<span class="fc" id="L67">        logger.debug(&quot;Extracted 'type' header value: {}&quot;, valueType);</span>
+<span class="fc" id="L68">        KafkaAction action = KafkaAction.setAction(valueType);</span>
+<span class="fc" id="L69">        logger.debug(&quot;Mapped header value '{}' to KafkaAction: {}&quot;, valueType, action);</span>
+<span class="fc" id="L70">        return action;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.12.202403310830</span></div></body></html>

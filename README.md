@@ -266,9 +266,9 @@ From Grafana, you can view application logs (collected by Promtail and stored in
 
 | Service             | Test Coverage |
 |---------------------|---------------|
-| **MainService**     | 76%           | 
+| **MainService**     | 80%           | 
 | **ZoneService**     | 67%           | 
-| **ExpensesService** | 78%           | 
+| **ExpensesService** | 77%           | 
 
 - [MainService Coverage Report](https://ajambor91.github.io/FiTracker/reports/MainService/jacoco/)
 - [ZoneService Coverage Report](https://ajambor91.github.io/FiTracker/reports/ZoneService/jacoco/)
