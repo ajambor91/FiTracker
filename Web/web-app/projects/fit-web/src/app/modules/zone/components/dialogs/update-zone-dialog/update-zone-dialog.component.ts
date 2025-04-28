@@ -88,14 +88,7 @@ export class UpdateZoneDialogComponent implements OnInit {
   }
 
   public submitForm(): void {
-    if (this._form.valid) {
-      this.zoneService.updateFullZoneData(this.zone.zoneId, this._form).subscribe(zone => {
-        this.navSevice.closeDialog(zone.zoneId);
-      });
-    } else {
-      this._form.markAllAsTouched();
-      this.snackbar.showError("Form has errors.")
-    }
+    this.zoneService.updateFullZoneData(this.zone.zoneId, this._form);
 
   }
 

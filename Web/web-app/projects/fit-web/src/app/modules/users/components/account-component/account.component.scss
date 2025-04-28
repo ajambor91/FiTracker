@@ -1,0 +1,23 @@
+.account {
+  width: 100vw;
+  display: flex;
+
+  &__aside {
+    min-width: 200px;
+    background-color: #cf27c3;
+  }
+
+  .aside {
+    &__menu-list {
+      padding: 7px;
+      margin-top: 20px;
+      list-style-type: none;
+      font-size: 1em;
+      font-weight: 700;
+
+      .menu-list__go-back {
+        margin-bottom: 20px;
+      }
+    }
+  }
+}

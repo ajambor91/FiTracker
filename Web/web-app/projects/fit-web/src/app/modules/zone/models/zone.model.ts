@@ -6,6 +6,6 @@ export interface Zone {
   zoneId: string;
   zoneName: string;
   membersList: Member[];
-  zoneDescription?: string;
+  zoneDescription?: string | null | undefined;
 }
 

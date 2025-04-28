@@ -2,8 +2,7 @@ import {Component} from '@angular/core';
 import {authForm, LoginForm} from '../../forms/auth.form';
 import {AbstractControl, FormGroup} from '@angular/forms';
 import {UsersService} from '../../services/users.service';
-import {LoginRequest} from 'api';
-import {SnackbarService} from '../../../shared/services/snackbar.service';
+
 
 @Component({
   selector: 'app-auth',
@@ -14,7 +13,7 @@ import {SnackbarService} from '../../../shared/services/snackbar.service';
 export class AuthComponent {
   private readonly _authForm: FormGroup<LoginForm> = authForm;
 
-  constructor(private usersService: UsersService, private snackbar: SnackbarService) {
+  constructor(private usersService: UsersService) {
   }
 
   public get isLoginInvalid(): boolean {
@@ -32,12 +31,6 @@ export class AuthComponent {
   }
 
   public submitForm(): void {
-    if (this.authForm.valid) {
-      this.usersService.auth(this.authForm.getRawValue() as LoginRequest)
-    } else {
-      this.authForm.markAllAsTouched()
-      this.snackbar.showError("Form has errors");
-    }
-
+    this.usersService.auth(this.authForm)
   }
 }

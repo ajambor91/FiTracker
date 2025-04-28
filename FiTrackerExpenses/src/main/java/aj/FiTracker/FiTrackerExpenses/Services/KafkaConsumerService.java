@@ -61,7 +61,7 @@ public class KafkaConsumerService {
         }
     }
 
-    @KafkaListener(topics = "request-zone-members", groupId = "fit-expenses-members-group")
+    @KafkaListener(topics = "request-zone-members", groupId = "fit-expenses-zone-members-group")
     public void listenForZoneMembers(ConsumerRecord<String, String> message) {
         logger.info("Received Kafka message from topic '{}', partition {}, offset {}.",
                 message.topic(), message.partition(), message.offset());

@@ -59,21 +59,16 @@ export class AddExpenseDialogComponent implements OnInit {
   }
 
   public submitForm(): void {
-    if (this._form.valid) {
-      this.activatedRoute.params.pipe(
-        switchMap(param => forkJoin([
-          of(param['id']),
-          this.expensesService.addExpenseMultiCategories(
-            param["id"],
-            this.form
-          )
-        ]))
-      ).subscribe(([id]) => this.navService.closeDialog(id))
-    } else {
-      this._form.markAllAsTouched();
-      this._form.markAsDirty()
-      this.snackbar.showError("Correct form errors!")
-    }
+    this.activatedRoute.params.pipe(
+      switchMap(param => forkJoin([
+        of(param['id']),
+        this.expensesService.addExpenseMultiCategories(
+          param["id"],
+          this.form
+        )
+      ]))
+    ).subscribe(([id]) => this.navService.closeDialog(id))
+
   }
 
 

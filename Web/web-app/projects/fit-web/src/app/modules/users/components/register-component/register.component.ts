@@ -2,7 +2,6 @@ import {Component} from '@angular/core';
 import {AbstractControl, FormGroup} from '@angular/forms';
 import {UsersService} from '../../services/users.service';
 import {registerForm, RegisterForm} from '../../forms/register.form';
-import {RegisterUserRequest} from 'api';
 import {SnackbarService} from '../../../shared/services/snackbar.service';
 
 @Component({
@@ -43,12 +42,8 @@ export class RegisterComponent {
   }
 
   public submitForm(): void {
-    if (this.registerForm.valid) {
-      this.usersService.register(this.registerForm.getRawValue() as RegisterUserRequest)
-    } else {
-      this.registerForm.markAllAsTouched()
-      this.snackbar.showError("Form has errors")
-    }
+    this.usersService.register(this._registerForm)
+
 
   }
 }

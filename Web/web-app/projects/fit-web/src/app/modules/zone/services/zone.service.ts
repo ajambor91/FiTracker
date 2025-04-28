@@ -9,7 +9,7 @@ import {
   ZonesResponse
 } from 'api';
 import {Router} from '@angular/router';
-import {catchError, filter, forkJoin, map, Observable, of, shareReplay, switchMap, take, tap} from 'rxjs';
+import {catchError, EMPTY, filter, forkJoin, map, Observable, of, shareReplay, switchMap, take, tap} from 'rxjs';
 import {select, Store} from '@ngrx/store';
 import {ZonesState} from '../store/zone.reducer';
 import {addZone, getZones, refreshZone, setCurrentZone, updateZone} from '../store/zone.actions';
@@ -23,6 +23,11 @@ import {Member} from '../models/member.model';
 import {MembersService} from './members.service';
 import {InitialZone} from '../models/initial-zone.model';
 import {ExpensesService} from './expenses.service';
+import {LoaderService} from '../../shared/services/loader.service';
+import {SnackbarService} from '../../shared/services/snackbar.service';
+import {NewZoneForm} from '../forms/new-zone.form';
+import {NavService} from './nav.service';
+import {errorUtil} from '../../../core/utils/error.util';
 
 
 @Injectable()
@@ -31,21 +36,42 @@ export class ZoneService {
   constructor(
     private zoneApi: ZoneApiService,
     private router: Router,
+    private navService: NavService,
     private membersService: MembersService,
     private expensesService: ExpensesService,
+    private loaderService: LoaderService,
+    private snackbarService: SnackbarService,
     private store: Store<ZonesState>) {
   }
 
-  public addNewZone(zone: NewZoneRequest): void {
-    this.zoneApi.createZone(zone).subscribe(res => {
+  public addNewZone(zone: FormGroup<NewZoneForm>): void {
+    if (zone.invalid) {
+      zone.markAllAsTouched();
+      this.snackbarService.showError("Form has errors");
+      return;
+    }
+    this.loaderService.show();
+    const {zoneName, zoneDescription} = zone.getRawValue()
+    const newZoneRequest: NewZoneRequest = {
+      zoneName, zoneDescription
+    }
+    this.zoneApi.createZone(newZoneRequest).pipe(
+      catchError(err => {
+        this.loaderService.hide();
+        this.snackbarService.showError(errorUtil.parseError(err))
+        return EMPTY;
+      })
+    ).subscribe(res => {
       this.store.dispatch(setCurrentZone(res))
       this.store.dispatch(addZone(res));
+      zone.reset()
+      this.loaderService.hide();
       this.router.navigate(['dashboard', 'zones', res.zoneId, 'members', 'add'])
     });
   }
 
   public fillUpdateZoneForm(id: string, form: FormGroup<UpdateZoneForm>): Observable<Zone> {
-
+    this.loaderService.show();
     return this.getCurrentZoneById(id).pipe(
       take(1),
       filter(zoneData => !!zoneData),
@@ -65,7 +91,13 @@ export class ZoneService {
           }))
         })
       }),
-      map(([zone, _]) => zone)
+      map(([zone, _]) => zone),
+      tap(() => this.loaderService.hide()),
+      catchError(err => {
+        this.loaderService.hide();
+        this.snackbarService.showError(errorUtil.parseError(err))
+        return EMPTY;
+      })
     );
   }
 
@@ -74,6 +106,7 @@ export class ZoneService {
   }
 
   public getInitialZoneData(zoneId: string, date?: Date): Observable<InitialZone> {
+    this.loaderService.show();
     return this.getCurrentZoneById(zoneId).pipe(
       filter(zone => !!zone),
       switchMap(zone => forkJoin([of(zone), this.expensesService.getInitialData(zoneId, date)])),
@@ -83,7 +116,13 @@ export class ZoneService {
         byCategory: expenses.byCategory,
         byDate: expenses.byDate,
         sum: expenses.sum
-      }))
+      })),
+      tap(() => this.loaderService.hide()),
+      catchError(err => {
+        this.loaderService.hide();
+        this.snackbarService.showError(errorUtil.parseError(err))
+        return EMPTY;
+      })
     )
   }
 
@@ -101,14 +140,22 @@ export class ZoneService {
           return this.zoneApi.getZone(zoneId).pipe(
             tap((zoneRes: Zone) => this.store.dispatch(addZone(zoneRes))),
             map(zoneRes => zoneRes as Zone),
-            catchError(() => of(null))
+            catchError(err => {
+              this.snackbarService.showError(errorUtil.parseError(err))
+              return EMPTY;
+            })
           );
         }
       })
     );
   }
 
-  public updateFullZoneData(zoneId: string, form: FormGroup<UpdateZoneForm>): Observable<Zone> {
+  public updateFullZoneData(zoneId: string, form: FormGroup<UpdateZoneForm>): void {
+    if (form.invalid) {
+      this.snackbarService.showError("Form has errors");
+      form.markAllAsTouched();
+      return;
+    }
     const membersForm: FormArray<FormGroup<FoundUserForm>> = form.get('addedMembers') as FormArray<FormGroup<FoundUserForm>>;
     const zoneDataForm: FormGroup<ZoneDataForm> = form.get('zoneData') as FormGroup<ZoneDataForm>;
     const zoneMembers: ZoneMember[] = membersForm.getRawValue().map(member => ({
@@ -124,12 +171,22 @@ export class ZoneService {
       zoneName: zoneName,
       zoneId: zoneId
     };
-    return this.zoneApi.updateZone(zoneId, updateZoneRequest).pipe(
+    this.loaderService.show();
+    this.zoneApi.updateZone(zoneId, updateZoneRequest).pipe(
       tap(responseZone => {
 
         this.store.dispatch(updateZone(responseZone));
         this.store.dispatch(setCurrentZone(responseZone))
-      }));
+        this.loaderService.hide()
+      }),
+      catchError(err => {
+        this.snackbarService.showError(errorUtil.parseError(err))
+        return EMPTY;
+      })).subscribe(zone => {
+      form.reset()
+      this.navService.closeDialog(zone.zoneId)
+
+    });
 
   }
 
@@ -154,7 +211,6 @@ export class ZoneService {
       if (zones && zones.length > 0) {
         this.selectCurrentZoneAndGo(zones[0])
       }
-
     }));
   }
 
@@ -168,6 +224,7 @@ export class ZoneService {
   }
 
   public updateZone(zoneId: string, formData: FindUser[]): Observable<UpdateZoneResponse> {
+    this.loaderService.show();
     return this.store.select(selectCurrentZone).pipe(
       filter((currentZone): currentZone is Zone => currentZone !== null),
       take(1),
@@ -192,6 +249,12 @@ export class ZoneService {
       tap(updatedZone => {
         this.store.dispatch(updateZone(updatedZone))
         this.store.dispatch(setCurrentZone(updatedZone))
+        this.loaderService.hide()
+      }),
+      catchError(err => {
+        this.loaderService.hide();
+        this.snackbarService.showError(errorUtil.parseError(err))
+        return EMPTY;
       })
     );
   }

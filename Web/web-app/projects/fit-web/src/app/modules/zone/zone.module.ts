@@ -4,7 +4,6 @@ import {DashboardComponent} from './components/dashboard/dashboard.component';
 import {MainContainerComponent} from './components/main-container/main-container.component';
 import {ZoneRoutingModule} from './zone-routing.module';
 import {SharedModule} from '../shared/shared.module';
-import {MatTab, MatTabGroup, MatTabLink, MatTabNav, MatTabNavPanel} from "@angular/material/tabs";
 import {NewZoneComponent} from './components/new-zone/new-zone.component';
 import {ZoneService} from './services/zone.service';
 import {ApiUsersService, CategoriesApiService, ExpensesApiService, ZoneApiService} from 'api';
@@ -26,13 +25,9 @@ import {AddExpenseDialogComponent} from './components/dialogs/add-expense-dialog
 import {
   AddExpenseCategoryDialogComponent
 } from './components/dialogs/add-expense-category-dialog/add-expense-category-dialog.component';
-import {MatDialogModule} from '@angular/material/dialog';
 import {RouteService} from './services/route.service';
-import {MatOption} from '@angular/material/core';
-import {MatSelect} from '@angular/material/select';
 import {DialogContentComponent} from './components/dialogs/dialog-content/dialog-content.component';
 import {AllZonesComponent} from './components/all-zones/all-zones.component';
-import {MatList, MatListItem} from "@angular/material/list";
 
 @NgModule({
   declarations: [
@@ -52,21 +47,13 @@ import {MatList, MatListItem} from "@angular/material/list";
     AllZonesComponent
   ],
   imports: [
-    MatDialogModule,
     SharedModule,
     ZoneRoutingModule,
     CommonModule,
-    MatTabGroup,
-    MatTab,
+
     EffectsModule.forFeature([zonesEffects]),
     StoreModule.forFeature('zones', zoneReducer),
-    MatTabNavPanel,
-    MatTabNav,
-    MatSelect,
-    MatOption,
-    MatTabLink,
-    MatList,
-    MatListItem,
+
   ],
   providers: [
     RouteService,

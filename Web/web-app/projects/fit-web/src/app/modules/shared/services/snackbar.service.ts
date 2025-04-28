@@ -17,4 +17,13 @@ export class SnackbarService {
     })
   }
 
+  public showSuccess(message: string): void {
+    this.snackbar.open(message, this.ACCEPT_ACTION, {
+      verticalPosition: "bottom",
+      panelClass: 'snackbar-background',
+      duration: 4000
+    })
+  }
+
+
 }

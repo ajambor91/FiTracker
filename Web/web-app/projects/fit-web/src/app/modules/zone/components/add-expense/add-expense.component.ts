@@ -48,21 +48,16 @@ export class AddExpenseComponent {
   }
 
   public submitForm(): void {
-    if (this.form.valid) {
-      this.activatedRoute.params.pipe(
-        switchMap(param => forkJoin([
-          of(param['id']),
-          this.expensesService.addExpense(
-            param["id"],
-            param['categoryId'],
-            this.form
-          )
-        ]))
-      ).subscribe(([id]) => this.goToDashboard(id))
-    } else {
-      this.form.markAllAsTouched();
-      this.snackbar.showError("Form has errors.")
-    }
+    this.activatedRoute.params.pipe(
+      switchMap(param => forkJoin([
+        of(param['id']),
+        this.expensesService.addExpense(
+          param["id"],
+          param['categoryId'],
+          this.form
+        )
+      ]))
+    ).subscribe(([id]) => this.goToDashboard(id))
   }
 
   private goToDashboard(id: number): void {

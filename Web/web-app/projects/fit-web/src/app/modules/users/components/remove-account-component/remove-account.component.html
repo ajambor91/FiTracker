@@ -1,0 +1,39 @@
+<app-form-container>
+  <ng-container *ngIf="userData$ | async as userData">
+
+
+    <div class="mb-3">
+      <app-header i18n><h1 class="h2">Hi, {{ userData.name }}, you want to permanently delete your account.</h1>
+      </app-header>
+    </div>
+    <form (submit)="submitForm()" [formGroup]="removeAccountForm">
+      <div class="form-group">
+        <mat-form-field>
+          <mat-label>Login</mat-label>
+          <input formControlName="login" matInput>
+          <ng-container *ngIf="isLoginInvalid">
+            <mat-error i18n>Login is invalid</mat-error>
+          </ng-container>
+        </mat-form-field>
+      </div>
+      <div class="form-group">
+        <mat-form-field>
+          <mat-label>Password</mat-label>
+          <input formControlName="rawPassword" matInput type="password">
+          <ng-container *ngIf="isPasswordInvalid">
+            <mat-error i18n>Password is invalid</mat-error>
+          </ng-container>
+        </mat-form-field>
+      </div>
+      <div class="form-group row justify-content-end">
+        <div class="col-6 row justify-content-end">
+          <button i18n mat-button mat-flat-button type="submit">
+            Delete
+          </button>
+        </div>
+      </div>
+
+    </form>
+  </ng-container>
+
+</app-form-container>

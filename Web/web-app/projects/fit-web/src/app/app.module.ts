@@ -21,6 +21,8 @@ import {FontAwesomeModule} from '@fortawesome/angular-fontawesome';
 import {SnackbarService} from './modules/shared/services/snackbar.service';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {environment} from '../environments/environment';
+import {ModalService} from './modules/shared/services/modal.service';
+import {LoaderService} from './modules/shared/services/loader.service';
 
 @NgModule({
   declarations: [
@@ -48,6 +50,8 @@ import {environment} from '../environments/environment';
     ApiCoreService,
     CoreService,
     SnackbarService,
+    ModalService,
+    LoaderService,
     provideHttpClient
     (withFetch(),
       withInterceptors([

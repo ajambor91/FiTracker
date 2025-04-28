@@ -1,0 +1,49 @@
+<app-form-container>
+  <ng-container *ngIf="userData$ | async as userData">
+
+
+    <div class="mb-3">
+      <app-header i18n><h1 class="h2">Hi, {{ userData.name }}</h1></app-header>
+    </div>
+    <form (submit)="submitForm()" [formGroup]="accountForm">
+      <div class="form-group">
+        <mat-form-field>
+          <mat-label>Name</mat-label>
+          <input formControlName="name" matInput>
+          <ng-container *ngIf="isNameInvalid">
+            <mat-error i18n>Name is invalid</mat-error>
+          </ng-container>
+        </mat-form-field>
+
+
+      </div>
+      <div class="form-group">
+        <mat-form-field>
+          <mat-label>Login</mat-label>
+          <input formControlName="email" matInput>
+          <ng-container *ngIf="isEmailInvalid">
+            <mat-error i18n>Email is invalid</mat-error>
+          </ng-container>
+        </mat-form-field>
+      </div>
+      <div class="form-group">
+        <mat-form-field>
+          <mat-label>Password</mat-label>
+          <input formControlName="rawPassword" matInput type="password">
+          <ng-container *ngIf="isPasswordInvalid">
+            <mat-error i18n>Password is invalid</mat-error>
+          </ng-container>
+        </mat-form-field>
+      </div>
+      <div class="form-group row justify-content-end">
+        <div class="col-6 row justify-content-end">
+          <button i18n mat-button mat-flat-button type="submit">
+            Sign In
+          </button>
+        </div>
+      </div>
+
+    </form>
+  </ng-container>
+
+</app-form-container>

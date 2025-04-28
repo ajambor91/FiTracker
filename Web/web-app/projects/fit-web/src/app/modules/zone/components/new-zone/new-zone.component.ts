@@ -2,7 +2,6 @@ import {Component} from '@angular/core';
 import {newZoneForm, NewZoneForm} from '../../forms/new-zone.form';
 import {AbstractControl, FormGroup} from '@angular/forms';
 import {ZoneService} from '../../services/zone.service';
-import {NewZoneRequest} from 'api';
 import {SnackbarService} from '../../../shared/services/snackbar.service';
 
 @Component({
@@ -33,12 +32,8 @@ export class NewZoneComponent {
   }
 
   public submitForm(): void {
-    if (this._form.valid) {
-      this.zoneService.addNewZone(this._form.getRawValue() as NewZoneRequest);
-    } else {
-      this._form.markAllAsTouched();
-      this.snackbar.showError("Form has errors");
-    }
+    this.zoneService.addNewZone(this._form);
+
 
   }
 }

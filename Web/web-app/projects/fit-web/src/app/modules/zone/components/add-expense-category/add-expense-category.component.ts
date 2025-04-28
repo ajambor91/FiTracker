@@ -48,17 +48,13 @@ export class AddExpenseCategoryComponent {
   }
 
   public submitForm(): void {
-    if (this.form.valid) {
-      this.activatedRoute.params.pipe(
-        map(param => param["id"]),
-        switchMap(id => forkJoin([of(id), this.expenseService.addExpenseCategory(id, this.form)]))
-      ).subscribe(([id, category]) => {
-        this.router.navigate(['dashboard', 'zones', id, 'category', category.categoryId, 'expense', 'add']);
-      });
-    } else {
-      this.form.markAllAsTouched();
-      this.snackbar.showError("Form has errors");
-    }
+    this.activatedRoute.params.pipe(
+      map(param => param["id"]),
+      switchMap(id => forkJoin([of(id), this.expenseService.addExpenseCategory(id, this.form)]))
+    ).subscribe(([id, category]) => {
+      this.router.navigate(['dashboard', 'zones', id, 'category', category.categoryId, 'expense', 'add']);
+    });
+
 
   }
 

@@ -9,13 +9,23 @@ import {HeaderComponent} from './components/header/header.component';
 import {FontAwesomeModule} from '@fortawesome/angular-fontawesome';
 import {MonthPickerComponent} from './components/month-picker/month-picker.component';
 import {MatFormFieldModule} from '@angular/material/form-field';
+import {ConfirmComponent} from './components/dialogs/confirm/confirm.component';
+import {LoaderComponent} from './components/loader/loader.component';
+import {MatProgressSpinner} from '@angular/material/progress-spinner';
+import {MatTab, MatTabGroup, MatTabLink, MatTabNav, MatTabNavPanel} from '@angular/material/tabs';
+import {MatSelect} from '@angular/material/select';
+import {MatOption} from '@angular/material/core';
+import {MatList, MatListItem} from '@angular/material/list';
+import {MatDialogModule} from '@angular/material/dialog';
 
 
 @NgModule({
   declarations: [
     FormContainerComponent,
     HeaderComponent,
-    MonthPickerComponent
+    MonthPickerComponent,
+    ConfirmComponent,
+    LoaderComponent
   ],
   imports: [
     CommonModule,
@@ -25,7 +35,17 @@ import {MatFormFieldModule} from '@angular/material/form-field';
     MatInput,
     MatLabel,
     MatButton,
-    MatFormFieldModule
+    MatFormFieldModule,
+    MatProgressSpinner,
+    MatTabGroup,
+    MatTab, MatTabNavPanel,
+    MatTabNav,
+    MatSelect,
+    MatOption,
+    MatTabLink,
+    MatList,
+    MatListItem,
+    MatDialogModule,
 
 
   ],
@@ -40,9 +60,16 @@ import {MatFormFieldModule} from '@angular/material/form-field';
     FormContainerComponent,
     HeaderComponent,
     MonthPickerComponent,
-    MatFormFieldModule
-
-
+    MatFormFieldModule,
+    MatTabGroup,
+    MatTab, MatTabNavPanel,
+    MatTabNav,
+    MatSelect,
+    MatOption,
+    MatTabLink,
+    MatList,
+    MatListItem,
+    MatDialogModule,
   ],
   providers: [
     provideAnimationsAsync(),
