@@ -91,7 +91,8 @@ Follow these steps to set up and run the application using Docker:
 3.  **Configure Application Properties:**
     You need to create `application.properties` files for the MainService, ZonesService, and ExpensesService. Example configuration files are provided in the `cfg` directory within each service's module (e.g., `FiTrackerMain/cfg/application.example.properties`).
     **Copy** the content of the `.example.properties` files and create new `application.properties` files in the same directories. **Crucially, update these files with your own secure configurations, especially database credentials.**
-    **Warning:** The example configurations include default passwords and logins (like `exampleUser`, `examplePassword`). **Do not use these configurations or passwords in a production environment!**
+    **Create your own sql initial files based on init.example.sql** set your password and replace with init.sql
+    **Warning:** The example configurations include placeholders passwords and logins (like `examplePassword`, `STRONG PASSWORD`). **Do not use these configurations or passwords in a production environment!**
 4.  **Run Docker Compose:**
     Start the application services using Docker Compose in detached mode:
     ```bash
@@ -245,11 +246,7 @@ The asterisk (*) represents different Actuator endpoints like /health, /info, /m
 ```text
 http://localhost:3000
 ```
-You can log in with the default credentials (which should be changed immediately in any non-local environment):
-```text
-login: admin
-password: examplePassword
-```
+To run Grafana container you have to create `grafana.local.ini` or `grafana.prod.ini` based on `grafana.example.ini`.
 From Grafana, you can view application logs (collected by Promtail and stored in Loki) by selecting the Loki data source and exploring logs for different services using labels. The main log sources you can explore using the job label are:
 ``` 
     main # Main Service
