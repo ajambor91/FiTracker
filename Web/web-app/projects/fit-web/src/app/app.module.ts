@@ -23,12 +23,14 @@ import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
 import {environment} from '../environments/environment';
 import {ModalService} from './modules/shared/services/modal.service';
 import {LoaderService} from './modules/shared/services/loader.service';
+import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 
 @NgModule({
   declarations: [
     AppComponent,
   ],
   imports: [
+    MatProgressSpinnerModule,
     MainModule,
     BrowserModule,
     EffectsModule.forRoot([]),

@@ -37,7 +37,7 @@
                       Overall
                     </span>
                     <span class="col-8 expenses-list__item">
-                      {{ zone.sum.overallSum }}
+                      {{ zone.sum.overallSum  | number:'1.2-2' }}
                     </span>
                   </div>
                   <ng-container *ngFor="let expense of zone.sum.sum">
@@ -46,7 +46,7 @@
                       {{ expense.categoryName }}
                     </span>
                       <span class="col-8 expenses-list__item">
-                      {{ expense.categoryValue }}
+                      {{ expense.categoryValue | number:'1.2-2' }}
                     </span>
                     </div>
                   </ng-container>
@@ -58,13 +58,13 @@
             <div class="col-12">
               <div class="expenses-list ">
                 <div class="expenses-list__header font-purple">
-                  <p i18n>Top expensive expenses</p>
+                  <p i18n>Top expenses</p>
                 </div>
                 <div class="expenses-list__list">
                   <ng-container *ngFor="let expense of zone.expenses">
                     <div class="row expenses-list__row">
                     <span class="col-2 expenses-list__item">
-                      {{ expense.expenseValue }}
+                      {{ expense.expenseValue  | number:'1.2-2' }}
                     </span>
                       <span class="col-5 expenses-list__item">
                       {{ expense.expenseName }}

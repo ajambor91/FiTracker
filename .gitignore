@@ -94,3 +94,5 @@ nginx-host/certs/
 out/
 operator_keys.txt
 init.prod.js
+init.sql
+grafana.local.ini

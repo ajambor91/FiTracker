@@ -11,7 +11,7 @@ import {MonthPickerComponent} from './components/month-picker/month-picker.compo
 import {MatFormFieldModule} from '@angular/material/form-field';
 import {ConfirmComponent} from './components/dialogs/confirm/confirm.component';
 import {LoaderComponent} from './components/loader/loader.component';
-import {MatProgressSpinner} from '@angular/material/progress-spinner';
+import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import {MatTab, MatTabGroup, MatTabLink, MatTabNav, MatTabNavPanel} from '@angular/material/tabs';
 import {MatSelect} from '@angular/material/select';
 import {MatOption} from '@angular/material/core';
@@ -28,6 +28,7 @@ import {MatDialogModule} from '@angular/material/dialog';
     LoaderComponent
   ],
   imports: [
+    MatProgressSpinnerModule,
     CommonModule,
     ReactiveFormsModule,
     FontAwesomeModule,
@@ -36,7 +37,6 @@ import {MatDialogModule} from '@angular/material/dialog';
     MatLabel,
     MatButton,
     MatFormFieldModule,
-    MatProgressSpinner,
     MatTabGroup,
     MatTab, MatTabNavPanel,
     MatTabNav,
@@ -50,6 +50,7 @@ import {MatDialogModule} from '@angular/material/dialog';
 
   ],
   exports: [
+    MatProgressSpinnerModule,
     FontAwesomeModule,
     CommonModule,
     ReactiveFormsModule,

@@ -105,3 +105,17 @@ button {
   color: red !important;
   font-size: 12px;
 }
+
+
+.loader-overlay .mdc-circular-progress__determinate-circle-graphic,
+.loader-overlay .mdc-circular-progress__indeterminate-circle-graphic {
+  stroke: blue !important;
+  fill: none;
+}
+
+.mdc-circular-progress__determinate-circle-graphic,
+.mdc-circular-progress__indeterminate-circle-graphic {
+  fill: transparent !important;
+
+  stroke: blue !important;
+}

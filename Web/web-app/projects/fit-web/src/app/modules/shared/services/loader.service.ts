@@ -34,12 +34,12 @@ export class LoaderService {
   }
 
 
-  show(): void {
+  public show(): void {
     this.show$.next(true);
   }
 
 
-  hide(): void {
+  public hide(): void {
     this.hide$.next(false);
   }
 

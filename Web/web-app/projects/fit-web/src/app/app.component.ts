@@ -7,10 +7,7 @@ import {Component} from '@angular/core';
   styleUrl: './app.component.scss'
 })
 export class AppComponent {
-  title = 'fit-web';
+  title = 'FiT - Track your multiple finances';
 
-  constructor() {
-
-  }
 
 }

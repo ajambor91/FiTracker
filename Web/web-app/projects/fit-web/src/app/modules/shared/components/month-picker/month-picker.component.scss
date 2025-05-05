@@ -1,4 +1,10 @@
 .month-picker {
+  &__year {
+    text-align: center;
+    font-size: 2.55em;
+    font-weight: 900;
+    color: deepskyblue;
+  }
   &__month-item {
     color: #cf27c3;
     font-size: 1.25em;
